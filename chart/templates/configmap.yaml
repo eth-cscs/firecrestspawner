@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+data:
+  jupyterhub-config: |
+    {{ tpl (.Files.Get "files/jupyterhub-config.py") . | nindent 4 }}

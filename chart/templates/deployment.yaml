@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-hub
+  labels:
+    app: jupyterhub
+  annotations:
+    configmap.reloader.stakater.com/reload: "{{ .Release.Name }}-configmap"
+    secret.reloader.stakater.com/reload: "{{ .Release.Name }}-common-secrets"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyterhub
+  template:
+    metadata:
+      labels:
+        app: jupyterhub
+    spec:
+      containers:
+      - name: jupyterhub
+        image: {{ .Values.image.name }}
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c", ". /opt/conda/bin/activate && conda activate py311 && jupyterhub --config /etc/config/jupyterhub_config.py"]
+        ports:
+        - containerPort: {{ .Values.network.appPort }}
+        env:
+          - name: FIRECREST_URL
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: firecrest-url
+          - name: AUTH_TOKEN_URL
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: auth-token-url
+          - name: KC_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-common-secrets
+                key: kc_client_id
+          - name: KC_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-common-secrets
+                key: kc_client_secret
+        volumeMounts:
+          - name: jupyterhub-config
+            mountPath: /etc/config
+      volumes:
+        - name: jupyterhub-config
+          configMap:
+            name: {{ .Release.Name }}-configmap
+            items:
+              - key: jupyterhub-config
+                path: jupyterhub_config.py
+      imagePullSecrets:
+      - name: {{ .Release.Name }}-registry-docker-config

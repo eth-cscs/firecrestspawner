@@ -3,7 +3,7 @@ items:
 - apiVersion: networking.k8s.io/v1
   kind: Ingress
   metadata:
-    name: {{ .Release.Name }}-hub-ingress
+    name: {{ .Release.Name }}-proxy-ingress
   spec:
     ingressClassName: nginx
     rules:
@@ -14,21 +14,21 @@ items:
           pathType: Prefix
           backend:
             service:
-              name: {{ .Release.Name }}-hub-svc
+              name: {{ .Release.Name }}-proxy-svc
               port:
                 number: {{ .Values.network.appPort }}
         - path: /hub/api
           pathType: Prefix
           backend:
             service:
-              name: {{ .Release.Name }}-hub-svc
+              name: {{ .Release.Name }}-proxy-svc
               port:
-                number: {{ .Values.network.externalPort }}
+                number: {{ .Values.network.appPort }}
         - path: /api
           pathType: Prefix
           backend:
             service:
-              name: {{ .Release.Name }}-hub-svc
+              name: {{ .Release.Name }}-proxy-svc
               port:
                 number: {{ .Values.network.apiPort }}
     tls:

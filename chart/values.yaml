@@ -1,0 +1,113 @@
+# reloader:
+#   reloader:
+#     watchGlobally: false
+#     isArgoRollouts: true
+#     serviceAccount:
+#       create: false
+
+f7t4jhub:
+  setup:
+    # URL for the Firecrest service (replace with your own Firecrest URL)
+    firecrestUrl: "https://firecrest.example.com"
+
+    # URL to obtain an auth token from your identity provider (replace with your own token URL)
+    authTokenUrl: "https://auth.example.com/auth/realms/yourrealm/protocol/openid-connect/token"
+
+  proxy:
+    # Image for the configurable HTTP proxy
+    image: 'quay.io/jupyterhub/configurable-http-proxy:4.6.1'
+
+  hub:
+    # Image for the JupyterHub application (replace with your own JupyterHub image)
+    image: 'rsarm/jhub:4.1.5-f7t-x86_64'
+
+  vault:
+    # Enable or disable Vault integration
+    enabled: false
+
+    # URL for the Vault service (replace with your own Vault URL)
+    url: 'https://vault.example.com'
+
+    # Secret engine used in Vault (replace with your own secret engine)
+    secretEngine: 'jupyterhub'
+
+    # Secret path in Vault (replace with your own secret path)
+    secretPath: 'dom/tds'
+
+    # Role ID for accessing Vault secrets (replace with your own role ID)
+    roleId: '<role-id>'
+
+  network:
+    # Ports configuration for the application
+    appPort: 8000
+    apiPort: 8001
+    externalPort: 8081
+
+  config:
+    # Common name for the JupyterHub instance (replace with your own domain)
+    commonName: 'jupyterhub.example.com'
+
+    # Admin users for the JupyterHub instance (replace with your own admin users)
+    adminUsers: "{'adminuser'}"
+
+    # Default URL for the hub
+    hubDefaultUrl: '/hub/home'
+
+    auth:
+      # OAuth callback URL (replace with your own callback URL)
+      oauthCallbackUrl: "https://jupyterhub.example.com/hub/oauth_callback"
+
+      # Authorization URL for your identity provider (replace with your own authorize URL)
+      authorizeUrl: "https://auth.example.com/auth/realms/yourrealm/protocol/openid-connect/auth"
+
+      # Token URL for your identity provider (replace with your own token URL)
+      tokenUrl: "https://auth.example.com/auth/realms/yourrealm/protocol/openid-connect/token"
+
+      # User data URL for your identity provider (replace with your own user info URL)
+      userDataUrl: "https://auth.example.com/auth/realms/yourrealm/protocol/openid-connect/userinfo"
+
+      # Login service URL (replace with your own login service URL)
+      loginService: "https://auth.example.com"
+
+      # Key for the username field in the user data response
+      userNameKey: "preferred_username"
+
+      # Additional parameters for user data request (customize as needed)
+      userDataParams: "{'state': 'state'}"
+
+      # Scopes for the authentication request (customize as needed)
+      scope: "['openid', 'profile', 'customscope']"
+
+    spawner:
+      # Host for the spawner (replace with your own host)
+      host: 'dom'
+
+      # Node name template (replace with your own node name template)
+      nodeNameTemplate: '{}.example.com'
+
+      # Job name for the spawner (customize as needed)
+      jobName: 'spawner-jupyterhub'
+
+      # Partition for the job scheduler (customize as needed)
+      partition: 'slurm_partition'
+
+      # Account for the job scheduler (customize as needed)
+      account: 'slurm_account'
+
+      # Constraint for the job scheduler (customize as needed)
+      constraint: 'slurm_constraint'
+
+      # Command to run srun (customize as needed)
+      srun: ''
+
+      # Command to start the JupyterHub single-user server (customize as needed)
+      cmd: 'firecrestspawner-singleuser jupyterhub-singleuser'
+
+      # Pre-launch commands (customize as needed)
+      prelaunchCmds: ''
+
+      # Virtual environment setup (customize as needed)
+      vclusterEnv: '. /path/to/venv/bin/activate'
+
+      # Custom state get host function (customize as needed)
+      customStateGetHost: None

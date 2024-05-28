@@ -3,5 +3,7 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-configmap
 data:
+  # lowercase RFC 1123 labels must consist of lower case alphanumeric characters or '-'
+  # https://github.com/helm/helm/issues/6477
   jupyterhub-config: |
     {{ tpl (.Files.Get "files/jupyterhub-config.py") . | nindent 4 }}

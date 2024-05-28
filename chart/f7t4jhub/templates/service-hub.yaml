@@ -4,15 +4,9 @@ metadata:
   name: {{ .Release.Name }}-hub-svc
 spec:
   selector:
-    app: jupyterhub
+    app: hub
   type: ClusterIP
   ports:
-    - name: app
-      port: {{ .Values.network.appPort }}
-      targetPort: {{ .Values.network.appPort }}
-    - name: api
-      port: {{ .Values.network.apiPort }}
-      targetPort: {{ .Values.network.apiPort }}
     - name: external
       port: {{ .Values.network.externalPort }}
       targetPort: {{ .Values.network.externalPort }}

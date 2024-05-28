@@ -117,7 +117,7 @@ c = get_config()  #noqa
 
 ## DEPRECATED since version 0.7.2, use Authenticator.admin_users instead.
 #  Default: set()
-# c.JupyterHub.admin_users = {'sarafael'}
+# c.JupyterHub.admin_users = {}
 
 ## Allow named single-user servers per user
 #  Default: False
@@ -222,16 +222,16 @@ class GenericOAuthenticatorCSCS(GenericOAuthenticator):
 import os
 
 c.JupyterHub.authenticator_class = GenericOAuthenticatorCSCS
-c.GenericOAuthenticator.client_id = os.environ['KC_CLIENT_ID']
-c.GenericOAuthenticator.client_secret = os.environ['KC_CLIENT_SECRET']
-c.GenericOAuthenticator.oauth_callback_url = {{ .Values.config.Auth.oauth_callback_url }}
-c.GenericOAuthenticator.authorize_url = {{ .Values.config.Auth.authorize_url }}
-c.GenericOAuthenticator.token_url = {{ .Values.config.Auth.token_url }}
-c.GenericOAuthenticator.userdata_url = {{ .Values.config.Auth.userdata_url }}
-c.GenericOAuthenticator.login_service = {{ .Values.config.Auth.login_service }}
-c.GenericOAuthenticator.username_key = {{ .Values.config.Auth.username_key }}
-c.GenericOAuthenticator.userdata_params = {{ .Values.config.Auth.userdata_params }}
-c.GenericOAuthenticator.scope = {{ .Values.config.Auth.scope }}
+c.GenericOAuthenticator.client_id = os.environ.get('KC_CLIENT_ID', '<client-id>')
+c.GenericOAuthenticator.client_secret = os.environ.get('KC_CLIENT_SECRET', '<client-secret>')
+c.GenericOAuthenticator.oauth_callback_url = "{{ .Values.config.auth.oauthCallbackUrl }}"
+c.GenericOAuthenticator.authorize_url = "{{ .Values.config.auth.authorizeUrl }}"
+c.GenericOAuthenticator.token_url = "{{ .Values.config.auth.tokenUrl }}"
+c.GenericOAuthenticator.userdata_url = "{{ .Values.config.auth.userDataUrl }}"
+c.GenericOAuthenticator.login_service = "{{ .Values.config.auth.loginService }}"
+c.GenericOAuthenticator.username_key = "{{ .Values.config.auth.userNameKey }}"
+c.GenericOAuthenticator.userdata_params = {{ .Values.config.auth.userDataParams }}
+c.GenericOAuthenticator.scope = {{ .Values.config.auth.scope }}
 
 
 ## The base URL of the entire application.
@@ -364,7 +364,7 @@ c.GenericOAuthenticator.scope = {{ .Values.config.Auth.scope }}
 #      c.JupyterHub.default_url = default_url_fn
 #  Default: traitlets.Undefined
 # c.JupyterHub.default_url = traitlets.Undefined
-c.JupyterHub.default_url = '{{ .Values.config.default_url }}'
+c.JupyterHub.default_url = '{{ .Values.config.hubDefaultUrl }}'
 
 ## Dict authority:dict(files). Specify the key, cert, and/or
 #          ca file for an authority. This is useful for externally managed
@@ -795,16 +795,16 @@ c.JupyterHub.hub_connect_ip = socket.gethostbyname(hostname)
 #  Default: 'jupyterhub.spawner.LocalProcessSpawner'
 # c.JupyterHub.spawner_class = 'jupyterhub.spawner.LocalProcessSpawner'
 
-c.JupyterHub.spawner_class = 'firecrestspawner.spawner.SlurmSpawner'
+c.JupyterHub.spawner_class = 'firecrest_spawner.spawner.SlurmSpawner'
 #
 c.FirecRESTSpawnerBase.req_host = '{{ .Values.config.spawner.host }}'
-c.FirecRESTSpawnerBase.node_name_template = '{{ .Values.config.spawner.node_name_template }}'
+c.FirecRESTSpawnerBase.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'
 c.FirecRESTSpawnerBase.req_partition = '{{ .Values.config.spawner.partition }}'
 c.FirecRESTSpawnerBase.req_account = '{{ .Values.config.spawner.account }}'
 c.FirecRESTSpawnerBase.req_constraint = '{{ .Values.config.spawner.constraint }}'
 c.FirecRESTSpawnerBase.req_srun = '{{ .Values.config.spawner.srun }}'
 c.FirecRESTSpawnerBase.batch_script = """#!/bin/bash
-#SBATCH --job-name={{ .Values.config.jobname }}
+#SBATCH --job-name={{ .Values.config.spawner.jobName }}
 #SBATCH --chdir={{`{{homedir}}`}}
 #SBATCH --get-user-env=L
 
@@ -822,7 +822,7 @@ c.FirecRESTSpawnerBase.batch_script = """#!/bin/bash
 {{ .Values.config.spawner.vclusterEnv }}
 
 # 
-{{ .Values.config.spawner.prelaunch_cmds }}
+{{ .Values.config.spawner.prelaunchCmds }}
 
 export JUPYTERHUB_API_URL="http://{{ .Values.config.commonName }}/hub/api"
 export JUPYTERHUB_ACTIVITY_URL="http://{{ .Values.config.commonName }}/hub/api/users/${USER}/activity"
@@ -1252,70 +1252,70 @@ c.Spawner.http_timeout = 60
 # c.Spawner.options_form = traitlets.Undefined
 
 c.Spawner.options_form = """
-        <hr>
-        <label for="constraint">Dom
-<!--    <select name="cluster">
-        <option value="dom">Dom</option> -->
-        </select> node type</label>
-        <select name="constraint">
-          <option value="gpu">GPU</option>
-          <option value="mc">MC</option>
-        </select>
-       <br><label for="resv">Queue</label>
-        <select name="resv">
-          <option value="jupyterhub">Jupyterhub dedicated queue (single node only)</option>
-          <option value="">Normal queue</option>
-        </select>
-        <br><label for "reservation">Training course reservation</label>
-        <input name="reservation"></input>
-        <br><label for="nnodes">Number of nodes</label>
-        <select name="nnodes">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="4">4</option>
-          <option value="8">8</option>
-          <option value="16">16</option>
-        </select>
-        <br><label for="runtime">Job duration</label>
-        <select name="runtime">
-          <option value="1:00:00">1 hour</option>
-          <option value="2:00:00">2 hours</option>
-          <option value="4:00:00">4 hours</option>
-          <option value="8:00:00">8 hours</option>
-          <option value="12:00:00">12 hours</option>
-          <option value="24:00:00">24 hours</option>
-        </select>
-        <!-- <label for="jobid">Testing by Mark(leave empty)</label>
-        <input name="jobid"></input> -->
-        </select>
-        <hr>
-       <br><label for=jupyterlab_version">JupyterLab Version</label>
-        <select name="jupyterlab_version">
-          <option value="1.1.1">1.1.1</option>
-          <option value="0.35.2">0.35.2</option>
-        </select>
+<hr>
+<label for="constraint">Dom node type</label>
+<select name="constraint">
+  <option value="gpu">GPU</option>
+  <option value="mc">MC</option>
+</select>
+<br>
+<label for="resv">Queue</label>
+<select name="resv">
+  <option value="jupyterhub">Jupyterhub dedicated queue (single node only)</option>
+  <option value="">Normal queue</option>
+</select>
+<br>
+<label for="reservation">Training course reservation</label>
+<input name="reservation">
+<br>
+<label for="nnodes">Number of nodes</label>
+<select name="nnodes">
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="4">4</option>
+  <option value="8">8</option>
+  <option value="16">16</option>
+</select>
+<br>
+<label for="runtime">Job duration</label>
+<select name="runtime">
+  <option value="1:00:00">1 hour</option>
+  <option value="2:00:00">2 hours</option>
+  <option value="4:00:00">4 hours</option>
+  <option value="8:00:00">8 hours</option>
+  <option value="12:00:00">12 hours</option>
+  <option value="24:00:00">24 hours</option>
+</select>
+<hr>
+<br>
+<label for="jupyterlab_version">JupyterLab Version</label>
+<select name="jupyterlab_version">
+  <option value="1.1.1">1.1.1</option>
+  <option value="0.35.2">0.35.2</option>
+</select>
 
 <!-- MPI and Distributed Options, twr -->
-        <hr>
-        <label for="mpi">Start ipyparallel automatically with MPI?</label>
-        <select name="mpi">
-          <option value="">No</option>
-          <option value="1">Yes</option>
-        </select>
-        <br><label for="ppn">If yes, how many processes per node? (default: one process per virtual core)</label>
-        <input name="ppn" value=""></input>
-        </select>
-        <hr>
-        <label for="distributed">Start distributed dask automatically?</label>
-        <select name="distributed">
-          <option value="">No</option>
-          <option value="1">Yes</option>
-        </select>
-        <br><label for="dtaskspn">If yes, how many tasks per node? (default: one task per node)</label>
-        <input name="dtaskspn" value="1"></input>
-        <br>NB: the number of threads = ncores / nprocesses
-        <br><br>
-        """
+<hr>
+<label for="mpi">Start ipyparallel automatically with MPI?</label>
+<select name="mpi">
+  <option value="">No</option>
+  <option value="1">Yes</option>
+</select>
+<br>
+<label for="ppn">If yes, how many processes per node? (default: one process per virtual core)</label>
+<input name="ppn" value="">
+<hr>
+<label for="distributed">Start distributed dask automatically?</label>
+<select name="distributed">
+  <option value="">No</option>
+  <option value="1">Yes</option>
+</select>
+<br>
+<label for="dtaskspn">If yes, how many tasks per node? (default: one task per node)</label>
+<input name="dtaskspn" value="1">
+<br>NB: the number of threads = ncores / nprocesses
+<br><br>
+"""
 
 ## Interpret HTTP form data
 #  
@@ -1362,7 +1362,7 @@ c.Spawner.poll_interval = 300
 #  
 #  New in version 0.7.
 #  Default: 0
-# c.Spawner.port = 50995
+c.Spawner.port = 57001
 
 ## An optional hook function that you can implement to do work after the spawner
 #  stops.
@@ -1431,7 +1431,7 @@ c.Spawner.start_timeout = 120
 #  
 #  Defaults to an empty set, in which case no user has admin access.
 #  Default: set()
-c.Authenticator.admin_users = {{ .Values.config.admin_users }}
+c.Authenticator.admin_users = {{ .Values.config.adminUsers }}
 
 ## Set of usernames that are allowed to log in.
 #  
@@ -1458,6 +1458,23 @@ c.Authenticator.allow_all = True
 #          (nothing by default).
 #  Default: 300
 c.Authenticator.auth_refresh_age = 250
+
+
+# This tells the hub to not stop servers when the hub restarts
+c.JupyterHub.cleanup_servers = False
+
+# This tells the hub that the proxy should not be started
+# because it's started manually.
+c.ConfigurableHTTPProxy.should_start = False
+
+# This should be set to a token for authenticating communication with the proxy.
+c.ConfigurableHTTPProxy.auth_token = "4558b4fda13ade6c8374037f1d18e9ce1465dded"   ### "CONFIGPROXY_AUTH_TOKEN"
+
+# This should be set to the URL which the hub uses to connect to the proxy’s API.
+c.ConfigurableHTTPProxy.api_url = 'http://{{ .Release.Name }}-proxy-svc:8001'   # 'http://localhost:8001'
+
+# c.JupyterHub.hub_connect_url = 'http://jhub-sep-rsarm-hub-svc:8081'
+
 
 ## Automatically begin the login process
 #  
@@ -1615,7 +1632,7 @@ num_bytes = 32
 random_bytes = secrets.token_bytes(num_bytes)
 hex_string = secrets.token_hex(num_bytes)
 
-c.CryptKeeper.keys = [hex_string]
+c.CryptKeeper.keys = ['52659d5e3c5e2a1eb5aebaa33efe53e4eed564411e048278c2bcb7af45a31fcd']  # [hex_string]
 
 ## The number of threads to allocate for encryption
 #  Default: 20
@@ -1652,4 +1669,4 @@ async def get_node_ip_from_output(spawner):
             sleep(2)
 
 
-c.FirecRESTSpawnerBase.custom_state_gethost = {{ .Values.config.spawner.custom_state_gethost }}
+c.FirecRESTSpawnerBase.custom_state_gethost = {{ .Values.config.spawner.customStateGetHost }}

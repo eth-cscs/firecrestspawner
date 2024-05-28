@@ -1,0 +1,44 @@
+name: Release Helm Chart
+
+on:
+  push:
+    tags:
+      - 'v*.*.*' # Triggers on version tags like v1.0.0
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: v3.5.4
+
+    - name: Build Helm dependencies
+      run: helm dependency build ./char
+
+    - name: Package Helm chart
+      run: helm package ./chart
+
+    - name: Create index.yaml
+      run: helm repo index . --url https://eth-cscs.github.io/firecrestspawner --merge index.yaml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Push to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        destination_dir: ./
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "*.tgz"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

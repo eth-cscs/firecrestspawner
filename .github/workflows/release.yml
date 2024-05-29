@@ -32,6 +32,7 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git fetch origin gh-pages:gh-pages
         git checkout gh-pages
         cp ./*.tgz index.yaml .
         git add *.tgz index.yaml

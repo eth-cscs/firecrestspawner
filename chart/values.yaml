@@ -1,9 +1,17 @@
-# reloader:
-#   reloader:
-#     watchGlobally: false
-#     isArgoRollouts: true
-#     serviceAccount:
-#       create: false
+reloader:
+  reloader:
+    # Set to true to enable the reloader for automatically restarting pods on ConfigMap/Secret changes.
+    enabled: false
+
+    # If true, the reloader will watch ConfigMaps and Secrets in all namespaces, not just its own.
+    watchGlobally: false
+
+    # Set to true if using Argo Rollouts for managing deployments, which may require specific handling.
+    isArgoRollouts: true
+
+    serviceAccount:
+      # Set to true to create a new service account for the reloader. If false, it will use an existing one.
+      create: false
 
 f7t4jhub:
   setup:
@@ -81,6 +89,9 @@ f7t4jhub:
     spawner:
       # Host for the spawner (replace with your own host)
       host: 'dom'
+
+      # Port for the single-user server. Set to 0 to use random port
+      port: 57001
 
       # Node name template (replace with your own node name template)
       nodeNameTemplate: '{}.example.com'

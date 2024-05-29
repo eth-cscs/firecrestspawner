@@ -1362,7 +1362,7 @@ c.Spawner.poll_interval = 300
 #  
 #  New in version 0.7.
 #  Default: 0
-c.Spawner.port = 57001
+c.Spawner.port = {{ .Values.config.spawner.port }}
 
 ## An optional hook function that you can implement to do work after the spawner
 #  stops.

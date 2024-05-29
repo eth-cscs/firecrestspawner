@@ -3,20 +3,16 @@ entries:
   f7t4jhub:
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2024-05-29T09:01:06.020176846Z"
+    created: "2024-05-29T10:18:53.640046+02:00"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
-      version: 0.5.0
-    - condition: reloader.reloader.enabled
-      name: reloader
-      repository: https://stakater.github.io/stakater-charts
-      version: v1.0.51
+      version: 0.3.0
     description: A Helm chart to Deploy JupyterHub with the FirecREST Spawner
-    digest: 4fb51d1f873b4eb39fd7c1ab87ca21571ddeb6d8899112a7ffa58dbc655647ad
+    digest: dd8a55b78aa8da663a79f533a757cfa1d69956779cb29740a7d079a263d814df
     name: f7t4jhub
     type: application
     urls:
-    - https://eth-cscs.github.io/firecrestspawner/f7t4jhub-0.5.0.tgz
-    version: 0.5.0
-generated: "2024-05-29T09:01:06.017932878Z"
+    - https://eth-cscs.github.io/firecrestspawner/f7t4jhub-0.3.0.tgz
+    version: 0.3.0
+generated: "2024-05-29T10:18:53.63857+02:00"

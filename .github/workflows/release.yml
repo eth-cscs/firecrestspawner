@@ -23,14 +23,11 @@ jobs:
       run: helm dependency build chart/
 
     - name: Package Helm chart
-      run: helm package chart/
-
-    - name: Create Helm repo index
       run: |
-        helm repo index . --url https://eth-cscs.github.io/firecrestspawner --merge index.yaml
+        helm package chart/
         rm -rf chart/Chart.lock chart/charts/
         mkdir gh_
-        mv *.tgz index.yaml gh_
+        mv *.tgz gh_
 
     - name: Push to gh-pages branch
       run: |
@@ -38,7 +35,8 @@ jobs:
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git fetch origin gh-pages:gh-pages
         git checkout gh-pages
-        mv gh_/* .
+        helm repo index . --url https://eth-cscs.github.io/firecrestspawner --merge index.yaml
+        mv gh_/*tgz .
         git add *.tgz index.yaml
         git commit -m "Update Helm repo"
         git push origin gh-pages

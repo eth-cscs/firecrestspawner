@@ -3,25 +3,7 @@ entries:
   f7t4jhub:
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2024-05-29T09:12:39.607763181Z"
-    dependencies:
-    - name: f7t4jhub
-      repository: file://./f7t4jhub
-      version: 0.5.0
-    - condition: reloader.reloader.enabled
-      name: reloader
-      repository: https://stakater.github.io/stakater-charts
-      version: v1.0.51
-    description: A Helm chart to Deploy JupyterHub with the FirecREST Spawner
-    digest: 4fb51d1f873b4eb39fd7c1ab87ca21571ddeb6d8899112a7ffa58dbc655647ad
-    name: f7t4jhub
-    type: application
-    urls:
-    - https://eth-cscs.github.io/firecrestspawner/f7t4jhub-0.5.0.tgz
-    version: 0.5.0
-  - apiVersion: v2
-    appVersion: 4.1.5
-    created: "2024-05-29T09:12:39.609584175Z"
+    created: "2024-05-29T10:49:04.84225759Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -35,11 +17,29 @@ entries:
     name: f7t4jhub
     type: application
     urls:
+    - https://eth-cscs.github.io/firecrestspawner/f7t4jhub-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v2
+    appVersion: 4.1.5
+    created: "2024-05-29T10:49:04.844043388Z"
+    dependencies:
+    - name: f7t4jhub
+      repository: file://./f7t4jhub
+      version: 0.5.0
+    - condition: reloader.reloader.enabled
+      name: reloader
+      repository: https://stakater.github.io/stakater-charts
+      version: v1.0.51
+    description: A Helm chart to Deploy JupyterHub with the FirecREST Spawner
+    digest: d40a0656829d767774a600691c251e01109e4d6d9c942f179f0f2dbe69738eaf
+    name: f7t4jhub
+    type: application
+    urls:
     - https://eth-cscs.github.io/firecrestspawner/gh_/f7t4jhub-0.5.0.tgz
     version: 0.5.0
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2024-05-29T09:12:39.605962947Z"
+    created: "2024-05-29T10:49:04.840414125Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -51,4 +51,4 @@ entries:
     urls:
     - https://eth-cscs.github.io/firecrestspawner/f7t4jhub-0.3.0.tgz
     version: 0.3.0
-generated: "2024-05-29T09:12:39.60444483Z"
+generated: "2024-05-29T10:49:04.838995465Z"

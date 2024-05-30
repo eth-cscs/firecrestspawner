@@ -2,8 +2,8 @@ name: Release Helm Chart
 
 on:
   push:
-    branches:
-      - main  # Change this to your default branch if it's not 'main'
+    tags:
+      - 'chart-v*'
   workflow_dispatch: # Allows manual triggering
 
 jobs:

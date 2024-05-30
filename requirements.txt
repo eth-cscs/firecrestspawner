@@ -3,3 +3,5 @@ pyfirecrest==2.1.0
 SQLAlchemy==1.4.52
 oauthenticator==16.0.7
 pytest==7.4.2
+pytest_httpserver==1.0.10
+werkzeug==3.0.1

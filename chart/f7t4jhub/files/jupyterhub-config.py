@@ -795,7 +795,7 @@ c.JupyterHub.hub_connect_ip = socket.gethostbyname(hostname)
 #  Default: 'jupyterhub.spawner.LocalProcessSpawner'
 # c.JupyterHub.spawner_class = 'jupyterhub.spawner.LocalProcessSpawner'
 
-c.JupyterHub.spawner_class = 'firecrest_spawner.spawner.SlurmSpawner'
+c.JupyterHub.spawner_class = 'firecrestspawner.spawner.SlurmSpawner'
 #
 c.FirecRESTSpawnerBase.req_host = '{{ .Values.config.spawner.host }}'
 c.FirecRESTSpawnerBase.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'

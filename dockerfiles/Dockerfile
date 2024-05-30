@@ -60,10 +60,6 @@ RUN . /opt/conda/bin/activate && \
 #     git clone https://github.com/moment/moment.git -b 2.29.1 && \
 #     git clone https://github.com/requirejs/requirejs.git -b 2.3.6
 
-# COPY socket.py /opt/conda/envs/py311/lib/python3.11/socket.py
-# COPY user.py /opt/conda/envs/py311/lib/python3.11/site-packages/jupyterhub/user.py
-# COPY app.py /opt/conda/envs/py311/lib/python3.11/site-packages/jupyterhub/app.py
-
 EXPOSE 8000
 
 RUN useradd -ms /bin/bash juhu

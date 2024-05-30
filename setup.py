@@ -22,13 +22,4 @@ setup(
     description='FirecREST-Spawner: A spawner for Jupyterhub to spawn notebooks using FirecREST.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    # install_requires=[
-    #     'jupyterhub==2.0.0',
-    #     'pyfirecrest==2.1.0',
-    #     'SQLAlchemy==1.3.22',
-    #     'oauthenticator==16.0.7'
-    # ],
-    extras_require={
-      "oauth": ['oauthenticator==16.0.7']
-    }
 )

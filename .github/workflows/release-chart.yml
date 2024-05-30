@@ -44,6 +44,8 @@ jobs:
         helm repo index . --url https://eth-cscs.github.io/firecrestspawner --merge index.yaml
 
         NEW_BRANCH="update-helm-repo-$(date +%s)"
+        echo "NEW_BRANCH=$NEW_BRANCH" >> $GITHUB_ENV
+
         git checkout -b $NEW_BRANCH                
         git add *.tgz index.yaml
         git commit -m "update helm repo"
@@ -54,7 +56,9 @@ jobs:
         # -d '{"title":"Update Helm repo","head":"'"$NEW_BRANCH"'","base":"gh-pages"}' \
         # https://api.github.com/repos/${{ github.repository }}/pulls | jq -r '.url'
 
-        # create pull request
-        gh pr create -B $NEW_BRANCH -H gh-pages --title '[release-chart] Update Helm repo' --body 'Created by Github action'
+    - name: Create pull request
+      run: |
+        gh pr create -H $NEW_BRANCH --B gh-pages --title '[release-chart] Update Helm repo' --body 'Created by Github action'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NEW_BRANCH: ${{ env.NEW_BRANCH }}

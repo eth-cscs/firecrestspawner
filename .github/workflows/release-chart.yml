@@ -33,12 +33,23 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        
         git fetch origin gh-pages:gh-pages
         git checkout gh-pages
-        helm repo index . --url https://eth-cscs.github.io/firecrestspawner --merge index.yaml
         mv gh_/*tgz .
+
+        helm repo index . --url https://eth-cscs.github.io/firecrestspawner --merge index.yaml
+
+        NEW_BRANCH="update-helm-repo-$(date +%s)"
+        git checkout -b $NEW_BRANCH                
         git add *.tgz index.yaml
-        git commit -m "Update Helm repo"
-        git push origin gh-pages
+        git commit -m "update helm repo"
+        git push origin $NEW_BRANCH
+
+        # Create a pull request
+        curl -s -u "${{ secrets.GH_PAT }}:x-oauth-basic" \
+        -d '{"title":"Update Helm repo","head":"'"$NEW_BRANCH"'","base":"gh-pages"}' \
+        https://api.github.com/repos/${{ github.repository }}/pulls | jq -r '.url'
+
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

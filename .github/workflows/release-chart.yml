@@ -51,11 +51,6 @@ jobs:
         git commit -m "update helm repo"
         git push -u origin $NEW_BRANCH
 
-        # Create a pull request
-        # curl -s -u "${{ secrets.GH_PAT }}:x-oauth-basic" \
-        # -d '{"title":"Update Helm repo","head":"'"$NEW_BRANCH"'","base":"gh-pages"}' \
-        # https://api.github.com/repos/${{ github.repository }}/pulls | jq -r '.url'
-
     - name: Create pull request
       run: |
         gh pr create -H $NEW_BRANCH -B gh-pages --title '[release-chart] Update Helm repo' --body 'Created by Github action'

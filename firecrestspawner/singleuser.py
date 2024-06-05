@@ -10,7 +10,7 @@ from jupyterhub.services.auth import HubAuth
 
 
 def main(argv=None):
-    port = random_port()
+    port = 50396  # random_port()
     hub_auth = HubAuth()
     hub_auth.client_ca = os.environ.get('JUPYTERHUB_SSL_CLIENT_CA', '')
     hub_auth.certfile = os.environ.get('JUPYTERHUB_SSL_CERTFILE', '')
@@ -23,6 +23,7 @@ def main(argv=None):
     cmd_path = which(sys.argv[1])
     sys.argv = sys.argv[1:] + ['--port={}'.format(port)]
     run_path(cmd_path, run_name="__main__")
+
 
 if __name__ == "__main__":
     main()

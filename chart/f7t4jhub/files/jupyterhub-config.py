@@ -176,7 +176,7 @@ c = get_config()  #noqa
 # c.JupyterHub.authenticator_class = 'jupyterhub.auth.PAMAuthenticator'
 
 import requests
-import firecrest as f7t
+import firecrest
 from oauthenticator.generic import GenericOAuthenticator
 
 

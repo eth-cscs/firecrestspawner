@@ -21,11 +21,11 @@ spec:
         command:
           - "configurable-http-proxy"
           - "--ip=0.0.0.0"
-          - "--port=8000"
+          - "--port={{ .Values.network.appPort }}"
           - "--default-target=http://{{ .Release.Name }}-hub-svc:{{ .Values.network.externalPort }}"
           - "--api-ip=0.0.0.0"
           - "--api-port={{ .Values.network.apiPort }}"
-          # - "--error-target http://10.42.8.16:8081/hub/error"
+          # - "--error-target http://10.42.8.16:{{ .Values.network.externalPort }}/hub/error"
           # - "--log-level info"
         ports:
         - containerPort: {{ .Values.network.appPort }}

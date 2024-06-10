@@ -122,13 +122,13 @@ hostname = socket.gethostname()
 c.JupyterHub.hub_connect_ip = socket.gethostbyname(hostname)
 
 c.JupyterHub.spawner_class = 'firecrestspawner.spawner.SlurmSpawner'
-c.FirecRESTSpawnerBase.req_host = '{{ .Values.config.spawner.host }}'
-c.FirecRESTSpawnerBase.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'
-c.FirecRESTSpawnerBase.req_partition = '{{ .Values.config.spawner.partition }}'
-c.FirecRESTSpawnerBase.req_account = '{{ .Values.config.spawner.account }}'
-c.FirecRESTSpawnerBase.req_constraint = '{{ .Values.config.spawner.constraint }}'
-c.FirecRESTSpawnerBase.req_srun = '{{ .Values.config.spawner.srun }}'
-c.FirecRESTSpawnerBase.batch_script = """#!/bin/bash
+c.Spawner.req_host = '{{ .Values.config.spawner.host }}'
+c.Spawner.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'
+c.Spawner.req_partition = '{{ .Values.config.spawner.partition }}'
+c.Spawner.req_account = '{{ .Values.config.spawner.account }}'
+c.Spawner.req_constraint = '{{ .Values.config.spawner.constraint }}'
+c.Spawner.req_srun = '{{ .Values.config.spawner.srun }}'
+c.Spawner.batch_script = """#!/bin/bash
 #SBATCH --job-name={{ .Values.config.spawner.jobName }}
 #SBATCH --chdir={{`{{homedir}}`}}
 #SBATCH --get-user-env=L
@@ -162,81 +162,14 @@ trap 'echo SIGTERM received' TERM
 echo "jupyterhub-singleuser ended gracefully"
 {{`{{epilogue}}`}}
 """
-c.FirecRESTSpawnerBase.custom_state_gethost = {{ .Values.config.spawner.customStateGetHost }}
-
+c.Spawner.custom_state_gethost = {{ .Values.config.spawner.customStateGetHost }}
 c.Spawner.cmd = '{{ .Values.config.spawner.cmd }}'
-
 c.Spawner.http_timeout = 60
-
 c.Spawner.options_form = """
-<hr>
-<label for="constraint">Dom node type</label>
-<select name="constraint">
-  <option value="gpu">GPU</option>
-  <option value="mc">MC</option>
-</select>
-<br>
-<label for="resv">Queue</label>
-<select name="resv">
-  <option value="jupyterhub">Jupyterhub dedicated queue (single node only)</option>
-  <option value="">Normal queue</option>
-</select>
-<br>
-<label for="reservation">Training course reservation</label>
-<input name="reservation">
-<br>
-<label for="nnodes">Number of nodes</label>
-<select name="nnodes">
-  <option value="1">1</option>
-  <option value="2">2</option>
-  <option value="4">4</option>
-  <option value="8">8</option>
-  <option value="16">16</option>
-</select>
-<br>
-<label for="runtime">Job duration</label>
-<select name="runtime">
-  <option value="1:00:00">1 hour</option>
-  <option value="2:00:00">2 hours</option>
-  <option value="4:00:00">4 hours</option>
-  <option value="8:00:00">8 hours</option>
-  <option value="12:00:00">12 hours</option>
-  <option value="24:00:00">24 hours</option>
-</select>
-<hr>
-<br>
-<label for="jupyterlab_version">JupyterLab Version</label>
-<select name="jupyterlab_version">
-  <option value="1.1.1">1.1.1</option>
-  <option value="0.35.2">0.35.2</option>
-</select>
-<!-- MPI and Distributed Options, twr -->
-<hr>
-<label for="mpi">Start ipyparallel automatically with MPI?</label>
-<select name="mpi">
-  <option value="">No</option>
-  <option value="1">Yes</option>
-</select>
-<br>
-<label for="ppn">If yes, how many processes per node? (default: one process per virtual core)</label>
-<input name="ppn" value="">
-<hr>
-<label for="distributed">Start distributed dask automatically?</label>
-<select name="distributed">
-  <option value="">No</option>
-  <option value="1">Yes</option>
-</select>
-<br>
-<label for="dtaskspn">If yes, how many tasks per node? (default: one task per node)</label>
-<input name="dtaskspn" value="1">
-<br>NB: the number of threads = ncores / nprocesses
-<br><br>
+{{ .Values.config.spawner.optionsForm }}
 """
-
 c.Spawner.poll_interval = 300
-
 c.Spawner.port = {{ .Values.config.spawner.port }}
-
 c.Spawner.start_timeout = 120
 
 # This tells the hub to not stop servers when the hub restarts

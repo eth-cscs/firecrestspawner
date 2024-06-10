@@ -27,7 +27,7 @@ f7t4jhub:
 
   hub:
     # Image for the JupyterHub application (replace with your own JupyterHub image)
-    image: 'ghcr.io/eth-cscs/f7t4fjhub:4.1.5'
+    image: 'ghcr.io/eth-cscs/f7t4jhub:4.1.5'
 
   vault:
     # Enable or disable Vault integration

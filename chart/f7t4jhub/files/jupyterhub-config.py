@@ -93,6 +93,17 @@ class GenericOAuthenticatorCSCS(GenericOAuthenticator):
 
 c = get_config()
 
+
+c.Authenticator.admin_users = {{ .Values.config.adminUsers }}
+c.JupyterHub.admin_access = False
+c.Authenticator.allow_all = True
+
+c.Authenticator.refresh_pre_spawn = True
+c.Authenticator.auth_refresh_age = 250
+
+c.Authenticator.enable_auth_state = True
+c.CryptKeeper.keys = gen_hex_string("/home/juhu/hex_strings.txt")
+
 c.JupyterHub.authenticator_class = GenericOAuthenticatorCSCS
 c.GenericOAuthenticator.client_id = os.environ.get('KC_CLIENT_ID', '<client-id>')
 c.GenericOAuthenticator.client_secret = os.environ.get('KC_CLIENT_SECRET', '<client-secret>')
@@ -228,13 +239,6 @@ c.Spawner.port = {{ .Values.config.spawner.port }}
 
 c.Spawner.start_timeout = 120
 
-c.Authenticator.admin_users = {{ .Values.config.adminUsers }}
-
-c.Authenticator.allow_all = True
-
-c.Authenticator.auth_refresh_age = 250
-
-
 # This tells the hub to not stop servers when the hub restarts
 c.JupyterHub.cleanup_servers = False
 
@@ -247,9 +251,3 @@ c.ConfigurableHTTPProxy.auth_token = "4558b4fda13ade6c8374037f1d18e9ce1465dded" 
 
 # This should be set to the URL which the hub uses to connect to the proxy’s API.
 c.ConfigurableHTTPProxy.api_url = 'http://{{ .Release.Name }}-proxy-svc:8001'
-
-c.Authenticator.enable_auth_state = True
-
-c.Authenticator.refresh_pre_spawn = True
-
-c.CryptKeeper.keys = gen_hex_string("/home/juhu/hex_strings.txt")

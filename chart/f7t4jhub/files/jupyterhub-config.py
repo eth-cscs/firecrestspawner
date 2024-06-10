@@ -7,7 +7,7 @@ import firecrest
 from oauthenticator.generic import GenericOAuthenticator
 
 
-def gen_hex_string(hex_strings_file, num_bytes = 32, num_hex_strings = 4):
+def gen_hex_string(hex_strings_file, num_bytes=32, num_hex_strings=4):
     if os.path.isfile(hex_strings_file):
         with open(hex_strings_file) as fp:
             lines = fp.readlines()
@@ -102,7 +102,7 @@ c.Authenticator.refresh_pre_spawn = True
 c.Authenticator.auth_refresh_age = 250
 
 c.Authenticator.enable_auth_state = True
-c.CryptKeeper.keys = gen_hex_string("/home/juhu/hex_strings.txt")
+c.CryptKeeper.keys = gen_hex_string("/home/juhu/hex_strings_crypt.txt")
 
 c.JupyterHub.authenticator_class = GenericOAuthenticatorCSCS
 c.GenericOAuthenticator.client_id = os.environ.get('KC_CLIENT_ID', '<client-id>')
@@ -180,7 +180,7 @@ c.JupyterHub.cleanup_servers = False
 c.ConfigurableHTTPProxy.should_start = False
 
 # This should be set to a token for authenticating communication with the proxy.
-c.ConfigurableHTTPProxy.auth_token = "4558b4fda13ade6c8374037f1d18e9ce1465dded"   # "CONFIGPROXY_AUTH_TOKEN"
+c.ConfigurableHTTPProxy.auth_token = os.environ["CONFIGPROXY_AUTH_TOKEN"]
 
 # This should be set to the URL which the hub uses to connect to the proxy’s API.
 c.ConfigurableHTTPProxy.api_url = 'http://{{ .Release.Name }}-proxy-svc:8001'

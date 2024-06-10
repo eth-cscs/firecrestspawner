@@ -45,6 +45,11 @@ spec:
               secretKeyRef:
                 name: {{ .Release.Name }}-secret
                 key: authTokenUrl
+          - name: CONFIGPROXY_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: configproxyAuthToken
           {{- if .Values.vault.enabled }}
           - name: KC_CLIENT_ID
             valueFrom:

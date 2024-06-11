@@ -122,3 +122,7 @@ f7t4jhub:
 
       # Custom state get host function (customize as needed)
       customStateGetHost: None
+
+      # Literal python code to add at the end of jupyterhub's configuration
+      extraConfig: |
+        # ...

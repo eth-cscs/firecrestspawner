@@ -26,7 +26,7 @@ class FireCRESTSpawnerAPIHandler(APIHandler):
             if hasattr(spawner, key):
                 setattr(spawner, key, value)
 
-        self.finish(json.dumps({"message": "BatchSpawner data configured"}))
+        self.finish(json.dumps({"message": "FirecRESTSpawner data configured"}))
         self.set_status(201)
 
 

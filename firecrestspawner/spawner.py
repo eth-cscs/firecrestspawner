@@ -15,7 +15,7 @@ import jupyterhub
 import firecrest as f7t
 from enum import Enum
 from jinja2 import Template
-from tornado import gen
+# from tornado import gen
 from jupyterhub.spawner import Spawner
 from traitlets import (
     Any, Integer, Unicode, Float, default
@@ -341,7 +341,7 @@ class FirecRESTSpawnerBase(Spawner):
         if self.port == 0:
             self.port = self.traits()['port'].default_value
 
-        if jupyterhub.version_info >= (0, 8) and self.server:
+        if self.server:
             self.server.port = self.port
 
         await self.submit_batch_script()
@@ -369,20 +369,10 @@ class FirecRESTSpawnerBase(Spawner):
                 raise RuntimeError('The Jupyter batch job has disappeared'
                                    ' while pending in the queue or died '
                                    ' immediately after starting.')
-            await gen.sleep(self.startup_poll_interval)
+            await asyncio.sleep(self.startup_poll_interval)
 
         self.ip = await self.state_gethost()
-        while self.port == 0:
-            await gen.sleep(self.startup_poll_interval)
-            # Test framework: For testing, mock_port is set because we
-            # don't actually run the single-user server yet.
-            if hasattr(self, 'mock_port'):
-                self.port = self.mock_port
 
-        if jupyterhub.version_info < (0, 7):
-            # store on user for pre-jupyterhub-0.7:
-            self.user.server.port = self.port
-            self.user.server.ip = self.ip
         self.db.commit()
         self.log.info(f"Notebook server job {self.job_id} started at "
                       f"{self.ip}:{self.port}")
@@ -403,7 +393,7 @@ class FirecRESTSpawnerBase(Spawner):
             status = await self.query_job_status()
             if status not in (JobStatus.RUNNING, JobStatus.UNKNOWN):
                 return
-            await gen.sleep(1.0)
+            await asyncio.sleep(1.0)
         if self.job_id:
             self.log.warning(
                 f"Notebook server job {self.job_id} at {self.ip}:{self.port} "
@@ -426,7 +416,7 @@ class FirecRESTSpawnerBase(Spawner):
                 await yield_({
                     "message": "Unknown status...",
                 })
-            await gen.sleep(1)
+            await asyncio.sleep(1)
 
 
 class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):

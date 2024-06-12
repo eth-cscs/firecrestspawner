@@ -30,8 +30,11 @@ spec:
         command:
           - "/bin/bash"
           - "-c"
-          - ". /opt/conda/bin/activate && conda activate py311 && jupyterhub --config /etc/config/jupyterhub_config.py"
-          - "--ip 0.0.0.0"
+          - >
+              . /opt/conda/bin/activate &&
+              conda activate py311 &&
+              jupyterhub --config /etc/config/jupyterhub_config.py --ip 0.0.0.0
+              {{- if .Values.hub.debug }} --debug{{- end }}
         ports:
         - containerPort: {{ .Values.network.appPort }}
         env:
@@ -49,7 +52,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: {{ .Release.Name }}-secret
-                key: configproxyAuthToken
+                key: configProxyAuthToken
           {{- if .Values.vault.enabled }}
           - name: KC_CLIENT_ID
             valueFrom:

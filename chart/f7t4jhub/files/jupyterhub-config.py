@@ -64,7 +64,7 @@ class FirecrestAccessTokenAuth:
 
 class GenericOAuthenticatorCSCS(GenericOAuthenticator):
     async def refresh_user(self, user, handler=None):
-        # self.log.info('Refresing auth state')
+        # self.log.info('Refreshing auth state')
         auth_state = await user.get_auth_state()
 
         params = {

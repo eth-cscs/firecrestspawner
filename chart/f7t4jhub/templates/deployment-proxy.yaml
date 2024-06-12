@@ -34,4 +34,4 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: {{ .Release.Name }}-secret
-                key: configproxyAuthToken
+                key: configProxyAuthToken

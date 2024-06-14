@@ -6,6 +6,11 @@
 Welcome to FirecRESTSpawner's documentation!
 ============================================
 
+FirecRESTSpawner is a JupyterHub spawner to launch notebooks servers via `FirecREST <https://firecrest.readthedocs.io>`_.
+
+FirecRESTSpawner has been written starting from the code of `batchspawner <https://github.com/jupyterhub/batchspawner>`_.
+The main change is that the calls to the workload scheduler's commands for starting, polling and stopping notebook server jobs, has been replaced by using `PyFirecREST <https://pyfirecrest.readthedocs.io/en/stable/index.html>`_ functions.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:

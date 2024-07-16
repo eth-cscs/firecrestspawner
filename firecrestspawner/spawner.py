@@ -15,7 +15,6 @@ import jupyterhub
 import firecrest as f7t
 from enum import Enum
 from jinja2 import Template
-# from tornado import gen
 from jupyterhub.spawner import Spawner
 from traitlets import (
     Any, Integer, Unicode, Float, default
@@ -275,13 +274,16 @@ class FirecRESTSpawnerBase(Spawner):
             return JobStatus.NOTFOUND
 
     async def cancel_batch_job(self):
+        """Cancel the job running the notebooks sever"""
+
         self.log.info(f"Cancelling job {self.job_id}")
         client = await self.get_firecrest_client()
         self.log.info('firecREST: Canceling job')
         await client.cancel(self.host, self.job_id)
 
     def load_state(self, state):
-        """load job_id from state"""
+        """load `job_id` from state"""
+
         super(FirecRESTSpawnerBase, self).load_state(state)
         self.job_id = state.get('job_id', '')
         self.job_status = state.get('job_status', '')

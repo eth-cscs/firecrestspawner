@@ -10,6 +10,12 @@ The ``FirecRESTSpawnerBase`` class
     :undoc-members:
     :show-inheritance:
 
+The ``FirecRESTSpawnerRegexStates`` class
+*****************************************
+.. autoclass:: firecrestspawner.spawner.FirecRESTSpawnerRegexStates
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 The ``SlurmSpawner`` class
 ****************************

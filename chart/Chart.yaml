@@ -2,11 +2,11 @@ apiVersion: v2
 name: f7t4jhub
 description: A Helm chart to Deploy JupyterHub with the FirecREST Spawner
 type: application
-version: 0.6.1
+version: 0.6.2
 appVersion: "4.1.5"
 dependencies:
   - name: f7t4jhub
-    version: 0.6.1
+    version: 0.6.2
     repository: "file://./f7t4jhub"
   - name: reloader
     version: v1.0.51

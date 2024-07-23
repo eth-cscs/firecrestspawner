@@ -4,6 +4,7 @@ import secrets
 import socket
 import time
 import firecrest
+from firecrest.FirecrestException import HeaderException
 from oauthenticator.generic import GenericOAuthenticator
 
 
@@ -44,10 +45,10 @@ async def get_node_ip_from_output(spawner):
                                    spawner.job['job_file_out'],
                                    lines='1')
             return ip.strip()
-        except firecrest.FirecrestException.HeaderException:
+        except HeaderException as e:
             spawner.log.info("Spawner looking for the host IP in "
                              "the job's output")
-            spawner.log.info("Job output file not available yet")
+            spawner.log.info(f"Job output file not available yet: {e}")
             time.sleep(2)
 
 

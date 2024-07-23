@@ -3,7 +3,7 @@ entries:
   f7t4jhub:
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2024-06-12T13:17:47.539062399Z"
+    created: "2024-07-23T08:20:28.4504267Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -13,7 +13,7 @@ entries:
       repository: https://stakater.github.io/stakater-charts
       version: v1.0.51
     description: A Helm chart to Deploy JupyterHub with the FirecREST Spawner
-    digest: 07a5c0b0e832c72b24aa817af651ecf50b9368e999dce52966ef74575d8262c7
+    digest: 9e125b15f4cd2670b67c1079a2b4dbf443d93adf22a4130b455a031618a1b88c
     name: f7t4jhub
     type: application
     urls:
@@ -21,7 +21,7 @@ entries:
     version: 0.6.0
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2024-06-12T13:17:47.537861612Z"
+    created: "2024-07-23T08:20:28.449166672Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -39,7 +39,7 @@ entries:
     version: 0.5.2
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2024-06-12T13:17:47.536060823Z"
+    created: "2024-07-23T08:20:28.445671412Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -57,7 +57,7 @@ entries:
     version: 0.5.1
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2024-06-12T13:17:47.533440817Z"
+    created: "2024-07-23T08:20:28.44376769Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -75,7 +75,7 @@ entries:
     version: 0.5.0
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2024-06-12T13:17:47.531563233Z"
+    created: "2024-07-23T08:20:28.441821298Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -87,4 +87,4 @@ entries:
     urls:
     - https://eth-cscs.github.io/firecrestspawner/f7t4jhub-0.3.0.tgz
     version: 0.3.0
-generated: "2024-06-12T13:17:47.529144938Z"
+generated: "2024-07-23T08:20:28.440316002Z"

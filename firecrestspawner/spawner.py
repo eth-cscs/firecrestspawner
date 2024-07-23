@@ -45,7 +45,7 @@ class JobStatus(Enum):
 
 class FirecrestAccessTokenAuth:
     """Utility class to provide an object with the
-    `get_access_token()` attribute needed by PyFirecREST's
+    ``get_access_token()`` attribute needed by PyFirecREST's
     authenticator"""
 
     _access_token: str = None
@@ -58,15 +58,11 @@ class FirecrestAccessTokenAuth:
 
 
 class FirecRESTSpawnerBase(Spawner):
-    """Base class for spawners using PyFirecrest to submit jobs.
+    """Base class for PyFirecrest-based spawners.
 
-    At minimum, subclasses should provide reasonable defaults for the traits:
-        batch_script
-
-    and must provide implementations for the methods:
-        state_ispending
-        state_isrunning
-        state_gethost
+    Subclasses should provide defaults for the traits ``batch_script``,
+    and must provide implementations for the methods ``state_ispending``,
+    ``state_isrunning`` and ``state_gethost``.
     """
 
     # override default since batch systems typically need longer
@@ -145,10 +141,10 @@ class FirecRESTSpawnerBase(Spawner):
     batch_script = Unicode(
         '',
         help="Template for job submission script. "
-             "Traits on this class named like req_xyz will be substituted in "
-             "the template for {xyz} using string.Formatter. "
-             "Must include {cmd} which will be replaced with the "
-             "jupyterhub-singleuser command line."
+             "Traits on this class named like ``req_xyz`` will be substituted in "
+             "the template for ``xyz`` using ``string.Formatter``. "
+             "Must include ``cmd`` which will be replaced with the "
+             "``jupyterhub-singleuser`` command line."
     ).tag(config=True)
 
     batchspawner_singleuser_cmd = Unicode(
@@ -165,8 +161,8 @@ class FirecRESTSpawnerBase(Spawner):
     # Will get the raw output of the job status command unless overridden
     job_status = Unicode()
 
-    # Prepare substitution variables for templates using req_xyz traits
     def get_req_subvars(self):
+        """ Get the substitution variables for templates using ``req_xyz`` traits"""
         reqlist = [t for t in self.trait_names() if t.startswith('req_')]
         subvars = {}
         for t in reqlist:
@@ -176,10 +172,14 @@ class FirecRESTSpawnerBase(Spawner):
 
     def cmd_formatted_for_batch(self):
         """The command which is substituted inside of the batch script"""
-        # return ' '.join([self.batchspawner_singleuser_cmd] + self.cmd + self.get_args())  # noqa E501
         return ' '.join(self.cmd)
 
     async def get_firecrest_client(self):
+        """Create an aync PyFirecREST client.
+
+        The client is created for the user ``self.user`` and it authenticates
+        with an access token obtained from the hub's authentication state.
+        """
         # TODO: Check if token is expired
         # auth_state = await self.user.get_auth_state()
 
@@ -209,6 +209,16 @@ class FirecRESTSpawnerBase(Spawner):
         return format_template(self.batch_script, **subvars)
 
     async def submit_batch_script(self):
+        """Submit the single-user server job.
+
+        A PyFirecREST client is created and is used to submit the
+        job running the single user server
+
+        .. code-block:: python
+
+            await client.submit(host, batch_script, env_vars)
+
+        """
         subvars = self.get_req_subvars()
         # `subvars['cmd']` is what is run _inside_ the batch script,
         # put into the template.
@@ -238,7 +248,7 @@ class FirecRESTSpawnerBase(Spawner):
             self.job_id = ''
 
     async def query_job_status(self):
-        """Check job status, return JobStatus object."""
+        """Check job status, return ``JobStatus`` object."""
 
         # fetch the hostname for pyfirecrest
         subvars = self.get_req_subvars()
@@ -282,14 +292,14 @@ class FirecRESTSpawnerBase(Spawner):
         await client.cancel(self.host, self.job_id)
 
     def load_state(self, state):
-        """load `job_id` from state"""
+        """Load ``job_id`` from ``state``"""
 
         super(FirecRESTSpawnerBase, self).load_state(state)
         self.job_id = state.get('job_id', '')
         self.job_status = state.get('job_status', '')
 
     def get_state(self):
-        """add job_id to state"""
+        """Add ``job_id`` to state"""
         state = super(FirecRESTSpawnerBase, self).get_state()
         if self.job_id:
             state['job_id'] = self.job_id
@@ -298,19 +308,19 @@ class FirecRESTSpawnerBase(Spawner):
         return state
 
     def clear_state(self):
-        """clear job_id state"""
+        """Clear ``job_id`` state"""
         super(FirecRESTSpawnerBase, self).clear_state()
         self.job_id = ""
         self.job_status = ''
 
     def state_ispending(self):
         """Return boolean indicating if job is still waiting to run,
-        likely by parsing self.job_status"""
+        likely by parsing ``self.job_status``"""
         raise NotImplementedError("Subclass must provide implementation")
 
     def state_isrunning(self):
         """Return boolean indicating if job is running,
-        likely by parsing self.job_status"""
+        likely by parsing ``self.job_status``"""
         raise NotImplementedError("Subclass must provide implementation")
 
     def state_isunknown(self):
@@ -320,11 +330,11 @@ class FirecRESTSpawnerBase(Spawner):
 
     def state_gethost(self):
         """Return string, hostname or addr of running job,
-        likely by parsing self.job_status"""
+        likely by parsing ``self.job_status``"""
         raise NotImplementedError("Subclass must provide implementation")
 
     async def poll(self):
-        """Poll the process"""
+        """Poll the job running the single-user server"""
         status = await self.query_job_status()
         if status in (JobStatus.PENDING, JobStatus.RUNNING, JobStatus.UNKNOWN):
             return None
@@ -338,7 +348,7 @@ class FirecRESTSpawnerBase(Spawner):
     ).tag(config=True)
 
     async def start(self):
-        """Start the process"""
+        """Start the job running the single-user server"""
         self.ip = self.traits()['ip'].default_value
         if self.port == 0:
             self.port = self.traits()['port'].default_value
@@ -384,8 +394,9 @@ class FirecRESTSpawnerBase(Spawner):
     async def stop(self, now=False):
         """Stop the singleuser server job.
 
-        Returns immediately after sending job cancellation command if now=True,
-        otherwise tries to confirm that job is no longer running."""
+        :param now: If ``True``, returns immediately after sending job cancellation
+            otherwise tries to confirm that job is no longer running.
+        """
 
         self.log.info("Stopping server job " + self.job_id)
         await self.cancel_batch_job()
@@ -424,20 +435,19 @@ class FirecRESTSpawnerBase(Spawner):
 class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):
     """Uses config-supplied regular expressions to interact with the
     batch submission system state. Provides implementations of
-        state_ispending
-        state_isrunning
-        state_gethost
+    ``state_ispending``, ``state_isrunning`` and ``state_gethost``.
 
-    In their place, the user should supply the following configuration:
-        state_pending_re  - regex matching job_status if job is waiting to run
-        state_running_re  - regex matching job_status if job is running
-        state_exechost_re - regex with at least one capture group that extracts
-                            execution host from job_status
-        state_exechost_exp - if empty, notebook IP will be set to the contents
-                             of the first capture group. If this variable is
-                             set, the match object will be expanded using this
-                             string to obtain the notebook IP.
-                             See Python docs: re.match.expand
+    In their place, the user should supply the following:
+
+    - ``state_pending_re``  - regex matching job_status if job is waiting to run
+    - ``state_running_re``  - regex matching job_status if job is running
+    - ``state_exechost_re`` - regex with at least one capture group that extract
+      execution host from job_status
+    - ``state_exechost_exp`` - if empty, notebook IP will be set to the contents
+      of the first capture group. If this variable is
+      set, the match object will be expanded using this
+      string to obtain the notebook IP.
+
     """
     state_pending_re = Unicode(
         '',

@@ -1,40 +1,42 @@
-apiVersion: v1
-items:
-- apiVersion: networking.k8s.io/v1
-  kind: Ingress
-  metadata:
-    name: {{ .Release.Name }}-proxy-ingress
-  spec:
-    ingressClassName: nginx
-    rules:
-    - host: {{ .Values.config.commonName }}
-      http:
-        paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ .Release.Name }}-proxy-svc
-              port:
-                number: {{ .Values.network.appPort }}
-        - path: /hub/api
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ .Release.Name }}-proxy-svc
-              port:
-                number: {{ .Values.network.appPort }}
-        - path: /api
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ .Release.Name }}-proxy-svc
-              port:
-                number: {{ .Values.network.apiPort }}
-    tls:
-    - hosts:
-      - {{ .Values.config.commonName }}
-      secretName: {{ .Release.Name }}-cert-secret
-kind: List
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  resourceVersion: ""
+  name: {{ .Release.Name }}-proxy-ingress
+  annotations:
+    {{- if .Values.metricbeat.deny_metrics_endpoint }}
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location /hub/metrics {
+        deny all;
+      }
+    {{- end }}
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ .Values.config.commonName }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-proxy-svc
+            port:
+              number: {{ .Values.network.appPort }}
+      - path: /hub/api
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-proxy-svc
+            port:
+              number: {{ .Values.network.appPort }}
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-proxy-svc
+            port:
+              number: {{ .Values.network.apiPort }}
+  tls:
+  - hosts:
+    - {{ .Values.config.commonName }}
+    secretName: {{ .Release.Name }}-cert-secret

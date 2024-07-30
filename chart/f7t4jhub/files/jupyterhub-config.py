@@ -186,4 +186,4 @@ c.ConfigurableHTTPProxy.auth_token = os.environ["CONFIGPROXY_AUTH_TOKEN"]
 # This should be set to the URL which the hub uses to connect to the proxy’s API.
 c.ConfigurableHTTPProxy.api_url = 'http://{{ .Release.Name }}-proxy-svc:{{ .Values.network.apiPort }}'
 
-{{ .Values.extraConfig }}
+{{ .Values.config.extraConfig }}

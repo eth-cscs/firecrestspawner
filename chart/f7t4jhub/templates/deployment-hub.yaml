@@ -5,7 +5,7 @@ metadata:
   labels:
     app: hub
   annotations:
-    {{- if .Values.vault.enabled }}
+    {{- if .Values.vault.keycloak.enabled }}
     configmap.reloader.stakater.com/reload: "{{ .Release.Name }}-configmap"
     secret.reloader.stakater.com/reload: "{{ .Release.Name }}-common-secrets"
     {{- end }}
@@ -18,6 +18,14 @@ spec:
     metadata:
       labels:
         app: hub
+      {{- if .Values.metricbeat.enabled }}
+      annotations:
+        co.elastic.metrics/enabled: "true"
+        co.elastic.metrics/hosts: '"${data.host}:{{ .Values.network.externalPort }}"'
+        co.elastic.metrics/metrics_path: /metrics
+        co.elastic.metrics/metricsets: collector
+        co.elastic.metrics/module: prometheus
+      {{- end }}
     spec:
       securityContext:
           runAsUser: 1000
@@ -53,7 +61,7 @@ spec:
               secretKeyRef:
                 name: {{ .Release.Name }}-secret
                 key: configProxyAuthToken
-          {{- if .Values.vault.enabled }}
+          {{- if .Values.vault.keycloak.enabled }}
           - name: KC_CLIENT_ID
             valueFrom:
               secretKeyRef:
@@ -80,7 +88,7 @@ spec:
             items:
               - key: jupyterhub-config
                 path: jupyterhub_config.py
-      {{- if .Values.vault.enabled }}
+      {{- if .Values.vault.keycloak.enabled }}
       imagePullSecrets:
       - name: {{ .Release.Name }}-registry-docker-config
       {{- end }}

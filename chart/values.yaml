@@ -33,20 +33,37 @@ f7t4jhub:
     debug: false
 
   vault:
-    # Enable or disable Vault integration
-    enabled: false
-
     # URL for the Vault service (replace with your own Vault URL)
     url: 'https://vault.example.com'
 
     # Secret engine used in Vault (replace with your own secret engine)
-    secretEngine: 'jupyterhub'
-
-    # Secret path in Vault (replace with your own secret path)
-    secretPath: 'dom/tds'
+    secretEngine: 'secret-engine'
 
     # Role ID for accessing Vault secrets (replace with your own role ID)
-    roleId: '<role-id>'
+    roleId: 'role-id'
+
+    # keycloack credentials
+    keycloak:
+      # Enable or disable Vault integration
+      enabled: false
+
+      # Secret path in Vault (replace with your own secret path)
+      secretPath: 'secret/path/keycloack'
+
+    # container registry credentials
+    containerRegistry:
+      # Enable or disable Vault integration
+      enabled: false
+
+      # Secret path in Vault (replace with your own secret path)
+      secretPath: 'secret/path/containers'
+
+  metricbeat:
+    # Enable or disable annotations for metric beat monitoring
+    enabled: false
+
+    # Allow or deny access to /hub/metrics
+    deny_metrics_endpoint: false
 
   network:
     # Ports configuration for the application
@@ -127,5 +144,8 @@ f7t4jhub:
       customStateGetHost: None
 
       # Literal python code to add at the end of jupyterhub's configuration
-      extraConfig: |
-        # ...
+      optionsForm: |
+
+    # Literal python code to add at the end of jupyterhub's configuration
+    extraConfig: |
+      # ...

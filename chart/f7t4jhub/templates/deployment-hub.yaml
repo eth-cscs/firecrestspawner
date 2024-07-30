@@ -5,7 +5,7 @@ metadata:
   labels:
     app: hub
   annotations:
-    {{- if .Values.vault.keycloak.enabled }}
+    {{- if .Values.reloader.enabled }}
     configmap.reloader.stakater.com/reload: "{{ .Release.Name }}-configmap"
     secret.reloader.stakater.com/reload: "{{ .Release.Name }}-common-secrets"
     {{- end }}
@@ -18,8 +18,8 @@ spec:
     metadata:
       labels:
         app: hub
-      {{- if .Values.metricbeat.enabled }}
       annotations:
+      {{- if .Values.metricbeat.enabled }}
         co.elastic.metrics/enabled: "true"
         co.elastic.metrics/hosts: '"${data.host}:{{ .Values.network.externalPort }}"'
         co.elastic.metrics/metrics_path: /metrics
@@ -88,7 +88,7 @@ spec:
             items:
               - key: jupyterhub-config
                 path: jupyterhub_config.py
-      {{- if .Values.vault.keycloak.enabled }}
+      {{- if .Values.vault.containerRegistry.enabled }}
       imagePullSecrets:
       - name: {{ .Release.Name }}-registry-docker-config
       {{- end }}

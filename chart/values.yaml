@@ -32,6 +32,10 @@ f7t4jhub:
     # Set log level to logging.DEBUG
     debug: false
 
+  reloader:
+    # Enable or disable reloader integration
+    enabled: false
+
   vault:
     # URL for the Vault service (replace with your own Vault URL)
     url: 'https://vault.example.com'

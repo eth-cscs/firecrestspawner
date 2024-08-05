@@ -62,6 +62,14 @@ f7t4jhub:
       # Secret path in Vault (replace with your own secret path)
       secretPath: 'secret/path/containers'
 
+    # proxy authentication token
+    configProxyAuthToken:
+      # Enable or disable Vault integration
+      enabled: false
+
+      # Secret path in Vault (replace with your own secret path)
+      secretPath: 'secret/path/proxy'
+
   metricbeat:
     # Enable or disable annotations for metric beat monitoring
     enabled: false

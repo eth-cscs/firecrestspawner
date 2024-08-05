@@ -56,11 +56,6 @@ spec:
               secretKeyRef:
                 name: {{ .Release.Name }}-secret
                 key: authTokenUrl
-          - name: CONFIGPROXY_AUTH_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-secret
-                key: configProxyAuthToken
           {{- if .Values.vault.keycloak.enabled }}
           - name: KC_CLIENT_ID
             valueFrom:
@@ -72,6 +67,19 @@ spec:
               secretKeyRef:
                 name: {{ .Release.Name }}-common-secrets
                 key: kc_client_secret
+          {{- end }}
+          {{- if .Values.vault.configProxyAuthToken.enabled }}
+          - name: CONFIGPROXY_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-common-secrets
+                key: configProxyAuthToken
+          {{- else }}
+          - name: CONFIGPROXY_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: configProxyAuthToken
           {{- end }}
         volumeMounts:
           - name: db-pvc

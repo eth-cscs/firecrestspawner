@@ -13,6 +13,10 @@ reloader:
       # Set to true to create a new service account for the reloader. If false, it will use an existing one.
       create: false
 
+    # Ensures the reloader container's filesystem is mounted as read-only to enhance security.
+    securityContext:
+      readOnlyRootFilesystem: true
+
 f7t4jhub:
   setup:
     # URL for the Firecrest service (replace with your own Firecrest URL)

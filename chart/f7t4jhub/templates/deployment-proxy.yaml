@@ -18,6 +18,8 @@ spec:
       - name: proxy
         image: {{ .Values.proxy.image }}
         imagePullPolicy: Always
+        securityContext:
+          readOnlyRootFilesystem: true
         command:
           - "configurable-http-proxy"
           - "--ip=0.0.0.0"

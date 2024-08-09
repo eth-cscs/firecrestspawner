@@ -99,6 +99,11 @@ class FirecRESTSpawnerBase(Spawner):
         help="Number of processors to request from resource manager"
     ).tag(config=True)
 
+    req_nnodes = Unicode(
+        '',
+        help="Number of nodes to request from resource manager"
+    ).tag(config=True)
+
     req_ngpus = Unicode(
         '',
         help="Number of GPUs to request from resource manager"
@@ -514,6 +519,7 @@ class SlurmSpawner(FirecRESTSpawnerRegexStates):
 {% if memory     %}#SBATCH --mem={{memory}}{% endif %}
 {% if gres       %}#SBATCH --gres={{gres}}{% endif %}
 {% if nprocs     %}#SBATCH --cpus-per-task={{nprocs}}{% endif %}
+{% if nnodes     %}#SBATCH --nodes={{nnodes}}{% endif %}
 {% if reservation%}#SBATCH --reservation={{reservation}}{% endif %}
 {% if constraint %}#SBATCH --constraint={{constraint}}{% endif %}
 {% if options    %}#SBATCH {{options}}{% endif %}

@@ -12,6 +12,7 @@ import os
 import re
 import sys
 import jupyterhub
+import hostlist
 import firecrest as f7t
 from enum import Enum
 from jinja2 import Template
@@ -236,6 +237,7 @@ class FirecRESTSpawnerBase(Spawner):
             self.job = await client.submit(self.host,
                                            script_str=script,
                                            env_vars=job_env)
+            self.log.debug(f"[client.submit] {self.job}")
             self.job_id = str(self.job['jobid'])
             self.log.info(f'Job {self.job_id} submitted')
         except Exception as e:
@@ -259,8 +261,11 @@ class FirecRESTSpawnerBase(Spawner):
             client = await self.get_firecrest_client()
             self.log.debug('firecREST: Polling job')
             poll_result = await client.poll(self.host, [self.job_id])
+            self.log.debug(f"[client.poll] [query_job_status] {poll_result}")
             state = poll_result[0]['state']
-            host = poll_result[0]['nodelist']
+            nodelist = hostlist.expand_hostlist(poll_result[0]['nodelist'])
+            # when PENDING nodelist is []
+            host = nodelist[0] if len(nodelist) > 0 else ""
             # `job_status` must keep the format used in the original
             # batchspawner since it will be later parsed with
             # regular expressions
@@ -284,7 +289,8 @@ class FirecRESTSpawnerBase(Spawner):
         self.log.info(f"Cancelling job {self.job_id}")
         client = await self.get_firecrest_client()
         self.log.info('firecREST: Canceling job')
-        await client.cancel(self.host, self.job_id)
+        cancel_result = await client.cancel(self.host, self.job_id)
+        self.log.debug(f"[client.cancel] {cancel_result}")
 
     def load_state(self, state):
         """load `job_id` from state"""
@@ -498,9 +504,8 @@ class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):
 
         client = await self.get_firecrest_client()
         poll_result = await client.poll(self.host, [self.job_id])
-        # FIXME: this is expecting `nodelist` to be only a single
-        # node. Fix it so it can work with multiple nodes.
-        host = poll_result[0]['nodelist']
+        self.log.debug(f"[client.poll] [state_gethost] {poll_result}")
+        host = hostlist.expand_hostlist(poll_result[0]['nodelist'])[0]
         return self.node_name_template.format(host)
 
 

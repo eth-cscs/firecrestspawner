@@ -1,4 +1,4 @@
-FROM ubuntu:24.10
+FROM ubuntu:24.04
 
 ARG __CONDA_ENV__=py311
 

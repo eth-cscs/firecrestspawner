@@ -3,4 +3,4 @@ name: f7t4jhub
 description: A Helm chart to Deploy JupyterHub with the FirecREST Spawner
 type: application
 version: 0.8.1
-appVersion: "4.1.5"
+appVersion: "4.1.6"

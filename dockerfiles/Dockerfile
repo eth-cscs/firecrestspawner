@@ -20,7 +20,7 @@ RUN . /opt/conda/bin/activate && \
 
 RUN . /opt/conda/bin/activate && \
     conda activate $__CONDA_ENV__ && \
-    pip install --no-cache jupyterhub==4.1.6 pyfirecrest==2.1.0 SQLAlchemy==1.4.52 oauthenticator==16.3.1
+    pip install --no-cache jupyterhub==4.1.6 pyfirecrest==2.1.0 SQLAlchemy==1.4.52 oauthenticator==16.3.1 python-hostlist==1.23.0
 
 COPY . firecrestspawner
 RUN . /opt/conda/bin/activate && \
@@ -68,4 +68,4 @@ USER juhu
 
 WORKDIR /home/juhu
 
-CMD . /opt/conda/bin/activate && jupyterhub
+CMD . /opt/conda/bin/activate && conda activate ${__CONDA_ENV__} && jupyterhub

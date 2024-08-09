@@ -263,7 +263,9 @@ class FirecRESTSpawnerBase(Spawner):
             poll_result = await client.poll(self.host, [self.job_id])
             self.log.debug(f"[client.poll] [query_job_status] {poll_result}")
             state = poll_result[0]['state']
-            host = hostlist.expand_hostlist(poll_result[0]['nodelist'])[0]
+            nodelist = hostlist.expand_hostlist(poll_result[0]['nodelist'])
+            # when PENDING nodelist is []
+            host = nodelist[0] if len(nodelist) > 0 else ""
             # `job_status` must keep the format used in the original
             # batchspawner since it will be later parsed with
             # regular expressions
@@ -503,8 +505,6 @@ class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):
         client = await self.get_firecrest_client()
         poll_result = await client.poll(self.host, [self.job_id])
         self.log.debug(f"[client.poll] [state_gethost] {poll_result}")
-        # FIXME: this is expecting `nodelist` to be only a single
-        # node. Fix it so it can work with multiple nodes.
         host = hostlist.expand_hostlist(poll_result[0]['nodelist'])[0]
         return self.node_name_template.format(host)
 

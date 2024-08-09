@@ -100,6 +100,7 @@ async def test_get_req_subvars(db):
         "host": "cluster1",
         "memory": "",
         "ngpus": "",
+        "nnodes": "",
         "nprocs": "",
         "options": "",
         "partition": "",
@@ -141,6 +142,7 @@ async def test_get_batch_script(db):
 
 
 
+
 hostname -i
 
 set -euo pipefail
@@ -163,6 +165,7 @@ async def test_get_batch_script_subvars(db):
     spawner.set_trait("req_memory", "64")
     spawner.set_trait("req_gres", "resource:1")
     spawner.set_trait("req_nprocs", "12")
+    spawner.set_trait("req_nnodes", "1")
     spawner.set_trait("req_reservation", "reservation1")
     spawner.set_trait("req_constraint", "constraint1")
     subvars = spawner.get_req_subvars()
@@ -179,6 +182,7 @@ async def test_get_batch_script_subvars(db):
 #SBATCH --mem=64
 #SBATCH --gres=resource:1
 #SBATCH --cpus-per-task=12
+#SBATCH --nodes=1
 #SBATCH --reservation=reservation1
 #SBATCH --constraint=constraint1
 

@@ -20,7 +20,7 @@ RUN . /opt/conda/bin/activate && \
 
 RUN . /opt/conda/bin/activate && \
     conda activate $__CONDA_ENV__ && \
-    pip install --no-cache jupyterhub==4.1.5 pyfirecrest==2.1.0 SQLAlchemy==1.4.52 oauthenticator==16.3.1
+    pip install --no-cache jupyterhub==4.1.6 pyfirecrest==2.1.0 SQLAlchemy==1.4.52 oauthenticator==16.3.1
 
 COPY . firecrestspawner
 RUN . /opt/conda/bin/activate && \

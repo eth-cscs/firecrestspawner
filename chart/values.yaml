@@ -16,6 +16,8 @@ reloader:
     # Ensures the reloader container's filesystem is mounted as read-only to enhance security.
     securityContext:
       readOnlyRootFilesystem: true
+      seccompProfile:
+        type: RuntimeDefault
 
 f7t4jhub:
   setup:

@@ -209,6 +209,22 @@ class FirecRESTSpawnerBase(Spawner):
         client.timeout = 30
         return client
 
+    async def firecrest_poll(self):
+        """Helper function to poll jobs.
+
+        This is needed in cases that the scheduler is slow updating
+        its database which could make the result of ``client.poll``
+        to be an empty list
+        """
+        client = await self.get_firecrest_client()
+        poll_result = []
+
+        while poll_result == []:
+            poll_result = await client.poll(self.host, [self.job_id])
+            print(poll_result)
+
+        return poll_result
+
     async def _get_batch_script(self, **subvars):
         """Format batch script from vars"""
         # Could be overridden by subclasses, but mainly useful for testing
@@ -258,9 +274,7 @@ class FirecRESTSpawnerBase(Spawner):
         self.log.debug(f'Spawner querying job {self.job_id}')
 
         try:
-            client = await self.get_firecrest_client()
-            self.log.debug('firecREST: Polling job')
-            poll_result = await client.poll(self.host, [self.job_id])
+            poll_result = await self.firecrest_poll()
             self.log.debug(f"[client.poll] [query_job_status] {poll_result}")
             state = poll_result[0]['state']
             nodelist = hostlist.expand_hostlist(poll_result[0]['nodelist'])
@@ -502,9 +516,11 @@ class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):
         if self.custom_state_gethost:
             return await self.custom_state_gethost(self)
 
-        client = await self.get_firecrest_client()
-        poll_result = await client.poll(self.host, [self.job_id])
+        poll_result = await self.firecrest_poll()
         self.log.debug(f"[client.poll] [state_gethost] {poll_result}")
+
+        # this function is called only when the job has been allocated,
+        # then ``nodelist`` won't be ``[]``
         host = hostlist.expand_hostlist(poll_result[0]['nodelist'])[0]
         return self.node_name_template.format(host)
 

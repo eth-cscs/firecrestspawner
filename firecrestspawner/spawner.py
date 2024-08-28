@@ -13,6 +13,8 @@ import re
 import sys
 import jupyterhub
 import hostlist
+import httpx
+import base64
 import firecrest as f7t
 from enum import Enum
 from jinja2 import Template
@@ -241,6 +243,13 @@ class FirecRESTSpawnerBase(Spawner):
         job_env = self.get_env()
         job_env.pop('PATH')
 
+        # FIXME: These two variables may have quotes in their values.
+        # We encoded as base64 since quotes are not allowed
+        # in firecrest requests
+        # The job script must have a line to decode them.
+        for v in ("JUPYTERHUB_OAUTH_ACCESS_SCOPES", "JUPYTERHUB_OAUTH_SCOPES"):
+            job_env[v] = base64.b64encode(job_env[v].encode()).decode("utf-8")
+
         script = await self._get_batch_script(**subvars)
         self.log.info('Spawner submitting job using firecREST')
         self.log.info('Spawner submitted script:\n' + script)
@@ -256,6 +265,12 @@ class FirecRESTSpawnerBase(Spawner):
             self.log.debug(f"[client.submit] {self.job}")
             self.job_id = str(self.job['jobid'])
             self.log.info(f'Job {self.job_id} submitted')
+        # In case the connection to the firecrest server timesout
+        # catch httpx.ConnectTimeout since httpx.ConnectTimeout
+        # doesn't print anything when cought
+        except httpx.ConnectTimeout:
+            self.log.error(f"Job submission failed: httpx.ConnectTimeout")
+            self.job_id = ""
         except Exception as e:
             self.log.error(f'Job submission failed: {e}')
             self.job_id = ''

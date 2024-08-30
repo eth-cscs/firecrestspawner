@@ -3,7 +3,11 @@ name: Build and Push Docker Image
 on:
   release:
     types: [created]
-  workflow_dispatch: # Allows manual triggering
+  workflow_dispatch:
+    inputs:
+      custom_tag:
+        description: 'Custom tag for manual trigger'
+        required: false
 
 jobs:
   build-and-push:
@@ -17,6 +21,19 @@ jobs:
           APP_VERSION=$(grep appVersion chart/Chart.yaml | cut -d ' ' -f 2 | tr -d '"')
           echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
 
+      - name: Determine release tag
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            if [ -z "${{ github.event.inputs.custom_tag }}" ]; then
+              RELEASE_TAG="manual-trigger"
+            else
+              RELEASE_TAG="${{ github.event.inputs.custom_tag }}"
+            fi
+          else
+            RELEASE_TAG="${{ github.event.release.tag_name }}"
+          fi
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
@@ -24,8 +41,8 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image
-        run: docker build -t ghcr.io/${{ github.repository_owner }}/f7t4jhub:${{ env.APP_VERSION }}-fcs${{ github.event.release.tag_name }} -f dockerfiles/Dockerfile .
+      - name: Build Docker image with combined tag
+        run: docker build -t ghcr.io/${{ github.repository_owner }}/f7t4jhub:${{ env.APP_VERSION }}-${{ env.RELEASE_TAG }} -f dockerfiles/Dockerfile .
 
       - name: Push Docker image to GitHub Container Registry
-        run: docker push ghcr.io/${{ github.repository_owner }}/f7t4jhub:${{ env.APP_VERSION }}-fcs${{ github.event.release.tag_name }}
+        run: docker push ghcr.io/${{ github.repository_owner }}/f7t4jhub:${{ env.APP_VERSION }}-${{ env.RELEASE_TAG }}

@@ -11,6 +11,8 @@ metadata:
     {{- end }}
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: hub
@@ -45,8 +47,7 @@ spec:
           - "/bin/bash"
           - "-c"
           - >
-              . /opt/conda/bin/activate &&
-              conda activate py311 &&
+              . /opt/jhub-env/bin/activate &&
               jupyterhub --config /etc/config/jupyterhub_config.py --ip 0.0.0.0
               {{- if .Values.hub.debug }} --debug{{- end }}
         ports:

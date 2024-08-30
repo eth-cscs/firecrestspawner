@@ -42,7 +42,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image with combined tag
-        run: docker build -t ghcr.io/${{ github.repository_owner }}/f7t4jhub:${{ env.APP_VERSION }}-${{ env.RELEASE_TAG }} -f dockerfiles/Dockerfile .
+        run: docker build -t ghcr.io/${{ github.repository_owner }}/f7t4jhub:${{ env.APP_VERSION }}-fcs${{ env.RELEASE_TAG }} -f dockerfiles/Dockerfile .
 
       - name: Push Docker image to GitHub Container Registry
-        run: docker push ghcr.io/${{ github.repository_owner }}/f7t4jhub:${{ env.APP_VERSION }}-${{ env.RELEASE_TAG }}
+        run: docker push ghcr.io/${{ github.repository_owner }}/f7t4jhub:${{ env.APP_VERSION }}-fcs${{ env.RELEASE_TAG }}

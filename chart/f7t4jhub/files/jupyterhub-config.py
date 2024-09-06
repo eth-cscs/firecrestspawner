@@ -80,7 +80,7 @@ class GenericOAuthenticatorCSCS(GenericOAuthenticator):
         }
 
         response = requests.post(self.token_url, data=params, headers=headers)
-        self.log.debug(f"[refresh_user] Request to KeyCloak: {response}")
+        self.log.debug(f"[refresh_user] Request to KeyCloak: {response} {response.json()}")
         token_response = response.json()
 
         auth_state['token_response'].update(token_response)

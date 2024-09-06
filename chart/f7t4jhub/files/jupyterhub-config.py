@@ -80,6 +80,7 @@ class GenericOAuthenticatorCSCS(GenericOAuthenticator):
         }
 
         response = requests.post(self.token_url, data=params, headers=headers)
+        self.log.debug(f"[refresh_user] Request to KeyCloak: {response}")
         token_response = response.json()
 
         auth_state['token_response'].update(token_response)
@@ -153,6 +154,9 @@ c.Spawner.batch_script = """#!/bin/bash
 
 export JUPYTERHUB_API_URL="http://{{ .Values.config.commonName }}/hub/api"
 export JUPYTERHUB_ACTIVITY_URL="http://{{ .Values.config.commonName }}/hub/api/users/${USER}/activity"
+
+export JUPYTERHUB_OAUTH_ACCESS_SCOPES=$(echo $JUPYTERHUB_OAUTH_ACCESS_SCOPES | base64 --decode)
+export JUPYTERHUB_OAUTH_SCOPES=$(echo $JUPYTERHUB_OAUTH_SCOPES | base64 --decode)
 
 export JUPYTERHUB_CRYPT_KEY=$(openssl rand -hex 32)
 

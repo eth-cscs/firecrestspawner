@@ -564,6 +564,9 @@ hostname -i
 
 set -euo pipefail
 
+export JUPYTERHUB_OAUTH_ACCESS_SCOPES=$(echo $JUPYTERHUB_OAUTH_ACCESS_SCOPES | base64 --decode)
+export JUPYTERHUB_OAUTH_SCOPES=$(echo $JUPYTERHUB_OAUTH_SCOPES | base64 --decode)
+
 trap 'echo SIGTERM received' TERM
 {{prologue}}
 which jupyterhub-singleuser

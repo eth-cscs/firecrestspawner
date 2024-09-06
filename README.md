@@ -1,6 +1,6 @@
-# f7t4jhub: FirecREST for JupyterHub Helm Chart 
+## f7t4jhub: FirecREST for JupyterHub Helm Chart 
 
-This is a repository for a Helm chart to deploy JupyterHub using the [firecrestspawner]https://github.com/eth-cscs/firecrestspawner).
+This is a repository for a Helm chart to deploy JupyterHub using the [firecrestspawner](https://github.com/eth-cscs/firecrestspawner).
 
 ### Fetching the repository
 

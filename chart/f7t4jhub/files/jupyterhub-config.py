@@ -1,3 +1,4 @@
+import json
 import os
 import requests
 import secrets
@@ -82,7 +83,11 @@ class GenericOAuthenticatorCSCS(GenericOAuthenticator):
         response = requests.post(self.token_url, data=params, headers=headers)
         if response.status_code != 200:
             self.log.debug(f"[refresh_user] Request to KeyCloak: {response.status_code}")
-            self.log.debug(f"[refresh_user] Request to KeyCloak: {response.json()}")
+            try:
+                self.log.debug(f"[refresh_user] Request to KeyCloak: {response.json()}")
+            except json.JSONDecodeError:
+                self.log.debug(f"[refresh_user] Request to KeyCloak: no json output")
+
             return False
 
         token_response = response.json()

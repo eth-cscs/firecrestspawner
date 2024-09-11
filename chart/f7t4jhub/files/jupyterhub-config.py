@@ -81,6 +81,7 @@ class GenericOAuthenticatorCSCS(GenericOAuthenticator):
 
         response = requests.post(self.token_url, data=params, headers=headers)
         if response.status_code != 200:
+            self.log.debug(f"[refresh_user] Request to KeyCloak: {response.status_code}")
             self.log.debug(f"[refresh_user] Request to KeyCloak: {response.json()}")
             return False
 

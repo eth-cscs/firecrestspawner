@@ -29,6 +29,25 @@ class DummyOAuthenticator(GenericOAuthenticator):
         return {"auth_state": auth_state}
 
 
+async def get_firecrest_client(spawner):
+    auth_state_refreshed = await spawner.user.authenticator.refresh_user(spawner.user)  # noqa E501
+    access_token = auth_state_refreshed['auth_state']['access_token']
+
+    client = firecrest.AsyncFirecrest(
+        firecrest_url=spawner.firecrest_url,
+        authorization=FirecrestAccessTokenAuth(access_token)
+    )
+
+    return client
+
+
+# FIXME: Setup the auth state in the unit tests
+# Since the auth state is not setup for the unit tests,
+# the spawner's get_firecrest_client method will fail
+# when trying to get a key from a none `auth_state`
+SlurmSpawner.get_firecrest_client = get_firecrest_client
+
+
 def new_spawner(db, spawner_class=SlurmSpawner, **kwargs):
     user = db.query(orm.User).first()
     hub = Hub()

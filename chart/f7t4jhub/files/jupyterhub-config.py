@@ -98,12 +98,12 @@ class AuthenticatorCSCS(GenericOAuthenticator):
         }
 
         if time.time() <= auth_state["access_token_expiration_ts"]:
-            self.log.debug(f"[refresh_user] Reusing access token for {user.name} {auth_state['access_token'][-10:]}")
+            self.log.debug(f"[refresh_user] Reusing access token for {user.name}")
             return True
 
         response = requests.post(self.token_url, data=params, headers=headers)
 
-        self.log.debug(f"[refresh_user] Refreshing access token for {user.name} {response.json()['access_token'][-10:]}")
+        self.log.debug(f"[refresh_user] Refreshing access token for {user.name}")
 
         if response.status_code != 200:
             self.log.info(f"[refresh_user] Request to KeyCloak: {response.status_code}")

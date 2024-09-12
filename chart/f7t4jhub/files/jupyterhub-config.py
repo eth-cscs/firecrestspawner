@@ -64,9 +64,26 @@ class FirecrestAccessTokenAuth:
         return self._access_token
 
 
-class GenericOAuthenticatorCSCS(GenericOAuthenticator):
+class AuthenticatorCSCS(GenericOAuthenticator):
+    _min_token_validity = 60
+
+    async def authenticate(self, handler, data=None):
+        """Extended to add the token expiration time to the
+        authentication state"""
+
+        auth_state = await super().authenticate(handler, data)
+
+        self.log.debug("[authenticate] Authenticating")
+
+        token_response = auth_state['auth_state']['token_response']
+
+        auth_state['auth_state']['access_token_expiration_ts'] = (
+            time.time() + token_response['expires_in'] - self._min_token_validity
+        )
+
+        return auth_state
+
     async def refresh_user(self, user, handler=None):
-        # self.log.info('Refreshing auth state')
         auth_state = await user.get_auth_state()
 
         params = {
@@ -80,13 +97,20 @@ class GenericOAuthenticatorCSCS(GenericOAuthenticator):
             "Content-Type": "application/x-www-form-urlencoded"
         }
 
+        if time.time() <= auth_state["access_token_expiration_ts"]:
+            self.log.debug(f"[refresh_user] Reusing access token for {user.name} {auth_state['access_token'][-10:]}")
+            return True
+
         response = requests.post(self.token_url, data=params, headers=headers)
+
+        self.log.debug(f"[refresh_user] Refreshing access token for {user.name} {response.json()['access_token'][-10:]}")
+
         if response.status_code != 200:
-            self.log.debug(f"[refresh_user] Request to KeyCloak: {response.status_code}")
+            self.log.info(f"[refresh_user] Request to KeyCloak: {response.status_code}")
             try:
-                self.log.debug(f"[refresh_user] Request to KeyCloak: {response.json()}")
+                self.log.info(f"[refresh_user] Request to KeyCloak: {response.json()}")
             except json.JSONDecodeError:
-                self.log.debug(f"[refresh_user] Request to KeyCloak: no json output")
+                self.log.info(f"[refresh_user] Request to KeyCloak: no json output")
 
             return False
 
@@ -95,6 +119,8 @@ class GenericOAuthenticatorCSCS(GenericOAuthenticator):
         auth_state['token_response'].update(token_response)
         auth_state['access_token'] = token_response['access_token']
         auth_state['refresh_token'] = token_response['refresh_token']
+        access_token_expiration_ts = token_response['expires_in'] - self._min_token_validity
+        auth_state['access_token_expiration_ts'] = time.time() + access_token_expiration_ts
 
         return {
             'name': auth_state['oauth_user']['preferred_username'],
@@ -115,7 +141,7 @@ c.Authenticator.auth_refresh_age = 250
 c.Authenticator.enable_auth_state = True
 c.CryptKeeper.keys = gen_hex_string("/home/juhu/hex_strings_crypt.txt")
 
-c.JupyterHub.authenticator_class = GenericOAuthenticatorCSCS
+c.JupyterHub.authenticator_class = AuthenticatorCSCS
 c.GenericOAuthenticator.client_id = os.environ.get('KC_CLIENT_ID', '<client-id>')
 c.GenericOAuthenticator.client_secret = os.environ.get('KC_CLIENT_SECRET', '<client-secret>')
 c.GenericOAuthenticator.oauth_callback_url = "{{ .Values.config.auth.oauthCallbackUrl }}"

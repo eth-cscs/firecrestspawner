@@ -15,6 +15,7 @@ import jupyterhub
 import hostlist
 import httpx
 import base64
+import time
 import firecrest as f7t
 from enum import Enum
 from jinja2 import Template
@@ -188,11 +189,18 @@ class FirecRESTSpawnerBase(Spawner):
         return ' '.join(self.cmd)
 
     async def get_firecrest_client(self):
-        # TODO: Check if token is expired
-        # auth_state = await self.user.get_auth_state()
+        auth_state = await self.user.get_auth_state()
 
-        auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)  # noqa E501
-        access_token = auth_state_refreshed['auth_state']['access_token']
+        if time.time() <= auth_state["access_token_expiration_ts"]:
+            self.log.debug(f"[get_firecrest_client] Reusing access token for {self.user.name}")
+            access_token = auth_state["access_token"]
+        else:
+            try:
+                auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)  # noqa E501
+                access_token = auth_state_refreshed['auth_state']['access_token']
+                self.log.debug(f"[get_firecrest_client] Refreshing access token for {self.user.name}")
+            except TypeError:
+                access_token = auth_state["access_token"]
 
         client = f7t.AsyncFirecrest(
             firecrest_url=self.firecrest_url,

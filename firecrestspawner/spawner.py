@@ -189,18 +189,9 @@ class FirecRESTSpawnerBase(Spawner):
         return ' '.join(self.cmd)
 
     async def get_firecrest_client(self):
+        await self.user.authenticator.refresh_user(self.user)
         auth_state = await self.user.get_auth_state()
-
-        if time.time() <= auth_state["access_token_expiration_ts"]:
-            self.log.debug(f"[get_firecrest_client] Reusing access token for {self.user.name}")
-            access_token = auth_state["access_token"]
-        else:
-            try:
-                auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)  # noqa E501
-                access_token = auth_state_refreshed['auth_state']['access_token']
-                self.log.debug(f"[get_firecrest_client] Refreshing access token for {self.user.name}")
-            except TypeError:
-                access_token = auth_state["access_token"]
+        access_token = auth_state["access_token"]
 
         client = f7t.AsyncFirecrest(
             firecrest_url=self.firecrest_url,
@@ -219,6 +210,30 @@ class FirecRESTSpawnerBase(Spawner):
         client.timeout = 30
         return client
 
+    async def get_firecrest_aux_client(self):
+        client_id = os.environ['FIRECREST_CLIENT_ID_AUX']
+        client_secret = os.environ['FIRECREST_CLIENT_SECRET_AUX']
+        token_url = os.environ['AUTH_TOKEN_URL_AUX']
+
+        keycloak = f7t.ClientCredentialsAuth(
+            client_id, client_secret, token_url
+        )
+
+        client = f7t.AsyncFirecrest(firecrest_url=self.firecrest_url, authorization=keycloak)
+
+        client.time_between_calls = {
+            "compute": 0,
+            "reservations": 0,
+            "status": 0,
+            "storage": 0,
+            "tasks": 0,
+            "utilities": 0,
+        }
+
+        client.timeout = 30
+        return client
+
+
     async def firecrest_poll(self):
         """Helper function to poll jobs.
 
@@ -226,12 +241,21 @@ class FirecRESTSpawnerBase(Spawner):
         its database which could make the result of ``client.poll``
         to be an empty list
         """
-        client = await self.get_firecrest_client()
-        poll_result = []
+        
+        self.log.info(f"\n\n\n[poll]\n\n\n")
 
+        auth_state = await self.user.get_auth_state()
+        auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)
+
+        if auth_state_refreshed == False:
+            client = await self.get_firecrest_aux_client()
+        else:
+            client = await self.get_firecrest_client()
+
+        poll_result = []
         while poll_result == []:
             poll_result = await client.poll(self.host, [self.job_id])
-            print(poll_result)
+            await asyncio.sleep(1)
 
         return poll_result
 
@@ -258,11 +282,15 @@ class FirecRESTSpawnerBase(Spawner):
         for v in ("JUPYTERHUB_OAUTH_ACCESS_SCOPES", "JUPYTERHUB_OAUTH_SCOPES"):
             job_env[v] = base64.b64encode(job_env[v].encode()).decode("utf-8")
 
+        self.host = subvars['host']
+
+        client = await self.get_firecrest_client()
+        groups = await client.groups(self.host)
+        subvars['account'] = groups['group']['name']
+
         script = await self._get_batch_script(**subvars)
         self.log.info('Spawner submitting job using firecREST')
         self.log.info('Spawner submitted script:\n' + script)
-
-        self.host = subvars['host']
 
         try:
             client = await self.get_firecrest_client()
@@ -464,7 +492,7 @@ class FirecRESTSpawnerBase(Spawner):
                 return
             else:
                 await yield_({
-                    "message": "Unknown status...",
+                    "message": "Waiting for job status...",
                 })
             await asyncio.sleep(1)
 
@@ -550,6 +578,7 @@ class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):
 
 class SlurmSpawner(FirecRESTSpawnerRegexStates):
     firecrest_url = os.environ['FIRECREST_URL']
+    token_url = os.environ['AUTH_TOKEN_URL']
 
     batch_script = Unicode("""#!/bin/bash
 ##SBATCH --output={{homedir}}/jupyterhub_slurmspawner_%j.log

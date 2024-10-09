@@ -242,8 +242,6 @@ class FirecRESTSpawnerBase(Spawner):
         to be an empty list
         """
         
-        self.log.info(f"\n\n\n[poll]\n\n\n")
-
         auth_state = await self.user.get_auth_state()
         auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)
 

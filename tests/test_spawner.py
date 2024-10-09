@@ -11,6 +11,7 @@ from fc_handlers import (
     systems_handler,
     sacct_handler,
     cancel_handler,
+    whoami_handler
 )
 from jupyterhub.tests.conftest import db
 from jupyterhub.user import User
@@ -87,6 +88,10 @@ def fc_server(httpserver):
     httpserver.expect_request(
         re.compile("^/compute/jobs.*"), method="DELETE"
     ).respond_with_handler(cancel_handler)
+
+    httpserver.expect_request(
+        "/utilities/whoami", method="GET"
+    ).respond_with_handler(whoami_handler)
 
     return httpserver
 

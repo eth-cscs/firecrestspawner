@@ -576,7 +576,6 @@ class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):
 
 class SlurmSpawner(FirecRESTSpawnerRegexStates):
     firecrest_url = os.environ['FIRECREST_URL']
-    token_url = os.environ['AUTH_TOKEN_URL']
 
     batch_script = Unicode("""#!/bin/bash
 ##SBATCH --output={{homedir}}/jupyterhub_slurmspawner_%j.log

@@ -171,6 +171,7 @@ hostname = socket.gethostname()
 c.JupyterHub.hub_connect_ip = socket.gethostbyname(hostname)
 
 c.JupyterHub.spawner_class = 'firecrestspawner.spawner.SlurmSpawner'
+c.Spawner.enable_aux_fc_client = {{ .Values.serviceAccount.enabled | toJson | replace "true" "True" | replace "false" "False" }}
 c.Spawner.req_host = '{{ .Values.config.spawner.host }}'
 c.Spawner.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'
 c.Spawner.req_partition = '{{ .Values.config.spawner.partition }}'
@@ -245,10 +246,5 @@ c.ConfigurableHTTPProxy.auth_token = os.environ["CONFIGPROXY_AUTH_TOKEN"]
 
 # This should be set to the URL which the hub uses to connect to the proxy’s API.
 c.ConfigurableHTTPProxy.api_url = 'http://{{ .Release.Name }}-proxy-svc:{{ .Values.network.apiPort }}'
-
-
-os.environ['FIRECREST_CLIENT_ID_AUX'] = "..."
-os.environ['FIRECREST_CLIENT_SECRET_AUX'] = "..."
-os.environ['AUTH_TOKEN_URL_AUX'] = "..."
 
 {{ .Values.config.extraConfig }}

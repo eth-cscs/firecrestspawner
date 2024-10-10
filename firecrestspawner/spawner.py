@@ -21,7 +21,7 @@ from enum import Enum
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
 from traitlets import (
-    Any, Integer, Unicode, Float, default
+    Any, Bool, Integer, Unicode, Float, default
 )
 from time import sleep
 
@@ -168,6 +168,12 @@ class FirecRESTSpawnerBase(Spawner):
              "needs specification."
     ).tag(config=True)
 
+    enable_aux_fc_client = Bool(
+        300,
+        help="If positive, use an auxiliary client to poll when client "
+             "credentials are expired."
+    ).tag(config=True)
+
     # Raw output of job submission command unless overridden
     job_id = Unicode()
 
@@ -211,9 +217,9 @@ class FirecRESTSpawnerBase(Spawner):
         return client
 
     async def get_firecrest_aux_client(self):
-        client_id = os.environ['FIRECREST_CLIENT_ID_AUX']
-        client_secret = os.environ['FIRECREST_CLIENT_SECRET_AUX']
-        token_url = os.environ['AUTH_TOKEN_URL_AUX']
+        client_id = os.environ['SA_CLIENT_ID']
+        client_secret = os.environ['SA_CLIENT_SECRET']
+        token_url = os.environ['SA_AUTH_TOKEN_URL']
 
         keycloak = f7t.ClientCredentialsAuth(
             client_id, client_secret, token_url
@@ -242,10 +248,10 @@ class FirecRESTSpawnerBase(Spawner):
         to be an empty list
         """
         
-        auth_state = await self.user.get_auth_state()
+        # auth_state = await self.user.get_auth_state()
         auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)
 
-        if auth_state_refreshed == False:
+        if self.enable_aux_fc_client and auth_state_refreshed == False:
             client = await self.get_firecrest_aux_client()
         else:
             client = await self.get_firecrest_client()

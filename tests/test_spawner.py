@@ -11,6 +11,7 @@ from fc_handlers import (
     systems_handler,
     sacct_handler,
     cancel_handler,
+    whoami_handler
 )
 from jupyterhub.tests.conftest import db
 from jupyterhub.user import User
@@ -27,6 +28,25 @@ class DummyOAuthenticator(GenericOAuthenticator):
     async def refresh_user(self, user, handler=None):
         auth_state = {"access_token": "VALID_TOKEN"}
         return {"auth_state": auth_state}
+
+
+async def get_firecrest_client(spawner):
+    auth_state_refreshed = await spawner.user.authenticator.refresh_user(spawner.user)  # noqa E501
+    access_token = auth_state_refreshed['auth_state']['access_token']
+
+    client = firecrest.AsyncFirecrest(
+        firecrest_url=spawner.firecrest_url,
+        authorization=FirecrestAccessTokenAuth(access_token)
+    )
+
+    return client
+
+
+# FIXME: Setup the auth state in the unit tests
+# Since the auth state is not setup for the unit tests,
+# the spawner's get_firecrest_client method will fail
+# when trying to get a key from a none `auth_state`
+SlurmSpawner.get_firecrest_client = get_firecrest_client
 
 
 def new_spawner(db, spawner_class=SlurmSpawner, **kwargs):
@@ -68,6 +88,10 @@ def fc_server(httpserver):
     httpserver.expect_request(
         re.compile("^/compute/jobs.*"), method="DELETE"
     ).respond_with_handler(cancel_handler)
+
+    httpserver.expect_request(
+        "/utilities/whoami", method="GET"
+    ).respond_with_handler(whoami_handler)
 
     return httpserver
 

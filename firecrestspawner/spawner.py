@@ -15,12 +15,13 @@ import jupyterhub
 import hostlist
 import httpx
 import base64
+import time
 import firecrest as f7t
 from enum import Enum
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
 from traitlets import (
-    Any, Integer, Unicode, Float, default
+    Any, Bool, Integer, Unicode, Float, default
 )
 from time import sleep
 
@@ -167,6 +168,12 @@ class FirecRESTSpawnerBase(Spawner):
              "needs specification."
     ).tag(config=True)
 
+    enable_aux_fc_client = Bool(
+        300,
+        help="If positive, use an auxiliary client to poll when client "
+             "credentials are expired."
+    ).tag(config=True)
+
     # Raw output of job submission command unless overridden
     job_id = Unicode()
 
@@ -188,11 +195,9 @@ class FirecRESTSpawnerBase(Spawner):
         return ' '.join(self.cmd)
 
     async def get_firecrest_client(self):
-        # TODO: Check if token is expired
-        # auth_state = await self.user.get_auth_state()
-
-        auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)  # noqa E501
-        access_token = auth_state_refreshed['auth_state']['access_token']
+        await self.user.authenticator.refresh_user(self.user)
+        auth_state = await self.user.get_auth_state()
+        access_token = auth_state["access_token"]
 
         client = f7t.AsyncFirecrest(
             firecrest_url=self.firecrest_url,
@@ -211,6 +216,30 @@ class FirecRESTSpawnerBase(Spawner):
         client.timeout = 30
         return client
 
+    async def get_firecrest_aux_client(self):
+        client_id = os.environ['SA_CLIENT_ID']
+        client_secret = os.environ['SA_CLIENT_SECRET']
+        token_url = os.environ['SA_AUTH_TOKEN_URL']
+
+        keycloak = f7t.ClientCredentialsAuth(
+            client_id, client_secret, token_url
+        )
+
+        client = f7t.AsyncFirecrest(firecrest_url=self.firecrest_url, authorization=keycloak)
+
+        client.time_between_calls = {
+            "compute": 0,
+            "reservations": 0,
+            "status": 0,
+            "storage": 0,
+            "tasks": 0,
+            "utilities": 0,
+        }
+
+        client.timeout = 30
+        return client
+
+
     async def firecrest_poll(self):
         """Helper function to poll jobs.
 
@@ -218,12 +247,19 @@ class FirecRESTSpawnerBase(Spawner):
         its database which could make the result of ``client.poll``
         to be an empty list
         """
-        client = await self.get_firecrest_client()
-        poll_result = []
+        
+        # auth_state = await self.user.get_auth_state()
+        auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)
 
+        if self.enable_aux_fc_client and auth_state_refreshed == False:
+            client = await self.get_firecrest_aux_client()
+        else:
+            client = await self.get_firecrest_client()
+
+        poll_result = []
         while poll_result == []:
             poll_result = await client.poll(self.host, [self.job_id])
-            print(poll_result)
+            await asyncio.sleep(1)
 
         return poll_result
 
@@ -250,11 +286,15 @@ class FirecRESTSpawnerBase(Spawner):
         for v in ("JUPYTERHUB_OAUTH_ACCESS_SCOPES", "JUPYTERHUB_OAUTH_SCOPES"):
             job_env[v] = base64.b64encode(job_env[v].encode()).decode("utf-8")
 
+        self.host = subvars['host']
+
+        client = await self.get_firecrest_client()
+        groups = await client.groups(self.host)
+        subvars['account'] = groups['group']['name']
+
         script = await self._get_batch_script(**subvars)
         self.log.info('Spawner submitting job using firecREST')
         self.log.info('Spawner submitted script:\n' + script)
-
-        self.host = subvars['host']
 
         try:
             client = await self.get_firecrest_client()
@@ -456,7 +496,7 @@ class FirecRESTSpawnerBase(Spawner):
                 return
             else:
                 await yield_({
-                    "message": "Unknown status...",
+                    "message": "Waiting for job status...",
                 })
             await asyncio.sleep(1)
 

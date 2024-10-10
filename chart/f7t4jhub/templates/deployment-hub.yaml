@@ -63,6 +63,11 @@ spec:
               secretKeyRef:
                 name: {{ .Release.Name }}-secret
                 key: authTokenUrl
+          - name: SA_AUTH_TOKEN_URL
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: serviceAccountAuthTokenUrl
           {{- if .Values.vault.keycloak.enabled }}
           - name: KC_CLIENT_ID
             valueFrom:
@@ -74,6 +79,16 @@ spec:
               secretKeyRef:
                 name: {{ .Release.Name }}-common-secrets
                 key: kc_client_secret
+          - name: SA_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-common-secrets
+                key: sa_client_id
+          - name: SA_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-common-secrets
+                key: sa_client_secret
           {{- end }}
           {{- if .Values.vault.configProxyAuthToken.enabled }}
           - name: CONFIGPROXY_AUTH_TOKEN

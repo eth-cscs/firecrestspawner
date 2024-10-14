@@ -1,4 +1,5 @@
 import json
+import grp
 import os
 import requests
 import secrets
@@ -64,10 +65,34 @@ class FirecrestAccessTokenAuth:
         return self._access_token
 
 
-class GenericOAuthenticatorCSCS(GenericOAuthenticator):
-    async def refresh_user(self, user, handler=None):
-        # self.log.info('Refreshing auth state')
+class AuthenticatorCSCS(GenericOAuthenticator):
+    _min_token_validity = 30
+
+    # async def authenticate(self, handler, data=None):
+    #     """Extended to add the token expiration time to the
+    #     authentication state"""
+
+    #     auth_state = await super().authenticate(handler, data)
+
+    #     self.log.debug("[authenticate] Authenticating")
+
+    #     token_response = auth_state['auth_state']['token_response']
+
+    #     with open('refresh_token.txt', 'w') as file:
+    #         print(token_response["refresh_token"], file=file)
+
+    #     auth_state['auth_state']['access_token_expiration_ts'] = (
+    #         time.time() + token_response['expires_in'] - self._min_token_validity
+    #     )
+
+    #     return auth_state
+
+    async def _refresh_user(self, user, handler=None):
         auth_state = await user.get_auth_state()
+
+        # if time.time() <= auth_state["access_token_expiration_ts"]:
+        #     self.log.debug(f"[refresh_user] Reusing access token for {user.name}")
+        #     return True
 
         params = {
             'grant_type': 'refresh_token',
@@ -81,20 +106,31 @@ class GenericOAuthenticatorCSCS(GenericOAuthenticator):
         }
 
         response = requests.post(self.token_url, data=params, headers=headers)
-        if response.status_code != 200:
-            self.log.debug(f"[refresh_user] Request to KeyCloak: {response.status_code}")
-            try:
-                self.log.debug(f"[refresh_user] Request to KeyCloak: {response.json()}")
-            except json.JSONDecodeError:
-                self.log.debug(f"[refresh_user] Request to KeyCloak: no json output")
 
-            return False
+        self.log.debug(f"[refresh_user] Refreshing access token for {user.name}")
 
         token_response = response.json()
-
         auth_state['token_response'].update(token_response)
+
+        if response.status_code != 200:
+            # self.log.info(f"[refresh_user] Request to KeyCloak: {response.status_code}")
+            # try:
+            #     self.log.info(f"[refresh_user] Request to KeyCloak: {response.json()}")
+            # except json.JSONDecodeError:
+            #     self.log.info(f"[refresh_user] Request to KeyCloak: no json output")
+
+            return True
+
         auth_state['access_token'] = token_response['access_token']
         auth_state['refresh_token'] = token_response['refresh_token']
+        access_token_expiration_ts = token_response['expires_in'] - self._min_token_validity
+        auth_state['access_token_expiration_ts'] = time.time() + access_token_expiration_ts
+
+        # user._auth_refreshed = time.monotonic()
+        # await user.save_auth_state(auth_state)
+
+        self.log.debug(f"[refresh_user] refresh_token {handler} for {user.name} "
+                       f"{token_response['refresh_token'][-10:]} {token_response['refresh_expires_in']}")
 
         return {
             'name': auth_state['oauth_user']['preferred_username'],
@@ -109,23 +145,25 @@ c.Authenticator.admin_users = {{ .Values.config.adminUsers }}
 c.JupyterHub.admin_access = False
 c.Authenticator.allow_all = True
 
-c.Authenticator.refresh_pre_spawn = True
+# c.Authenticator.refresh_pre_spawn = True
 c.Authenticator.auth_refresh_age = 250
 
 c.Authenticator.enable_auth_state = True
 c.CryptKeeper.keys = gen_hex_string("/home/juhu/hex_strings_crypt.txt")
 
-c.JupyterHub.authenticator_class = GenericOAuthenticatorCSCS
-c.GenericOAuthenticator.client_id = os.environ.get('KC_CLIENT_ID', '<client-id>')
-c.GenericOAuthenticator.client_secret = os.environ.get('KC_CLIENT_SECRET', '<client-secret>')
-c.GenericOAuthenticator.oauth_callback_url = "{{ .Values.config.auth.oauthCallbackUrl }}"
-c.GenericOAuthenticator.authorize_url = "{{ .Values.config.auth.authorizeUrl }}"
-c.GenericOAuthenticator.token_url = "{{ .Values.config.auth.tokenUrl }}"
-c.GenericOAuthenticator.userdata_url = "{{ .Values.config.auth.userDataUrl }}"
-c.GenericOAuthenticator.login_service = "{{ .Values.config.auth.loginService }}"
-c.GenericOAuthenticator.username_key = "{{ .Values.config.auth.userNameKey }}"
-c.GenericOAuthenticator.userdata_params = {{ .Values.config.auth.userDataParams }}
-c.GenericOAuthenticator.scope = {{ .Values.config.auth.scope }}
+c.JupyterHub.authenticator_class = AuthenticatorCSCS
+c.AuthenticatorCSCS.client_id = os.environ.get('KC_CLIENT_ID', '<client-id>')
+c.AuthenticatorCSCS.client_secret = os.environ.get('KC_CLIENT_SECRET', '<client-secret>')
+c.AuthenticatorCSCS.oauth_callback_url = "{{ .Values.config.auth.oauthCallbackUrl }}"
+c.AuthenticatorCSCS.authorize_url = "{{ .Values.config.auth.authorizeUrl }}"
+c.AuthenticatorCSCS.token_url = "{{ .Values.config.auth.tokenUrl }}"
+c.AuthenticatorCSCS.userdata_url = "{{ .Values.config.auth.userDataUrl }}"
+c.AuthenticatorCSCS.login_service = "{{ .Values.config.auth.loginService }}"
+c.AuthenticatorCSCS.username_key = "{{ .Values.config.auth.userNameKey }}"
+c.AuthenticatorCSCS.userdata_params = {{ .Values.config.auth.userDataParams }}
+c.AuthenticatorCSCS.scope = {{ .Values.config.auth.scope }}
+
+# c.JupyterHub.cookie_max_age_days = 0.01
 
 c.JupyterHub.default_url = '{{ .Values.config.hubDefaultUrl }}'
 
@@ -133,13 +171,14 @@ hostname = socket.gethostname()
 c.JupyterHub.hub_connect_ip = socket.gethostbyname(hostname)
 
 c.JupyterHub.spawner_class = 'firecrestspawner.spawner.SlurmSpawner'
+c.Spawner.enable_aux_fc_client = {{ .Values.serviceAccount.enabled | toJson | replace "true" "True" | replace "false" "False" }}
 c.Spawner.req_host = '{{ .Values.config.spawner.host }}'
 c.Spawner.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'
 c.Spawner.req_partition = '{{ .Values.config.spawner.partition }}'
-c.Spawner.req_account = '{{ .Values.config.spawner.account }}'
 c.Spawner.req_constraint = '{{ .Values.config.spawner.constraint }}'
 c.Spawner.req_srun = '{{ .Values.config.spawner.srun }}'
 c.Spawner.batch_script = """#!/bin/bash
+
 #SBATCH --job-name={{ .Values.config.spawner.jobName }}
 #SBATCH --chdir={{`{{homedir}}`}}
 #SBATCH --get-user-env=L
@@ -151,8 +190,16 @@ c.Spawner.batch_script = """#!/bin/bash
 {% if gres       %}#SBATCH --gres={{`{{gres}}`}}{% endif %}
 {% if nprocs     %}#SBATCH --cpus-per-task={{`{{nprocs}}`}}{% endif %}
 {% if nnodes     %}#SBATCH --nodes={{`{{nnodes[0]}}`}}{% endif %}
-{% if reservation%}#SBATCH --reservation={{`{{reservation[0]}}`}}{% endif %}
-{% if constraint %}#SBATCH --constraint={{`{{constraint[0]}}`}}{% endif %}
+{% if reservation is string %}
+#SBATCH --reservation={{`{{reservation}}`}}
+{% else %}
+#SBATCH --reservation={{`{{reservation[0]}}`}}
+{% endif %}
+{% if constraint is string %}
+#SBATCH --constraint={{`{{constraint}}`}}
+{% else %}
+#SBATCH --constraint={{`{{constraint[0]}}`}}
+{% endif %}
 {% if options    %}#SBATCH {{`{{options}}`}}{% endif %}
 
 # Activate a virtual environment, load modules, etc
@@ -199,5 +246,11 @@ c.ConfigurableHTTPProxy.auth_token = os.environ["CONFIGPROXY_AUTH_TOKEN"]
 
 # This should be set to the URL which the hub uses to connect to the proxy’s API.
 c.ConfigurableHTTPProxy.api_url = 'http://{{ .Release.Name }}-proxy-svc:{{ .Values.network.apiPort }}'
+
+
+def pre_spawn_hook(spawner):
+    spawner.user.authenticator._refresh_user(spawner.user)
+
+c.Spawner.pre_spawn_hook = pre_spawn_hook
 
 {{ .Values.config.extraConfig }}

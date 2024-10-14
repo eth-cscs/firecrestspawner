@@ -195,8 +195,8 @@ class FirecRESTSpawnerBase(Spawner):
         return ' '.join(self.cmd)
 
     async def get_firecrest_client(self):
-        await self.user.authenticator.refresh_user(self.user)
-        auth_state = await self.user.get_auth_state()
+        auth_state_refreshed = await self.user.authenticator._refresh_user(self.user)
+        auth_state = auth_state_refreshed['auth_state']  #await self.user.get_auth_state()
         access_token = auth_state["access_token"]
 
         client = f7t.AsyncFirecrest(
@@ -249,12 +249,13 @@ class FirecRESTSpawnerBase(Spawner):
         """
         
         # auth_state = await self.user.get_auth_state()
-        auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)
+        # auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)
 
-        if self.enable_aux_fc_client and auth_state_refreshed == False:
-            client = await self.get_firecrest_aux_client()
-        else:
-            client = await self.get_firecrest_client()
+        # if self.enable_aux_fc_client and auth_state_refreshed == False:
+        #     client = await self.get_firecrest_aux_client()
+        # else:
+        #     client = await self.get_firecrest_client()
+        client = await self.get_firecrest_aux_client()
 
         poll_result = []
         while poll_result == []:

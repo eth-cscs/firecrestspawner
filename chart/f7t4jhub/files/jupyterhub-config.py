@@ -1,3 +1,4 @@
+import asyncio
 import json
 import grp
 import os
@@ -66,33 +67,8 @@ class FirecrestAccessTokenAuth:
 
 
 class AuthenticatorCSCS(GenericOAuthenticator):
-    _min_token_validity = 30
-
-    # async def authenticate(self, handler, data=None):
-    #     """Extended to add the token expiration time to the
-    #     authentication state"""
-
-    #     auth_state = await super().authenticate(handler, data)
-
-    #     self.log.debug("[authenticate] Authenticating")
-
-    #     token_response = auth_state['auth_state']['token_response']
-
-    #     with open('refresh_token.txt', 'w') as file:
-    #         print(token_response["refresh_token"], file=file)
-
-    #     auth_state['auth_state']['access_token_expiration_ts'] = (
-    #         time.time() + token_response['expires_in'] - self._min_token_validity
-    #     )
-
-    #     return auth_state
-
     async def _refresh_user(self, user, handler=None):
         auth_state = await user.get_auth_state()
-
-        # if time.time() <= auth_state["access_token_expiration_ts"]:
-        #     self.log.debug(f"[refresh_user] Reusing access token for {user.name}")
-        #     return True
 
         params = {
             'grant_type': 'refresh_token',
@@ -107,30 +83,15 @@ class AuthenticatorCSCS(GenericOAuthenticator):
 
         response = requests.post(self.token_url, data=params, headers=headers)
 
-        self.log.debug(f"[refresh_user] Refreshing access token for {user.name}")
-
         token_response = response.json()
+
         auth_state['token_response'].update(token_response)
 
         if response.status_code != 200:
-            # self.log.info(f"[refresh_user] Request to KeyCloak: {response.status_code}")
-            # try:
-            #     self.log.info(f"[refresh_user] Request to KeyCloak: {response.json()}")
-            # except json.JSONDecodeError:
-            #     self.log.info(f"[refresh_user] Request to KeyCloak: no json output")
-
-            return True
+            return False
 
         auth_state['access_token'] = token_response['access_token']
         auth_state['refresh_token'] = token_response['refresh_token']
-        access_token_expiration_ts = token_response['expires_in'] - self._min_token_validity
-        auth_state['access_token_expiration_ts'] = time.time() + access_token_expiration_ts
-
-        # user._auth_refreshed = time.monotonic()
-        # await user.save_auth_state(auth_state)
-
-        self.log.debug(f"[refresh_user] refresh_token {handler} for {user.name} "
-                       f"{token_response['refresh_token'][-10:]} {token_response['refresh_expires_in']}")
 
         return {
             'name': auth_state['oauth_user']['preferred_username'],
@@ -162,8 +123,6 @@ c.AuthenticatorCSCS.login_service = "{{ .Values.config.auth.loginService }}"
 c.AuthenticatorCSCS.username_key = "{{ .Values.config.auth.userNameKey }}"
 c.AuthenticatorCSCS.userdata_params = {{ .Values.config.auth.userDataParams }}
 c.AuthenticatorCSCS.scope = {{ .Values.config.auth.scope }}
-
-# c.JupyterHub.cookie_max_age_days = 0.01
 
 c.JupyterHub.default_url = '{{ .Values.config.hubDefaultUrl }}'
 
@@ -246,11 +205,5 @@ c.ConfigurableHTTPProxy.auth_token = os.environ["CONFIGPROXY_AUTH_TOKEN"]
 
 # This should be set to the URL which the hub uses to connect to the proxy’s API.
 c.ConfigurableHTTPProxy.api_url = 'http://{{ .Release.Name }}-proxy-svc:{{ .Values.network.apiPort }}'
-
-
-def pre_spawn_hook(spawner):
-    spawner.user.authenticator._refresh_user(spawner.user)
-
-c.Spawner.pre_spawn_hook = pre_spawn_hook
 
 {{ .Values.config.extraConfig }}

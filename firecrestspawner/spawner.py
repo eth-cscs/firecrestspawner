@@ -5,6 +5,7 @@
 # Modified and redistributed under the terms of the BSD 3-Clause License.
 # See the accompanying LICENSE file for more details.
 
+import inspect
 import asyncio
 from async_generator import async_generator, yield_
 import pwd
@@ -72,6 +73,9 @@ class FirecRESTSpawnerBase(Spawner):
         state_isrunning
         state_gethost
     """
+
+    # define since the begining since this is used in the home.html template
+    access_token_is_valid = False
 
     # override default since batch systems typically need longer
     start_timeout = Integer(300).tag(config=True)
@@ -196,7 +200,7 @@ class FirecRESTSpawnerBase(Spawner):
 
     async def get_firecrest_client(self):
         auth_state_refreshed = await self.user.authenticator._refresh_user(self.user)
-        auth_state = auth_state_refreshed['auth_state']  #await self.user.get_auth_state()
+        auth_state = auth_state_refreshed['auth_state']
         access_token = auth_state["access_token"]
 
         client = f7t.AsyncFirecrest(
@@ -216,7 +220,7 @@ class FirecRESTSpawnerBase(Spawner):
         client.timeout = 30
         return client
 
-    async def get_firecrest_aux_client(self):
+    async def get_firecrest_client_service_account(self):
         client_id = os.environ['SA_CLIENT_ID']
         client_secret = os.environ['SA_CLIENT_SECRET']
         token_url = os.environ['SA_AUTH_TOKEN_URL']
@@ -247,15 +251,11 @@ class FirecRESTSpawnerBase(Spawner):
         its database which could make the result of ``client.poll``
         to be an empty list
         """
-        
-        # auth_state = await self.user.get_auth_state()
-        # auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)
 
-        # if self.enable_aux_fc_client and auth_state_refreshed == False:
-        #     client = await self.get_firecrest_aux_client()
-        # else:
-        #     client = await self.get_firecrest_client()
-        client = await self.get_firecrest_aux_client()
+        if self.enable_aux_fc_client:
+            client = await self.get_firecrest_client_service_account()
+        else:
+            client = await self.get_firecrest_client()
 
         poll_result = []
         while poll_result == []:
@@ -406,6 +406,19 @@ class FirecRESTSpawnerBase(Spawner):
 
     async def poll(self):
         """Poll the process"""
+
+        # check if the refresh token is valid when
+        # accessing /hub/home and set `self.access_token_is_valid`
+        # for the template in `home.html`
+        stack = inspect.stack()
+        caller_frame = stack[3]
+        if 'self' in caller_frame.frame.f_locals:
+            class_name = caller_frame.frame.f_locals['self'].__class__.__name__
+
+            if  class_name == "HomeHandler":
+                auth_state_refreshed = await self.user.authenticator._refresh_user(self.user)
+                self.access_token_is_valid = bool(auth_state_refreshed)
+
         status = await self.query_job_status()
         if status in (JobStatus.PENDING, JobStatus.RUNNING, JobStatus.UNKNOWN):
             return None

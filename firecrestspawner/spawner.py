@@ -173,7 +173,7 @@ class FirecRESTSpawnerBase(Spawner):
     ).tag(config=True)
 
     enable_aux_fc_client = Bool(
-        300,
+        True,
         help="If positive, use an auxiliary client to poll when client "
              "credentials are expired."
     ).tag(config=True)

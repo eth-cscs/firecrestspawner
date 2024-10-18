@@ -63,6 +63,7 @@ def new_spawner(db, spawner_class=SlurmSpawner, **kwargs):
         req_host="cluster1",
         port=testport,
         node_name_template="{}.cluster1.ch",
+        enable_aux_fc_client=False
     )
     return _spawner
 

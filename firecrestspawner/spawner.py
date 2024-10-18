@@ -5,6 +5,7 @@
 # Modified and redistributed under the terms of the BSD 3-Clause License.
 # See the accompanying LICENSE file for more details.
 
+import inspect
 import asyncio
 from async_generator import async_generator, yield_
 import pwd
@@ -15,12 +16,13 @@ import jupyterhub
 import hostlist
 import httpx
 import base64
+import time
 import firecrest as f7t
 from enum import Enum
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
 from traitlets import (
-    Any, Integer, Unicode, Float, default
+    Any, Bool, Integer, Unicode, Float, default
 )
 from time import sleep
 
@@ -71,6 +73,9 @@ class FirecRESTSpawnerBase(Spawner):
         state_isrunning
         state_gethost
     """
+
+    # define since the begining since this is used in the home.html template
+    access_token_is_valid = False
 
     # override default since batch systems typically need longer
     start_timeout = Integer(300).tag(config=True)
@@ -167,6 +172,12 @@ class FirecRESTSpawnerBase(Spawner):
              "needs specification."
     ).tag(config=True)
 
+    enable_aux_fc_client = Bool(
+        True,
+        help="If positive, use an auxiliary client to poll when client "
+             "credentials are expired."
+    ).tag(config=True)
+
     # Raw output of job submission command unless overridden
     job_id = Unicode()
 
@@ -188,11 +199,9 @@ class FirecRESTSpawnerBase(Spawner):
         return ' '.join(self.cmd)
 
     async def get_firecrest_client(self):
-        # TODO: Check if token is expired
-        # auth_state = await self.user.get_auth_state()
-
-        auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)  # noqa E501
-        access_token = auth_state_refreshed['auth_state']['access_token']
+        auth_state_refreshed = await self.user.authenticator._refresh_user(self.user)
+        auth_state = auth_state_refreshed['auth_state']
+        access_token = auth_state["access_token"]
 
         client = f7t.AsyncFirecrest(
             firecrest_url=self.firecrest_url,
@@ -211,6 +220,30 @@ class FirecRESTSpawnerBase(Spawner):
         client.timeout = 30
         return client
 
+    async def get_firecrest_client_service_account(self):
+        client_id = os.environ['SA_CLIENT_ID']
+        client_secret = os.environ['SA_CLIENT_SECRET']
+        token_url = os.environ['SA_AUTH_TOKEN_URL']
+
+        keycloak = f7t.ClientCredentialsAuth(
+            client_id, client_secret, token_url
+        )
+
+        client = f7t.AsyncFirecrest(firecrest_url=self.firecrest_url, authorization=keycloak)
+
+        client.time_between_calls = {
+            "compute": 0,
+            "reservations": 0,
+            "status": 0,
+            "storage": 0,
+            "tasks": 0,
+            "utilities": 0,
+        }
+
+        client.timeout = 30
+        return client
+
+
     async def firecrest_poll(self):
         """Helper function to poll jobs.
 
@@ -218,12 +251,16 @@ class FirecRESTSpawnerBase(Spawner):
         its database which could make the result of ``client.poll``
         to be an empty list
         """
-        client = await self.get_firecrest_client()
-        poll_result = []
 
+        if self.enable_aux_fc_client:
+            client = await self.get_firecrest_client_service_account()
+        else:
+            client = await self.get_firecrest_client()
+
+        poll_result = []
         while poll_result == []:
             poll_result = await client.poll(self.host, [self.job_id])
-            print(poll_result)
+            await asyncio.sleep(1)
 
         return poll_result
 
@@ -250,11 +287,15 @@ class FirecRESTSpawnerBase(Spawner):
         for v in ("JUPYTERHUB_OAUTH_ACCESS_SCOPES", "JUPYTERHUB_OAUTH_SCOPES"):
             job_env[v] = base64.b64encode(job_env[v].encode()).decode("utf-8")
 
+        self.host = subvars['host']
+
+        client = await self.get_firecrest_client()
+        groups = await client.groups(self.host)
+        subvars['account'] = groups['group']['name']
+
         script = await self._get_batch_script(**subvars)
         self.log.info('Spawner submitting job using firecREST')
         self.log.info('Spawner submitted script:\n' + script)
-
-        self.host = subvars['host']
 
         try:
             client = await self.get_firecrest_client()
@@ -365,6 +406,19 @@ class FirecRESTSpawnerBase(Spawner):
 
     async def poll(self):
         """Poll the process"""
+
+        # check if the refresh token is valid when
+        # accessing /hub/home and set `self.access_token_is_valid`
+        # for the template in `home.html`
+        stack = inspect.stack()
+        caller_frame = stack[3]
+        if 'self' in caller_frame.frame.f_locals:
+            class_name = caller_frame.frame.f_locals['self'].__class__.__name__
+
+            if  class_name == "HomeHandler":
+                auth_state_refreshed = await self.user.authenticator._refresh_user(self.user)
+                self.access_token_is_valid = bool(auth_state_refreshed)
+
         status = await self.query_job_status()
         if status in (JobStatus.PENDING, JobStatus.RUNNING, JobStatus.UNKNOWN):
             return None
@@ -456,7 +510,7 @@ class FirecRESTSpawnerBase(Spawner):
                 return
             else:
                 await yield_({
-                    "message": "Unknown status...",
+                    "message": "Waiting for job status...",
                 })
             await asyncio.sleep(1)
 

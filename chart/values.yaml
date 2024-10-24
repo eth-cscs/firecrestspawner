@@ -76,6 +76,14 @@ f7t4jhub:
       # Secret path in Vault (replace with your own secret path)
       secretPath: 'secret/path/proxy'
 
+  # service account for polling jobs
+  serviceAccount:
+    # Enable or disable service account for polling jobs
+    enabled: true
+
+    # URL to obtain an auth token from your identity provider (replace with the SA's token URL)
+    authTokenUrl: 'https://auth-sa.example.com/auth/realms/yourrealm/protocol/openid-connect/token'
+
   metricbeat:
     # Enable or disable annotations for metric beat monitoring
     enabled: false
@@ -139,9 +147,6 @@ f7t4jhub:
 
       # Partition for the job scheduler (customize as needed)
       partition: 'slurm_partition'
-
-      # Account for the job scheduler (customize as needed)
-      account: 'slurm_account'
 
       # Constraint for the job scheduler (customize as needed)
       constraint: 'slurm_constraint'

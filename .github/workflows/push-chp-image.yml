@@ -3,11 +3,7 @@ name: Build and Push CHP Image
 on:
   release:
     types: [created]
-  workflow_dispatch:
-    inputs:
-      custom_tag:
-        description: 'Custom tag for manual trigger'
-        required: false
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   build-and-push:
@@ -25,12 +21,13 @@ jobs:
 
       - name: Build Docker image
         run: |
-            CHP_TAG=4.6.2
+            APP_VERSION=4.6.2
+            echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
             git clone https://github.com/jupyterhub/configurable-http-proxy.git
             cd configurable-http-proxy
-            git checkout ${CHP_TAG}
+            git checkout ${APP_VERSION}
             sed "s/alpine3.18/alpine3.19/g" Dockerfile
-            docker build -t ghcr.io/${{ github.repository_owner }}/chp:${CHP_TAG} -f Dockerfile .
+            docker build -t ghcr.io/${{ github.repository_owner }}/chp:${APP_VERSION} -f Dockerfile .
 
       - name: Push Docker image to GitHub Container Registry
-        run: docker push ghcr.io/${{ github.repository_owner }}/chp:${{ env.CHP_TAG }}
+        run: docker push ghcr.io/${{ github.repository_owner }}/chp:${{ env.APP_VERSION }}

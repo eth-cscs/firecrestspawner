@@ -245,18 +245,16 @@ class FirecRESTSpawnerBase(Spawner):
 
 
     async def firecrest_poll(self):
-        """Helper function to poll jobs.
-
-        This is needed in cases that the scheduler is slow updating
-        its database which could make the result of ``client.poll``
-        to be an empty list
-        """
+        """Helper function to poll jobs."""
 
         if self.enable_aux_fc_client:
             client = await self.get_firecrest_client_service_account()
         else:
             client = await self.get_firecrest_client()
 
+        # This is needed in case the scheduler is slow updating
+        # its database which could make the result of ``client.poll``
+        # to be an empty list
         poll_result = []
         while poll_result == []:
             poll_result = await client.poll(self.host, [self.job_id])

@@ -82,7 +82,7 @@ f7t4jhub:
     enabled: true
 
     # URL to obtain an auth token from your identity provider (replace with the SA's token URL)
-    authTokenUrl: 'https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token'
+    authTokenUrl: 'https://auth-sa.example.com/auth/realms/yourrealm/protocol/openid-connect/token'
 
   metricbeat:
     # Enable or disable annotations for metric beat monitoring

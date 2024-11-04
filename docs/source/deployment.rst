@@ -71,7 +71,8 @@ and updated live with
 
    helm upgrade jhub-dom-gen -n<namespace> f7t4jhub/f7t4jhub --values values.yaml
 
-In our deployments at CSCS, the hub and proxy run on their own pods, allowing the hub to be restarted (to apply a new configuration, for instance) without affecting users with running JupyterLab servers.
+In our deployments at CSCS, the hub and proxy run on their own pods.
+That's a standard practice that allows the hub to be restarted (to apply a new configuration, for instance) without affecting users with running JupyterLab servers.
 The deployment used the following images:
 
 Proxy
@@ -124,8 +125,8 @@ All JupyterHub configuration parameters are set under ``config`` in the ``values
 Live updates
 ^^^^^^^^^^^^
 
-The chart uses `Reloader <https://github.com/stakater/Reloader>` to ensure that the hub pod is restarted if the configuration is modified or if secrets are changed in vault.
-Since the hub and the proxy run on different pods, plus the JUpyterHub database is stored on a persistent volume, it's possible to apply new configurations without affecting users that have JupyterLab running.
+The chart uses `Reloader <https://github.com/stakater/Reloader>`_ to ensure that the hub pod is restarted if the configuration is modified or if secrets are changed in vault.
+Since the hub and the proxy run on different pods, plus the JupyterHub database is stored on a persistent volume, it's possible to apply new configurations without affecting users that have JupyterLab running.
 
 HTTPS Provisioning
 ^^^^^^^^^^^^^^^^^^

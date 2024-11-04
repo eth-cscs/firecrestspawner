@@ -462,22 +462,26 @@ class FirecRESTSpawnerBase(Spawner):
 
 
 class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):
-    """Uses config-supplied regular expressions to interact with the
-    batch submission system state. Provides implementations of
-        state_ispending
-        state_isrunning
-        state_gethost
+    """
+    Uses config-supplied regular expressions to interact with the
+    batch submission system state.
 
-    In their place, the user should supply the following configuration:
-        state_pending_re  - regex matching job_status if job is waiting to run
-        state_running_re  - regex matching job_status if job is running
-        state_exechost_re - regex with at least one capture group that extracts
-                            execution host from job_status
-        state_exechost_exp - if empty, notebook IP will be set to the contents
-                             of the first capture group. If this variable is
-                             set, the match object will be expanded using this
-                             string to obtain the notebook IP.
-                             See Python docs: re.match.expand
+    Provides implementations of the following methods:
+
+    - ``state_ispending``
+    - ``state_isrunning``
+    - ``state_gethost``
+
+    In place of these methods, the user should supply the following configuration options:
+
+    - ``state_pending_re``: A regular expression that matches ``job_status`` if the job is waiting to run.
+    - ``state_running_re``: A regular expression that matches ``job_status`` if the job is running.
+    - ``state_exechost_re``: A regular expression with at least one capture group that extracts
+      the execution host from ``job_status``.
+    - ``state_exechost_exp``: If empty, the notebook IP will be set to the contents
+      of the first capture group. If this variable is set, the match object will be
+      expanded using this string to obtain the notebook IP.
+      (See Python documentation for ``re.match.expand`` for more details.)
     """
     state_pending_re = Unicode(
         '',

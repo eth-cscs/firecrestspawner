@@ -452,7 +452,6 @@ class FirecRESTSpawnerBase(Spawner):
             class_name = caller_frame.frame.f_locals['self'].__class__.__name__
 
             if  class_name == "HomeHandler":
-                # auth_state_refreshed = await self.user.authenticator.refresh_access_token(self.user)
                 auth_state = await self.user.get_auth_state()
 
                 auth = AuthorizationCodeFlowAuth(

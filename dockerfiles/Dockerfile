@@ -15,7 +15,7 @@ RUN apt-get update -qq \
 RUN python3 -m venv /opt/jhub-env
 
 RUN . /opt/jhub-env/bin/activate && \
-    pip install --no-cache jupyterhub==4.1.6 pyfirecrest==2.1.0 SQLAlchemy==1.4.52 oauthenticator==16.3.1 python-hostlist==1.23.0
+    pip install --no-cache jupyterhub==4.1.6 pyfirecrest==2.6.0 SQLAlchemy==1.4.52 oauthenticator==16.3.1 python-hostlist==1.23.0
 
 COPY . firecrestspawner
 

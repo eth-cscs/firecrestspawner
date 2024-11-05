@@ -1,0 +1,33 @@
+name: Build and Push CHP Image
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+            APP_VERSION=4.6.2
+            echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+            git clone https://github.com/jupyterhub/configurable-http-proxy.git
+            cd configurable-http-proxy
+            git checkout ${APP_VERSION}
+            sed "s/alpine3.18/alpine3.19/g" Dockerfile
+            docker build -t ghcr.io/${{ github.repository_owner }}/chp:${APP_VERSION} -f Dockerfile .
+
+      - name: Push Docker image to GitHub Container Registry
+        run: docker push ghcr.io/${{ github.repository_owner }}/chp:${{ env.APP_VERSION }}

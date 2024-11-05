@@ -50,6 +50,14 @@ class JobStatus(Enum):
 
 
 class AuthorizationCodeFlowAuth:
+    """
+    Authorization Code Flow class
+
+    :param client_id: name of the client as registered in the authorization server
+    :param client_secret: secret associated to the client
+    :param refresh_token: refresh token for the SSO session
+    :param token_url: URL of the token request in the authorization server
+    """
 
     def __init__(
         self,
@@ -64,6 +72,8 @@ class AuthorizationCodeFlowAuth:
         self.refresh_token = refresh_token
 
     def get_access_token(self):
+        """Returns an access token to be used for accessing resources.
+        """
         params = {
             'grant_type': 'refresh_token',
             'client_id': self.client_id,
@@ -89,16 +99,7 @@ class AuthorizationCodeFlowAuth:
 
 
 class FirecRESTSpawnerBase(Spawner):
-    """Base class for spawners using PyFirecrest to submit jobs.
-
-    At minimum, subclasses should provide reasonable defaults for the traits:
-        batch_script
-
-    and must provide implementations for the methods:
-        state_ispending
-        state_isrunning
-        state_gethost
-    """
+    """Base class for spawners using PyFirecrest to submit jobs"""
 
     # define since the begining since this is used in the home.html template
     access_token_is_valid = False
@@ -210,8 +211,8 @@ class FirecRESTSpawnerBase(Spawner):
     # Will get the raw output of the job status command unless overridden
     job_status = Unicode()
 
-    # Prepare substitution variables for templates using req_xyz traits
     def get_req_subvars(self):
+        """Prepare substitution variables for templates using req_xyz traits."""
         reqlist = [t for t in self.trait_names() if t.startswith('req_')]
         subvars = {}
         for t in reqlist:
@@ -220,14 +221,12 @@ class FirecRESTSpawnerBase(Spawner):
         return subvars
 
     def cmd_formatted_for_batch(self):
-        """The command which is substituted inside of the batch script"""
+        """The command which is substituted inside of the batch script."""
         # return ' '.join([self.batchspawner_singleuser_cmd] + self.cmd + self.get_args())  # noqa E501
         return ' '.join(self.cmd)
 
     async def get_firecrest_client(self):
-        # auth_state_refreshed = await self.user.authenticator.refresh_access_token(self.user)
-        # auth_state = auth_state_refreshed['auth_state']
-        # access_token = auth_state["access_token"]
+        """Returns a firecrest client that uses the Authorization Code Flow method"""
         auth_state = await self.user.get_auth_state()
 
         auth = AuthorizationCodeFlowAuth(
@@ -255,6 +254,7 @@ class FirecRESTSpawnerBase(Spawner):
         return client
 
     async def get_firecrest_client_service_account(self):
+        """Returns a firecrest client that uses the Client Credentials Authorization method"""
         client_id = os.environ['SA_CLIENT_ID']
         client_secret = os.environ['SA_CLIENT_SECRET']
         token_url = os.environ['SA_AUTH_TOKEN_URL']
@@ -302,6 +302,10 @@ class FirecRESTSpawnerBase(Spawner):
         return format_template(self.batch_script, **subvars)
 
     async def submit_batch_script(self):
+        """Submits the batch script that starts the notebook server job
+
+        It's called by ``spawner.start``.
+        """
         subvars = self.get_req_subvars()
         # `subvars['cmd']` is what is run _inside_ the batch script,
         # put into the template.
@@ -639,6 +643,7 @@ class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):
 
 
 class SlurmSpawner(FirecRESTSpawnerRegexStates):
+    """Implementation of the FirecRESTSpawner for Slurm"""
     firecrest_url = os.environ['FIRECREST_URL']
 
     batch_script = Unicode("""#!/bin/bash

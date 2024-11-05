@@ -104,9 +104,9 @@ They can be accessed in our kubernetes deployment via a set of secrets:
 
 - A `SecretStore <https://github.com/eth-cscs/firecrestspawner/blob/main/chart/f7t4jhub/templates/secret-store.yaml>`_, which interacts with the ``vault-approle-secret`` secret.
 
-- An `ExternalSecret <https://github.com/eth-cscs/firecrestspawner/blob/main/chart/f7t4jhub/templates/external-secret.yaml>`_ which interacts with the ``SecretStore`` allowing the deployment to access the Keycloak client's IDs and secrets.
+- An `ExternalSecret <https://github.com/eth-cscs/firecrestspawner/blob/main/chart/f7t4jhub/templates/external-secret.yaml>`_ which interacts with the ``SecretStore`` allowing the deployment to access the client's IDs and secrets.
 
-- An optional `ExternalSecret <https://github.com/eth-cscs/firecrestspawner/blob/main/chart/f7t4jhub/templates/external-secret-registry.yaml>`_ that's used for to store credentials for a custom container registry. That's currently not in use.
+- An optional `ExternalSecret to access credentials for a custom container registry <https://github.com/eth-cscs/firecrestspawner/blob/main/chart/f7t4jhub/templates/external-secret-registry.yaml>`_. That's currently not in use.
 
 The section of the chart related to Vault is optional and can be disabled in the ``values.yaml``.
 

@@ -55,50 +55,6 @@ async def get_node_ip_from_output(spawner):
             time.sleep(2)
 
 
-class FirecrestAccessTokenAuth:
-
-    _access_token: str = None
-
-    def __init__(self, access_token):
-        self._access_token = access_token
-
-    def get_access_token(self):
-        return self._access_token
-
-
-class AuthenticatorCSCS(GenericOAuthenticator):
-    async def _refresh_user(self, user, handler=None):
-        auth_state = await user.get_auth_state()
-
-        params = {
-            'grant_type': 'refresh_token',
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
-            'refresh_token': auth_state['refresh_token']
-        }
-
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
-
-        response = requests.post(self.token_url, data=params, headers=headers)
-
-        token_response = response.json()
-
-        auth_state['token_response'].update(token_response)
-
-        if response.status_code != 200:
-            return False
-
-        auth_state['access_token'] = token_response['access_token']
-        auth_state['refresh_token'] = token_response['refresh_token']
-
-        return {
-            'name': auth_state['oauth_user']['preferred_username'],
-            'auth_state': auth_state
-        }
-
-
 c = get_config()
 
 
@@ -112,17 +68,17 @@ c.Authenticator.auth_refresh_age = 250
 c.Authenticator.enable_auth_state = True
 c.CryptKeeper.keys = gen_hex_string("/home/juhu/hex_strings_crypt.txt")
 
-c.JupyterHub.authenticator_class = AuthenticatorCSCS
-c.AuthenticatorCSCS.client_id = os.environ.get('KC_CLIENT_ID', '<client-id>')
-c.AuthenticatorCSCS.client_secret = os.environ.get('KC_CLIENT_SECRET', '<client-secret>')
-c.AuthenticatorCSCS.oauth_callback_url = "{{ .Values.config.auth.oauthCallbackUrl }}"
-c.AuthenticatorCSCS.authorize_url = "{{ .Values.config.auth.authorizeUrl }}"
-c.AuthenticatorCSCS.token_url = "{{ .Values.config.auth.tokenUrl }}"
-c.AuthenticatorCSCS.userdata_url = "{{ .Values.config.auth.userDataUrl }}"
-c.AuthenticatorCSCS.login_service = "{{ .Values.config.auth.loginService }}"
-c.AuthenticatorCSCS.username_key = "{{ .Values.config.auth.userNameKey }}"
-c.AuthenticatorCSCS.userdata_params = {{ .Values.config.auth.userDataParams }}
-c.AuthenticatorCSCS.scope = {{ .Values.config.auth.scope }}
+c.JupyterHub.authenticator_class = GenericOAuthenticator
+c.GenericOAuthenticator.client_id = os.environ.get('KC_CLIENT_ID', '<client-id>')
+c.GenericOAuthenticator.client_secret = os.environ.get('KC_CLIENT_SECRET', '<client-secret>')
+c.GenericOAuthenticator.oauth_callback_url = "{{ .Values.config.auth.oauthCallbackUrl }}"
+c.GenericOAuthenticator.authorize_url = "{{ .Values.config.auth.authorizeUrl }}"
+c.GenericOAuthenticator.token_url = "{{ .Values.config.auth.tokenUrl }}"
+c.GenericOAuthenticator.userdata_url = "{{ .Values.config.auth.userDataUrl }}"
+c.GenericOAuthenticator.login_service = "{{ .Values.config.auth.loginService }}"
+c.GenericOAuthenticator.username_key = "{{ .Values.config.auth.userNameKey }}"
+c.GenericOAuthenticator.userdata_params = {{ .Values.config.auth.userDataParams }}
+c.GenericOAuthenticator.scope = {{ .Values.config.auth.scope }}
 
 c.JupyterHub.default_url = '{{ .Values.config.hubDefaultUrl }}'
 

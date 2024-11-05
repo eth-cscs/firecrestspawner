@@ -18,6 +18,7 @@ import httpx
 import base64
 import time
 import firecrest as f7t
+import requests
 from enum import Enum
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
@@ -48,18 +49,43 @@ class JobStatus(Enum):
     UNKNOWN = 3
 
 
-class FirecrestAccessTokenAuth:
-    """Utility class to provide an object with the
-    `get_access_token()` attribute needed by PyFirecREST's
-    authenticator"""
+class AuthorizationCodeFlowAuth:
 
-    _access_token: str = None
-
-    def __init__(self, access_token):
-        self._access_token = access_token
+    def __init__(
+        self,
+        client_id: str,
+        client_secret: str,
+        refresh_token: str,
+        token_url: str,
+     ):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.token_url = token_url
+        self.refresh_token = refresh_token
 
     def get_access_token(self):
-        return self._access_token
+        params = {
+            'grant_type': 'refresh_token',
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+            'refresh_token': self.refresh_token
+        }
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        response = requests.post(
+            self.token_url,
+            data=params,
+            headers=headers
+        )
+
+        if response.status_code != 200:
+            return False
+
+        json_response = response.json()
+        self.refresh_token = json_response["refresh_token"]
+
+        return json_response['access_token']
 
 
 class FirecRESTSpawnerBase(Spawner):
@@ -199,13 +225,21 @@ class FirecRESTSpawnerBase(Spawner):
         return ' '.join(self.cmd)
 
     async def get_firecrest_client(self):
-        auth_state_refreshed = await self.user.authenticator._refresh_user(self.user)
-        auth_state = auth_state_refreshed['auth_state']
-        access_token = auth_state["access_token"]
+        # auth_state_refreshed = await self.user.authenticator.refresh_access_token(self.user)
+        # auth_state = auth_state_refreshed['auth_state']
+        # access_token = auth_state["access_token"]
+        auth_state = await self.user.get_auth_state()
+
+        auth = AuthorizationCodeFlowAuth(
+            client_id = self.user.authenticator.client_id,
+            client_secret = self.user.authenticator.client_secret,
+            refresh_token = auth_state["refresh_token"],
+            token_url = self.user.authenticator.token_url,
+        )
 
         client = f7t.AsyncFirecrest(
             firecrest_url=self.firecrest_url,
-            authorization=FirecrestAccessTokenAuth(access_token)
+            authorization=auth
         )
 
         client.time_between_calls = {
@@ -225,11 +259,11 @@ class FirecRESTSpawnerBase(Spawner):
         client_secret = os.environ['SA_CLIENT_SECRET']
         token_url = os.environ['SA_AUTH_TOKEN_URL']
 
-        keycloak = f7t.ClientCredentialsAuth(
+        auth = f7t.ClientCredentialsAuth(
             client_id, client_secret, token_url
         )
 
-        client = f7t.AsyncFirecrest(firecrest_url=self.firecrest_url, authorization=keycloak)
+        client = f7t.AsyncFirecrest(firecrest_url=self.firecrest_url, authorization=auth)
 
         client.time_between_calls = {
             "compute": 0,
@@ -414,8 +448,16 @@ class FirecRESTSpawnerBase(Spawner):
             class_name = caller_frame.frame.f_locals['self'].__class__.__name__
 
             if  class_name == "HomeHandler":
-                auth_state_refreshed = await self.user.authenticator._refresh_user(self.user)
-                self.access_token_is_valid = bool(auth_state_refreshed)
+                # auth_state_refreshed = await self.user.authenticator.refresh_access_token(self.user)
+                auth_state = await self.user.get_auth_state()
+
+                auth = AuthorizationCodeFlowAuth(
+                    client_id = self.user.authenticator.client_id,
+                    client_secret = self.user.authenticator.client_secret,
+                    refresh_token = auth_state["refresh_token"],
+                    token_url = self.user.authenticator.token_url,
+                )
+                self.access_token_is_valid = bool(auth.get_access_token())
 
         status = await self.query_job_status()
         if status in (JobStatus.PENDING, JobStatus.RUNNING, JobStatus.UNKNOWN):

@@ -4,7 +4,7 @@ import firecrest
 import getpass
 import pytest
 from werkzeug.wrappers import Response
-from context import FirecrestAccessTokenAuth, SlurmSpawner, format_template
+from context import SlurmSpawner, format_template
 from fc_handlers import (
     tasks_handler,
     submit_upload_handler,
@@ -28,6 +28,20 @@ class DummyOAuthenticator(GenericOAuthenticator):
     async def refresh_user(self, user, handler=None):
         auth_state = {"access_token": "VALID_TOKEN"}
         return {"auth_state": auth_state}
+
+
+class FirecrestAccessTokenAuth:
+    """Utility class to provide an object with the
+    `get_access_token()` attribute needed by PyFirecREST's
+    authenticator"""
+
+    _access_token: str = None
+
+    def __init__(self, access_token):
+        self._access_token = access_token
+
+    def get_access_token(self):
+        return self._access_token
 
 
 async def get_firecrest_client(spawner):

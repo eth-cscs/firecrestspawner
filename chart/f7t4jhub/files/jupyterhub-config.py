@@ -1,4 +1,6 @@
+import asyncio
 import json
+import grp
 import os
 import requests
 import secrets
@@ -53,55 +55,6 @@ async def get_node_ip_from_output(spawner):
             time.sleep(2)
 
 
-class FirecrestAccessTokenAuth:
-
-    _access_token: str = None
-
-    def __init__(self, access_token):
-        self._access_token = access_token
-
-    def get_access_token(self):
-        return self._access_token
-
-
-class GenericOAuthenticatorCSCS(GenericOAuthenticator):
-    async def refresh_user(self, user, handler=None):
-        # self.log.info('Refreshing auth state')
-        auth_state = await user.get_auth_state()
-
-        params = {
-            'grant_type': 'refresh_token',
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
-            'refresh_token': auth_state['refresh_token']
-        }
-
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
-
-        response = requests.post(self.token_url, data=params, headers=headers)
-        if response.status_code != 200:
-            self.log.debug(f"[refresh_user] Request to KeyCloak: {response.status_code}")
-            try:
-                self.log.debug(f"[refresh_user] Request to KeyCloak: {response.json()}")
-            except json.JSONDecodeError:
-                self.log.debug(f"[refresh_user] Request to KeyCloak: no json output")
-
-            return False
-
-        token_response = response.json()
-
-        auth_state['token_response'].update(token_response)
-        auth_state['access_token'] = token_response['access_token']
-        auth_state['refresh_token'] = token_response['refresh_token']
-
-        return {
-            'name': auth_state['oauth_user']['preferred_username'],
-            'auth_state': auth_state
-        }
-
-
 c = get_config()
 
 
@@ -109,13 +62,13 @@ c.Authenticator.admin_users = {{ .Values.config.adminUsers }}
 c.JupyterHub.admin_access = False
 c.Authenticator.allow_all = True
 
-c.Authenticator.refresh_pre_spawn = True
+# c.Authenticator.refresh_pre_spawn = True
 c.Authenticator.auth_refresh_age = 250
 
 c.Authenticator.enable_auth_state = True
 c.CryptKeeper.keys = gen_hex_string("/home/juhu/hex_strings_crypt.txt")
 
-c.JupyterHub.authenticator_class = GenericOAuthenticatorCSCS
+c.JupyterHub.authenticator_class = GenericOAuthenticator
 c.GenericOAuthenticator.client_id = os.environ.get('KC_CLIENT_ID', '<client-id>')
 c.GenericOAuthenticator.client_secret = os.environ.get('KC_CLIENT_SECRET', '<client-secret>')
 c.GenericOAuthenticator.oauth_callback_url = "{{ .Values.config.auth.oauthCallbackUrl }}"
@@ -133,13 +86,14 @@ hostname = socket.gethostname()
 c.JupyterHub.hub_connect_ip = socket.gethostbyname(hostname)
 
 c.JupyterHub.spawner_class = 'firecrestspawner.spawner.SlurmSpawner'
+c.Spawner.enable_aux_fc_client = {{ .Values.serviceAccount.enabled | toJson | replace "true" "True" | replace "false" "False" }}
 c.Spawner.req_host = '{{ .Values.config.spawner.host }}'
 c.Spawner.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'
 c.Spawner.req_partition = '{{ .Values.config.spawner.partition }}'
-c.Spawner.req_account = '{{ .Values.config.spawner.account }}'
 c.Spawner.req_constraint = '{{ .Values.config.spawner.constraint }}'
 c.Spawner.req_srun = '{{ .Values.config.spawner.srun }}'
 c.Spawner.batch_script = """#!/bin/bash
+
 #SBATCH --job-name={{ .Values.config.spawner.jobName }}
 #SBATCH --chdir={{`{{homedir}}`}}
 #SBATCH --get-user-env=L
@@ -151,8 +105,16 @@ c.Spawner.batch_script = """#!/bin/bash
 {% if gres       %}#SBATCH --gres={{`{{gres}}`}}{% endif %}
 {% if nprocs     %}#SBATCH --cpus-per-task={{`{{nprocs}}`}}{% endif %}
 {% if nnodes     %}#SBATCH --nodes={{`{{nnodes[0]}}`}}{% endif %}
-{% if reservation%}#SBATCH --reservation={{`{{reservation[0]}}`}}{% endif %}
-{% if constraint %}#SBATCH --constraint={{`{{constraint[0]}}`}}{% endif %}
+{% if reservation is string %}
+#SBATCH --reservation={{`{{reservation}}`}}
+{% else %}
+#SBATCH --reservation={{`{{reservation[0]}}`}}
+{% endif %}
+{% if constraint is string %}
+#SBATCH --constraint={{`{{constraint}}`}}
+{% else %}
+#SBATCH --constraint={{`{{constraint[0]}}`}}
+{% endif %}
 {% if options    %}#SBATCH {{`{{options}}`}}{% endif %}
 
 # Activate a virtual environment, load modules, etc

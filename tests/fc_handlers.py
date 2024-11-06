@@ -4,6 +4,44 @@ import pytest
 from werkzeug.wrappers import Response
 
 
+def whoami_handler(request):
+    if request.headers["Authorization"] != "Bearer VALID_TOKEN":
+        return Response(
+            json.dumps({"message": "Bad token; invalid JSON"}),
+            status=401,
+            content_type="application/json",
+        )
+
+    if request.headers["X-Machine-Name"] != "cluster1":
+        return Response(
+            json.dumps(
+                {"description": "Error on whoami operation", "error": "Machine does not exist"}
+            ),
+            status=400,
+            headers={"X-Machine-Does-Not-Exist": "Machine does not exist"},
+            content_type="application/json",
+        )
+
+    groups = request.args.get("groups", False)
+    if groups:
+        ret = {
+            "description": "User information",
+            "output": {
+                "group": {"id": "1000", "name": "group1"},
+                "groups": [{"id": "1000", "name": "group1"}, {"id": "1001", "name": "group2"}],
+                "user": {"id": "10000", "name": "test_user"},
+            }
+        }
+    else:
+        ret = {"description": "Success on whoami operation.", "output": "username"}
+
+    return Response(
+        json.dumps(ret),
+        status=200,
+        content_type="application/json",
+    )
+
+
 def tasks_handler(request):
     taskid = request.args.get("tasks")
     if taskid == "acct_352_id":
@@ -389,23 +427,3 @@ def cancel_handler(request):
     return Response(
         json.dumps(ret), status=status_code, content_type="application/json"
     )
-
-
-@pytest.fixture
-def fc_server(httpserver):
-    httpserver.expect_request(
-        "/compute/jobs/upload", method="POST"
-    ).respond_with_handler(submit_upload_handler)
-    httpserver.expect_request(
-        re.compile("^/status/systems.*"), method="GET"
-    ).respond_with_handler(systems_handler)
-    httpserver.expect_request("/tasks", method="GET").respond_with_handler(
-        tasks_handler
-    )
-    httpserver.expect_request("/compute/acct", method="GET").respond_with_handler(
-        sacct_handler
-    )
-    httpserver.expect_request(
-        re.compile("^/compute/jobs.*"), method="DELETE"
-    ).respond_with_handler(cancel_handler)
-    return httpserver

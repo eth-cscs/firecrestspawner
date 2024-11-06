@@ -5,6 +5,7 @@
 # Modified and redistributed under the terms of the BSD 3-Clause License.
 # See the accompanying LICENSE file for more details.
 
+import inspect
 import asyncio
 from async_generator import async_generator, yield_
 import pwd
@@ -15,12 +16,14 @@ import jupyterhub
 import hostlist
 import httpx
 import base64
+import time
 import firecrest as f7t
+import requests
 from enum import Enum
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
 from traitlets import (
-    Any, Integer, Unicode, Float, default
+    Any, Bool, Integer, Unicode, Float, default
 )
 from time import sleep
 
@@ -46,31 +49,60 @@ class JobStatus(Enum):
     UNKNOWN = 3
 
 
-class FirecrestAccessTokenAuth:
-    """Utility class to provide an object with the
-    `get_access_token()` attribute needed by PyFirecREST's
-    authenticator"""
+class AuthorizationCodeFlowAuth:
+    """
+    Authorization Code Flow class
 
-    _access_token: str = None
+    :param client_id: name of the client as registered in the authorization server
+    :param client_secret: secret associated to the client
+    :param refresh_token: refresh token for the SSO session
+    :param token_url: URL of the token request in the authorization server
+    """
 
-    def __init__(self, access_token):
-        self._access_token = access_token
+    def __init__(
+        self,
+        client_id: str,
+        client_secret: str,
+        refresh_token: str,
+        token_url: str,
+     ):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.token_url = token_url
+        self.refresh_token = refresh_token
 
     def get_access_token(self):
-        return self._access_token
+        """Returns an access token to be used for accessing resources.
+        """
+        params = {
+            'grant_type': 'refresh_token',
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+            'refresh_token': self.refresh_token
+        }
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        response = requests.post(
+            self.token_url,
+            data=params,
+            headers=headers
+        )
+
+        if response.status_code != 200:
+            return False
+
+        json_response = response.json()
+        self.refresh_token = json_response["refresh_token"]
+
+        return json_response['access_token']
 
 
 class FirecRESTSpawnerBase(Spawner):
-    """Base class for spawners using PyFirecrest to submit jobs.
+    """Base class for spawners using PyFirecrest to submit jobs"""
 
-    At minimum, subclasses should provide reasonable defaults for the traits:
-        batch_script
-
-    and must provide implementations for the methods:
-        state_ispending
-        state_isrunning
-        state_gethost
-    """
+    # define since the begining since this is used in the home.html template
+    access_token_is_valid = False
 
     # override default since batch systems typically need longer
     start_timeout = Integer(300).tag(config=True)
@@ -167,14 +199,20 @@ class FirecRESTSpawnerBase(Spawner):
              "needs specification."
     ).tag(config=True)
 
+    enable_aux_fc_client = Bool(
+        True,
+        help="If positive, use an auxiliary client to poll when client "
+             "credentials are expired."
+    ).tag(config=True)
+
     # Raw output of job submission command unless overridden
     job_id = Unicode()
 
     # Will get the raw output of the job status command unless overridden
     job_status = Unicode()
 
-    # Prepare substitution variables for templates using req_xyz traits
     def get_req_subvars(self):
+        """Prepare substitution variables for templates using req_xyz traits."""
         reqlist = [t for t in self.trait_names() if t.startswith('req_')]
         subvars = {}
         for t in reqlist:
@@ -183,20 +221,24 @@ class FirecRESTSpawnerBase(Spawner):
         return subvars
 
     def cmd_formatted_for_batch(self):
-        """The command which is substituted inside of the batch script"""
+        """The command which is substituted inside of the batch script."""
         # return ' '.join([self.batchspawner_singleuser_cmd] + self.cmd + self.get_args())  # noqa E501
         return ' '.join(self.cmd)
 
     async def get_firecrest_client(self):
-        # TODO: Check if token is expired
-        # auth_state = await self.user.get_auth_state()
+        """Returns a firecrest client that uses the Authorization Code Flow method"""
+        auth_state = await self.user.get_auth_state()
 
-        auth_state_refreshed = await self.user.authenticator.refresh_user(self.user)  # noqa E501
-        access_token = auth_state_refreshed['auth_state']['access_token']
+        auth = AuthorizationCodeFlowAuth(
+            client_id = self.user.authenticator.client_id,
+            client_secret = self.user.authenticator.client_secret,
+            refresh_token = auth_state["refresh_token"],
+            token_url = self.user.authenticator.token_url,
+        )
 
         client = f7t.AsyncFirecrest(
             firecrest_url=self.firecrest_url,
-            authorization=FirecrestAccessTokenAuth(access_token)
+            authorization=auth
         )
 
         client.time_between_calls = {
@@ -211,19 +253,46 @@ class FirecRESTSpawnerBase(Spawner):
         client.timeout = 30
         return client
 
+    async def get_firecrest_client_service_account(self):
+        """Returns a firecrest client that uses the Client Credentials Authorization method"""
+        client_id = os.environ['SA_CLIENT_ID']
+        client_secret = os.environ['SA_CLIENT_SECRET']
+        token_url = os.environ['SA_AUTH_TOKEN_URL']
+
+        auth = f7t.ClientCredentialsAuth(
+            client_id, client_secret, token_url
+        )
+
+        client = f7t.AsyncFirecrest(firecrest_url=self.firecrest_url, authorization=auth)
+
+        client.time_between_calls = {
+            "compute": 0,
+            "reservations": 0,
+            "status": 0,
+            "storage": 0,
+            "tasks": 0,
+            "utilities": 0,
+        }
+
+        client.timeout = 30
+        return client
+
+
     async def firecrest_poll(self):
-        """Helper function to poll jobs.
+        """Helper function to poll jobs."""
 
-        This is needed in cases that the scheduler is slow updating
-        its database which could make the result of ``client.poll``
-        to be an empty list
-        """
-        client = await self.get_firecrest_client()
+        if self.enable_aux_fc_client:
+            client = await self.get_firecrest_client_service_account()
+        else:
+            client = await self.get_firecrest_client()
+
+        # This is needed in case the scheduler is slow updating
+        # its database which could make the result of ``client.poll``
+        # to be an empty list
         poll_result = []
-
         while poll_result == []:
             poll_result = await client.poll(self.host, [self.job_id])
-            print(poll_result)
+            await asyncio.sleep(1)
 
         return poll_result
 
@@ -233,6 +302,10 @@ class FirecRESTSpawnerBase(Spawner):
         return format_template(self.batch_script, **subvars)
 
     async def submit_batch_script(self):
+        """Submits the batch script that starts the notebook server job
+
+        It's called by ``spawner.start``.
+        """
         subvars = self.get_req_subvars()
         # `subvars['cmd']` is what is run _inside_ the batch script,
         # put into the template.
@@ -250,11 +323,15 @@ class FirecRESTSpawnerBase(Spawner):
         for v in ("JUPYTERHUB_OAUTH_ACCESS_SCOPES", "JUPYTERHUB_OAUTH_SCOPES"):
             job_env[v] = base64.b64encode(job_env[v].encode()).decode("utf-8")
 
+        self.host = subvars['host']
+
+        client = await self.get_firecrest_client()
+        groups = await client.groups(self.host)
+        subvars['account'] = groups['group']['name']
+
         script = await self._get_batch_script(**subvars)
         self.log.info('Spawner submitting job using firecREST')
         self.log.info('Spawner submitted script:\n' + script)
-
-        self.host = subvars['host']
 
         try:
             client = await self.get_firecrest_client()
@@ -365,6 +442,26 @@ class FirecRESTSpawnerBase(Spawner):
 
     async def poll(self):
         """Poll the process"""
+
+        # check if the refresh token is valid when
+        # accessing /hub/home and set `self.access_token_is_valid`
+        # for the template in `home.html`
+        stack = inspect.stack()
+        caller_frame = stack[3]
+        if 'self' in caller_frame.frame.f_locals:
+            class_name = caller_frame.frame.f_locals['self'].__class__.__name__
+
+            if  class_name == "HomeHandler":
+                auth_state = await self.user.get_auth_state()
+
+                auth = AuthorizationCodeFlowAuth(
+                    client_id = self.user.authenticator.client_id,
+                    client_secret = self.user.authenticator.client_secret,
+                    refresh_token = auth_state["refresh_token"],
+                    token_url = self.user.authenticator.token_url,
+                )
+                self.access_token_is_valid = bool(auth.get_access_token())
+
         status = await self.query_job_status()
         if status in (JobStatus.PENDING, JobStatus.RUNNING, JobStatus.UNKNOWN):
             return None
@@ -456,7 +553,7 @@ class FirecRESTSpawnerBase(Spawner):
                 return
             else:
                 await yield_({
-                    "message": "Unknown status...",
+                    "message": "Waiting for job status...",
                 })
             await asyncio.sleep(1)
 
@@ -545,6 +642,7 @@ class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):
 
 
 class SlurmSpawner(FirecRESTSpawnerRegexStates):
+    """Implementation of the FirecRESTSpawner for Slurm"""
     firecrest_url = os.environ['FIRECREST_URL']
 
     batch_script = Unicode("""#!/bin/bash

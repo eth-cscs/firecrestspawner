@@ -4,13 +4,14 @@ import firecrest
 import getpass
 import pytest
 from werkzeug.wrappers import Response
-from context import FirecrestAccessTokenAuth, SlurmSpawner, format_template
+from context import SlurmSpawner, format_template
 from fc_handlers import (
     tasks_handler,
     submit_upload_handler,
     systems_handler,
     sacct_handler,
     cancel_handler,
+    whoami_handler
 )
 from jupyterhub.tests.conftest import db
 from jupyterhub.user import User
@@ -29,6 +30,39 @@ class DummyOAuthenticator(GenericOAuthenticator):
         return {"auth_state": auth_state}
 
 
+class FirecrestAccessTokenAuth:
+    """Utility class to provide an object with the
+    `get_access_token()` attribute needed by PyFirecREST's
+    authenticator"""
+
+    _access_token: str = None
+
+    def __init__(self, access_token):
+        self._access_token = access_token
+
+    def get_access_token(self):
+        return self._access_token
+
+
+async def get_firecrest_client(spawner):
+    auth_state_refreshed = await spawner.user.authenticator.refresh_user(spawner.user)  # noqa E501
+    access_token = auth_state_refreshed['auth_state']['access_token']
+
+    client = firecrest.AsyncFirecrest(
+        firecrest_url=spawner.firecrest_url,
+        authorization=FirecrestAccessTokenAuth(access_token)
+    )
+
+    return client
+
+
+# FIXME: Setup the auth state in the unit tests
+# Since the auth state is not setup for the unit tests,
+# the spawner's get_firecrest_client method will fail
+# when trying to get a key from a none `auth_state`
+SlurmSpawner.get_firecrest_client = get_firecrest_client
+
+
 def new_spawner(db, spawner_class=SlurmSpawner, **kwargs):
     user = db.query(orm.User).first()
     hub = Hub()
@@ -43,6 +77,7 @@ def new_spawner(db, spawner_class=SlurmSpawner, **kwargs):
         req_host="cluster1",
         port=testport,
         node_name_template="{}.cluster1.ch",
+        enable_aux_fc_client=False
     )
     return _spawner
 
@@ -68,6 +103,10 @@ def fc_server(httpserver):
     httpserver.expect_request(
         re.compile("^/compute/jobs.*"), method="DELETE"
     ).respond_with_handler(cancel_handler)
+
+    httpserver.expect_request(
+        "/utilities/whoami", method="GET"
+    ).respond_with_handler(whoami_handler)
 
     return httpserver
 

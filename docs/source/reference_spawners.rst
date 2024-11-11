@@ -1,7 +1,6 @@
 Spawners
 ========
 
-The library also provides an asynchronous API for the client:
 
 The ``FirecRESTSpawnerBase`` class
 **********************************
@@ -20,6 +19,17 @@ The ``FirecRESTSpawnerRegexStates`` class
 The ``SlurmSpawner`` class
 ****************************
 .. autoclass:: firecrestspawner.spawner.SlurmSpawner
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+The ``JobStatus`` class
+***********************
+.. autoclass:: firecrestspawner.spawner.JobStatus
+
+The ``AuthorizationCodeFlowAuth`` class
+***************************************
+.. autoclass:: firecrestspawner.spawner.AuthorizationCodeFlowAuth
     :members:
     :undoc-members:
     :show-inheritance:

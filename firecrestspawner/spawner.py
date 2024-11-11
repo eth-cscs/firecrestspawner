@@ -71,7 +71,7 @@ class AuthorizationCodeFlowAuth:
     :param token_url: URL of the token request in the authorization server
 
     This is used with PyFirecREST clients based on Keycloak's Authorization
-    Code Flow method. It's simlar PyFirecREST's ``ClientCredentialsAuth`` class,
+    Code Flow method. It's simlar PyFirecREST's ``ClientCredentialsAuth`` class
     which is used with clients based on the Keycloak's Client Credentials
     method.
     """
@@ -133,7 +133,7 @@ class FirecRESTSpawnerBase(Spawner):
     # override default since batch systems typically need longer
     start_timeout = Integer(
         300,
-        help="Timeout in seconds before giving up on starting of single-user server"
+        help="Timeout before giving up on starting of single-user server"
     ).tag(config=True)
 
     # override default server ip since batch jobs normally run remotely
@@ -255,7 +255,8 @@ class FirecRESTSpawnerBase(Spawner):
         return " ".join(self.cmd)
 
     async def get_firecrest_client(self):
-        """Returns a firecrest client that uses the Authorization Code Flow method"""
+        """Returns a firecrest client that uses Keycloak's Authorization Code
+        Flow method"""
         auth_state = await self.user.get_auth_state()
 
         auth = AuthorizationCodeFlowAuth(
@@ -282,12 +283,18 @@ class FirecRESTSpawnerBase(Spawner):
         return client
 
     async def get_firecrest_client_service_account(self):
-        """Returns a firecrest client that uses the Client Credentials Authorization method"""
+        """Returns a firecrest client that uses the Client Credentials
+        Authorization method
+        """
         client_id = os.environ["SA_CLIENT_ID"]
         client_secret = os.environ["SA_CLIENT_SECRET"]
         token_url = os.environ["SA_AUTH_TOKEN_URL"]
 
-        auth = firecrest.ClientCredentialsAuth(client_id, client_secret, token_url)
+        auth = firecrest.ClientCredentialsAuth(
+            client_id,
+            client_secret,
+            token_url
+        )
 
         client = firecrest.AsyncFirecrest(
             firecrest_url=self.firecrest_url, authorization=auth
@@ -497,7 +504,7 @@ class FirecRESTSpawnerBase(Spawner):
             return 1
 
     startup_poll_interval = Float(
-        0.5, help="Polling interval (seconds) to check job state during startup"
+        0.5, help="Polling interval to check job state during startup"
     ).tag(config=True)
 
     async def start(self) -> tuple[str, int]:
@@ -545,7 +552,8 @@ class FirecRESTSpawnerBase(Spawner):
 
         self.db.commit()
         self.log.info(
-            f"Notebook server job {self.job_id} started at " f"{self.ip}:{self.port}"
+            f"Notebook server job {self.job_id} started on "
+            f"{self.ip}:{self.port}"
         )
 
         return self.ip, self.port
@@ -574,21 +582,26 @@ class FirecRESTSpawnerBase(Spawner):
     @async_generator
     async def progress(self) -> AsyncGenerator[dict[str, str], None]:
         """
-        Async generator that yields status messages reflecting the progress of a job.
+        Async generator that yields status messages reflecting the progress
+        of a job.
 
         This generator continuously checks the job's current state and yields
         an appropriate status message:
 
-        - If the job is pending, it yields a message indicating the job is waiting in the queue.
-        - If the job is running, it yields a message that the cluster job is active and waits briefly before terminating.
-        - For any other state, it yields a message indicating it is awaiting a status update.
+        - If the job is pending, a message is shown in the hub indicating
+          the job is waiting in the queue.
+        - If the job is running, a message is hown in the hub that the cluster
+          job is running.
+        - For any other state, a message is shwon in the hub indicating it is
+          awaiting a status update.
 
         Yields:
-            dict: A dictionary containing a "message" key with a status message.
+            dict: A dictionary containing a "message" key with a status
+            message.
 
         Note:
-            This generator pauses for one second between each status check to avoid
-            excessive polling.
+            This generator pauses for one second between each status check to
+            avoid excessive polling.
         """
         while True:
             if self.state_ispending():
@@ -624,15 +637,18 @@ class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):
     - ``state_isrunning``
     - ``state_gethost``
 
-    In place of these methods, the user should supply the following configuration options:
+    In place of these methods, the user should supply the following
+    configuration options:
 
-    - ``state_pending_re``: A regular expression that matches ``job_status`` if the job is waiting to run.
-    - ``state_running_re``: A regular expression that matches ``job_status`` if the job is running.
-    - ``state_exechost_re``: A regular expression with at least one capture group that extracts
-      the execution host from ``job_status``.
-    - ``state_exechost_exp``: If empty, the notebook IP will be set to the contents
-      of the first capture group. If this variable is set, the match object will be
-      expanded using this string to obtain the notebook IP.
+    - ``state_pending_re``: A regular expression that matches ``job_status``
+       if the job is waiting to run.
+    - ``state_running_re``: A regular expression that matches ``job_status``
+      if the job is running.
+    - ``state_exechost_re``: A regular expression with at least one capture
+      group that extracts the execution host from ``job_status``.
+    - ``state_exechost_exp``: If empty, the notebook IP will be set to the
+      contents of the first capture group. If this variable is set, the match
+      object will be expanded using this string to obtain the notebook IP.
       (See Python documentation for ``re.match.expand`` for more details.)
     """
 
@@ -734,12 +750,14 @@ echo "jupyterhub-singleuser ended gracefully"
     # all these req_foo traits will be available as substvars
     # for templated strings
     req_cluster = Unicode(
-        "", help="Cluster name to submit job to resource manager"
+        "",
+        help="Cluster name to submit job to resource manager"
     ).tag(config=True)
 
-    req_qos = Unicode("", help="QoS name to submit job to resource manager").tag(
-        config=True
-    )
+    req_qos = Unicode(
+        "",
+        help="QoS name to submit job to resource manager"
+    ).tag(config=True)
 
     req_srun = Unicode(
         "srun",
@@ -752,17 +770,24 @@ echo "jupyterhub-singleuser ended gracefully"
         "", help="Reservation name to submit to resource manager"
     ).tag(config=True)
 
-    req_gres = Unicode("", help="Additional resources (e.g. GPUs) requested").tag(
-        config=True
-    )
+    req_gres = Unicode(
+        "",
+        help="Additional resources (e.g. GPUs) requested"
+    ).tag(config=True)
 
-    req_submitenv = Unicode("", help="Submit environment").tag(config=True)
+    req_submitenv = Unicode(
+        "",
+        help="Submit environment"
+    ).tag(config=True)
 
-    req_constraint = Unicode("", help="Specify the constraint").tag(config=True)
+    req_constraint = Unicode(
+        "",
+        help="Specify the constraint"
+    ).tag(config=True)
 
-    node_name_template = Unicode(help="A template for the DNS name of the node").tag(
-        config=True
-    )
+    node_name_template = Unicode(
+        help="A template for the DNS name of the node"
+    ).tag(config=True)
 
     custom_state_gethost = Any(
         "",
@@ -776,6 +801,6 @@ echo "jupyterhub-singleuser ended gracefully"
     state_pending_re = Unicode(r"^(?:PENDING|CONFIGURING)").tag(config=True)
     state_running_re = Unicode(r"^(?:RUNNING|COMPLETING)").tag(config=True)
     state_unknown_re = Unicode(
-        r"^slurm_load_jobs error: (?:Socket timed out on send/recv|Unable to contact slurm controller)"  # noqa E501
+        r"^slurm_load_jobs error: (?:Socket timed out on send/recv|Unable to contact slurm controller)"
     ).tag(config=True)
     state_exechost_re = Unicode(r"\s+((?:[\w_-]+\.?)+)$").tag(config=True)

@@ -7,7 +7,7 @@ class FireCRESTSpawnerAPIHandler(APIHandler):
     @web.authenticated
     def post(self):
         """POST set user spawner data"""
-        if hasattr(self, 'current_user'):
+        if hasattr(self, "current_user"):
             # Jupyterhub compatability, (september 2018, d79a99323ef1d)
             user = self.current_user
         else:

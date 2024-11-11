@@ -2,3 +2,4 @@ sphinx_rtd_theme
 jupyterhub
 pyfirecrest
 python-hostlist==1.23.0
+async_generator

@@ -1,6 +1,9 @@
 Deployment
 ==========
 
+Overview
+--------
+
 Deploying JupyteHub has two components:
 
 Hub and proxy
@@ -33,44 +36,6 @@ It has been designed mainly for CSCS but it's general enough for the use at othe
 
    Schematic representation of the f7t4jhub chart
 
-Adding the chart's repository locally
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The repository can be added locally with
-
-.. code-block:: Shell
-
-    $> helm repo add f7t4jhub https://eth-cscs.github.io/firecrestspawner
-    $> helm repo update
-
-
-Now, for instance the available versions can be displayed
-
-.. code-block:: Shell
-
-    $> helm search repo f7t4jhub/f7t4jhub --versions
-    NAME             	CHART VERSION	APP VERSION	DESCRIPTION
-    f7t4jhub/f7t4jhub	0.6.0        	4.1.5      	A Helm chart to Deploy JupyterHub with the Fire...
-    f7t4jhub/f7t4jhub	0.5.2        	4.1.5      	A Helm chart to Deploy JupyterHub with the Fire...
-    f7t4jhub/f7t4jhub	0.5.1        	4.1.5      	A Helm chart to Deploy JupyterHub with the Fire...
-    f7t4jhub/f7t4jhub	0.5.0        	4.1.5      	A Helm chart to Deploy JupyterHub with the Fire...
-    f7t4jhub/f7t4jhub	0.3.0        	4.1.5      	A Helm chart to Deploy JupyterHub with the Fire...
-
-Installing the chart
-^^^^^^^^^^^^^^^^^^^^
-
-The chart can be installed with
-
-.. code-block:: Shell
-
-   helm install --create-namespace <namespace> -n<namespace> f7t4jhub/f7t4jhub --values values.yaml --version <chart-version>
-
-and updated live with
-
-.. code-block:: Shell
-
-   helm upgrade jhub-dom-gen -n<namespace> f7t4jhub/f7t4jhub --values values.yaml
-
 In our deployments at CSCS, the hub and proxy run on their own pods.
 That's a standard practice that allows the hub to be restarted (to apply a new configuration, for instance) without affecting users with running JupyterLab servers.
 The deployment used the following images:
@@ -94,7 +59,7 @@ The following figure shows a schematic representation of the deployment:
    JupyterHub deployment at CSCS
 
 Access to Keycloak
-^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~
 
 At CSCS, the Keycloak client's IDs and secrets to login in JupyterHub are stored in `Vault <https://www.vaultproject.io>`_.
 They can be accessed in our kubernetes deployment via a set of secrets:
@@ -111,7 +76,7 @@ They can be accessed in our kubernetes deployment via a set of secrets:
 The section of the chart related to Vault is optional and can be disabled in the ``values.yaml``.
 
 JupyterHub configuration
-^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Another key element of the chart is the ``ConfigMap`` mentioned above, which provides
 the `JupyterHub configuration <https://jupyterhub.readthedocs.io/en/stable/tutorial/getting-started/config-basics.html>`_.
@@ -123,12 +88,215 @@ to submit the Jupyter notebook servers, as Slurm settings may vary between clust
 All JupyterHub configuration parameters are set under ``config`` in the ``values.yaml``.
 
 Live updates
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 
 The chart uses `Reloader <https://github.com/stakater/Reloader>`_ to ensure that the hub pod is restarted if the configuration is modified or if secrets are changed in vault.
 Since the hub and the proxy run on different pods, plus the JupyterHub database is stored on a persistent volume, it's possible to apply new configurations without affecting users that have JupyterLab running.
 
 HTTPS Provisioning
-^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~
 
 HTTPS is automatically provided by `cert-manager <https://cert-manager.io/>`_, which handles the management of of SSL/TLS certificates to ensure secure connections.
+
+
+Deploying the chart
+~~~~~~~~~~~~~~~~~~~
+
+This section explain how the chart is deployed with Helm or ArgoCD.
+For either option, there's a common first first step, which is the  creation of the ``vault-approle-secret``.
+That can be done in a namespace with the following command:
+
+.. code-block:: Shell
+
+   kubectl create namespace <namespace>
+   kubectl create secret generic vault-approle-secret --from-literal secret-id=<approle-secret-id> -n<namespace> 
+
+Here  ``secret-id=<approle-secret-id>`` is a "key, value" pair.
+The actual value of ``<approle-secret-id>`` can be copied from an existing ``vault-approle-secret``.
+
+.. code-block:: Shell
+
+   kubectl get secret vault-approle-secret -n<existing-namespace> -o yaml
+   # apiVersion: v1
+   # data:
+   #   secret-id: <approle-secret-id-base64>
+   # kind: Secret
+   # metadata:
+   #   creationTimestamp: "2024-03-06T16:22:23Z"
+   #   name: vault-approle-secret
+   #   namespace: jhub-clariden-tds
+   #   resourceVersion: "206319585"
+   #   uid: 29490228-a546-4609-bba3-102dc9b113b9
+   # type: Opaque
+
+In the output, ``<approle-secret-id-base64>`` is the ``<approle-secret-id>`` encoded as Base64. It must be decoded in order to use it with the ``kubectl create secret``.
+
+In short
+
+.. code-block:: Shell
+
+   kubectl get secret vault-approle-secret -njhub-eiger-dev -o jsonpath="{.data.secret-id}" | base64 --decode
+
+
+Helm
+^^^^
+
+The repository can be added to the local helm repo with
+
+.. code-block:: Shell
+
+    helm repo add f7t4jhub https://eth-cscs.github.io/firecrestspawner
+    helm repo update
+
+
+Now, for instance the available versions can be displayed
+
+.. code-block:: Shell
+
+    helm search repo f7t4jhub/f7t4jhub --versions
+    # NAME             	CHART VERSION	APP VERSION	DESCRIPTION
+    # f7t4jhub/f7t4jhub	0.6.0        	4.1.5      	A Helm chart to Deploy JupyterHub with the Fire...
+    # f7t4jhub/f7t4jhub	0.5.2        	4.1.5      	A Helm chart to Deploy JupyterHub with the Fire...
+    # f7t4jhub/f7t4jhub	0.5.1        	4.1.5      	A Helm chart to Deploy JupyterHub with the Fire...
+    # f7t4jhub/f7t4jhub	0.5.0        	4.1.5      	A Helm chart to Deploy JupyterHub with the Fire...
+    # f7t4jhub/f7t4jhub	0.3.0        	4.1.5      	A Helm chart to Deploy JupyterHub with the Fire...
+
+Once available locally, the chart can be installed with
+
+.. code-block:: Shell
+
+   helm dependency build
+   helm install <namespace> -n<namespace> f7t4jhub/f7t4jhub --values values.yaml --version <chart-version>
+
+and updated live with
+
+.. code-block:: Shell
+
+   helm dependency build
+   helm upgrade namespace -n<namespace> f7t4jhub/f7t4jhub --values values.yaml
+
+Here we have used the same names for the namespace and the helm release.
+
+ArgoCD
+^^^^^^
+
+The ``values.yaml`` as presented in the spawner's repository, is written for a deployment with Helm.
+To deploy the chart with ArgoCD, because of the way we defined the dependencies, both the ``reloader`` and the ``f7t4jhub`` sections must be indented into another section of the same name.
+The structure should look like the following code block, wher we have highlighted the two new sections:
+
+.. code-block:: Yaml  
+   :emphasize-lines: 1, 8
+
+   reloader:
+    reloader:
+      reloader:
+        # Set to true to enable the reloader for automatically restarting pods on ConfigMap/Secret changes.
+        enabled: true
+        ...
+
+   f7t4jhub:
+     f7t4jhub:
+       setup:
+         # URL for the Firecrest service (replace with your own Firecrest URL)
+         firecrestUrl: "https://firecrest.cscs.ch"
+         ...
+
+The dependecies are defined like in the following ``Chart.yaml`` for the version ``0.8.6`` of the chart
+
+.. code-block:: Yaml
+
+   apiVersion: v2
+   name: f7t4jhub
+   description: A Helm chart to Deploy JupyterHub with the FirecREST Spawner
+   type: application
+   version: 0.8.6  # same as the chart version
+   appVersion: "4.1.5"
+   dependencies:
+     - name: f7t4jhub
+       version: 0.8.6  # chart version
+       repository: https://eth-cscs.github.io/firecrestspawner
+     - name: reloader
+       version: v1.0.51
+       repository: https://stakater.github.io/stakater-charts
+       condition: reloader.reloader.enabled
+
+For more information about the ArgoCD deployment, please get in contact with us.
+
+
+Software installation in the cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A JupyterLab installation including the spawner must be available in the HPC cluster.
+From the spawner, only the ``firecrestspawner-singleuser`` script is used since it's needed to launch the JupyterLab server.
+The needed software can be installed like with
+
+.. code-block:: Shell
+
+   pip install --no-cache jupyterhub==4.1.5 pyfirecrest==2.1.0 SQLAlchemy==1.4.52 oauthenticator==16.0.7 jupyterlab==4.1.8
+
+   git clone https://github.com/eth-cscs/firecrestspawner.git
+   cd firecrestspawner
+   git checkout test-eiger
+   pip install .
+
+That software can be installed on a python virtual environment or container images or `uenv <https://github.com/eth-cscs/uenv>`_ images.
+
+Container images
+^^^^^^^^^^^^^^^^
+
+As an example, this is a dockerfile to install the JupyterLab and the spawner within a PyTorch image from `NVidia GPU Cloud <https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch>`_.
+
+.. code-block:: Dockerfile
+   
+   FROM nvcr.io/nvidia/pytorch:24.07-py3
+   
+   RUN pip install --no-cache jupyterlab jupyterhub==4.1.6 pyfirecrest==2.1.0 SQLAlchemy==1.4.52 oauthenticator==16.3.1 notebook==7.2.1
+   
+   RUN git clone https://github.com/eth-cscs/firecrestspawner.git && \
+       cd firecrestspawner && \
+       pip install .
+
+Uenvs
+^^^^^
+
+We create a uenv based on the `prgenv-gnu <https://github.com/eth-cscs/alps-uenv/tree/main/recipes/prgenv-gnu/23.11/mc>`_ recipe. For instance, for the multicore partition of Eiger, an ``environments.yaml`` can be defined like this
+
+.. code-block:: Yaml
+   :emphasize-lines: 18
+
+    gcc-env:
+      compiler:
+          - toolchain: gcc
+            spec: gcc@12
+      mpi:
+          spec: cray-mpich
+          gpu: Null
+      unify: true
+      specs:
+      - cmake
+      - fftw
+      - fmt
+      - hdf5
+      - ninja@1.11
+      - openblas
+      - python@3.11
+      - py-pybind11
+      - py-pip
+      variants:
+      - +mpi
+      views:
+        default:
+
+Here, starting from the ``prgenv-gnu`` recipe, only ``py-pip`` was adeed in the specs (and ``osu-micro-benchmarks@5.9`` removed), which is used in the post-install script
+
+.. code-block:: Shell
+
+    export PATH=/user-environment/env/default/bin:$PATH
+    pip install --no-cache jupyterhub==4.1.5 pyfirecrest==2.1.0 SQLAlchemy==1.4.52 oauthenticator==16.0.7 jupyterlab==4.1.8
+    
+    git clone https://github.com/eth-cscs/firecrestspawner.git
+    cd firecrestspawner
+    git checkout test-eiger
+    pip install .
+
+and by users to build their environments.

@@ -259,7 +259,7 @@ As an example, this is a dockerfile to install the JupyterLab and the spawner wi
 Uenvs
 ^^^^^
 
-A simple way to create a uenv for to be used with this JupyterHub deployment is by starting from the `prgenv-gnu <https://github.com/eth-cscs/alps-uenv/tree/main/recipes/prgenv-gnu/23.11/mc>`_ recipe. An options is to include the `py-pip` Spack package on the ``environment.yaml`` (the ``osu-micro-benchmarks@5.9`` package can be removed)
+A simple way to create a uenv to be used with the JupyterHub deployment, is by starting from the `prgenv-gnu <https://github.com/eth-cscs/alps-uenv/tree/main/recipes/prgenv-gnu/23.11/mc>`_ recipe. One way to go, is to include the `py-pip` Spack package on the ``environment.yaml`` (the ``osu-micro-benchmarks@5.9`` package can be removed)
 
 .. code-block:: Yaml
    :emphasize-lines: 18

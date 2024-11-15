@@ -259,7 +259,7 @@ As an example, this is a dockerfile to install the JupyterLab and the spawner wi
 Uenvs
 ^^^^^
 
-We create a uenv based on the `prgenv-gnu <https://github.com/eth-cscs/alps-uenv/tree/main/recipes/prgenv-gnu/23.11/mc>`_ recipe. For instance, for the multicore partition of Eiger, an ``environments.yaml`` can be defined like this
+A simple way to create a uenv for to be used with this JupyterHub deployment is by starting from the `prgenv-gnu <https://github.com/eth-cscs/alps-uenv/tree/main/recipes/prgenv-gnu/23.11/mc>`_ recipe. An options is to include the `py-pip` Spack package on the ``environment.yaml`` (the ``osu-micro-benchmarks@5.9`` package can be removed)
 
 .. code-block:: Yaml
    :emphasize-lines: 18
@@ -287,7 +287,7 @@ We create a uenv based on the `prgenv-gnu <https://github.com/eth-cscs/alps-uenv
       views:
         default:
 
-Here, starting from the ``prgenv-gnu`` recipe, only ``py-pip`` was adeed in the specs (and ``osu-micro-benchmarks@5.9`` removed), which is used in the post-install script
+and to add a post-install script that will take care of all the necessary software
 
 .. code-block:: Shell
 
@@ -296,7 +296,4 @@ Here, starting from the ``prgenv-gnu`` recipe, only ``py-pip`` was adeed in the 
     
     git clone https://github.com/eth-cscs/firecrestspawner.git
     cd firecrestspawner
-    git checkout test-eiger
     pip install .
-
-and by users to build their environments.

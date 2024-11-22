@@ -4,8 +4,39 @@ import pytest
 from werkzeug.wrappers import Response
 
 
+def keycloak_handler(request):
+    if "VALID_REFRESH_TOKEN" not in request.data.decode("utf-8"):
+        return Response(
+            json.dumps({"message": "Bad token; invalid JSON"}),
+            status=401,
+            content_type="application/json",
+        )
+
+
+    ret = {
+        'access_token': 'VALID_ACCESS_TOKEN',
+        'expires_in': 300,
+        'refresh_expires_in': 1800,
+        'refresh_token': 'VALID_REFRESH_TOKEN',
+        'token_type': 'Bearer',
+        'id_token': 'ID_TOKEN',
+        'not-before-policy': 0,
+        'session_state': 'fc347b39-8dd0-44f5-99d5-c3e5237eabac',
+        'scope': 'openid firecrest profile email'
+    }
+    extra_headers = None
+    status_code=200
+
+    return Response(
+        json.dumps(ret),
+        status=status_code,
+        headers=extra_headers,
+        content_type="application/json",
+    )
+
+
 def whoami_handler(request):
-    if request.headers["Authorization"] != "Bearer VALID_TOKEN":
+    if request.headers["Authorization"] != "Bearer VALID_ACCESS_TOKEN":
         return Response(
             json.dumps({"message": "Bad token; invalid JSON"}),
             status=401,
@@ -274,7 +305,7 @@ def tasks_handler(request):
 
 
 def submit_upload_handler(request):
-    if request.headers["Authorization"] != "Bearer VALID_TOKEN":
+    if request.headers["Authorization"] != "Bearer VALID_ACCESS_TOKEN":
         return Response(
             json.dumps({"message": "Bad token; invalid JSON"}),
             status=401,
@@ -331,7 +362,7 @@ def submit_upload_handler(request):
 
 
 def systems_handler(request):
-    if request.headers["Authorization"] != "Bearer VALID_TOKEN":
+    if request.headers["Authorization"] != "Bearer VALID_ACCESS_TOKEN":
         return Response(
             json.dumps({"message": "Bad token; invalid JSON"}),
             status=401,
@@ -358,7 +389,7 @@ def systems_handler(request):
 
 
 def sacct_handler(request):
-    if request.headers["Authorization"] != "Bearer VALID_TOKEN":
+    if request.headers["Authorization"] != "Bearer VALID_ACCESS_TOKEN":
         return Response(
             json.dumps({"message": "Bad token; invalid JSON"}),
             status=401,

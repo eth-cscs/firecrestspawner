@@ -348,7 +348,8 @@ class FirecRESTSpawnerBase(Spawner):
             subvars.update(self.user_options)
 
         job_env = self.get_env()
-        job_env.pop("PATH")
+        if "PATH" in job_env:
+            job_env.pop("PATH")
 
         # FIXME: These two variables may have quotes in their values.
         # We encoded as base64 since quotes are not allowed

@@ -4,14 +4,19 @@ import firecrest
 import getpass
 import pytest
 from werkzeug.wrappers import Response
-from context import SlurmSpawner, format_template
+from context import (
+    AuthorizationCodeFlowAuth,
+    format_template,
+    SlurmSpawner
+)
 from fc_handlers import (
+    keycloak_handler,
     tasks_handler,
     submit_upload_handler,
     systems_handler,
     sacct_handler,
     cancel_handler,
-    whoami_handler
+    whoami_handler,
 )
 from jupyterhub.tests.conftest import db
 from jupyterhub.user import User
@@ -24,50 +29,26 @@ from oauthenticator.generic import GenericOAuthenticator
 testport = random_port()
 
 
-class DummyOAuthenticator(GenericOAuthenticator):
-    async def refresh_user(self, user, handler=None):
-        auth_state = {"access_token": "VALID_TOKEN"}
-        return {"auth_state": auth_state}
-
-
-class FirecrestAccessTokenAuth:
-    """Utility class to provide an object with the
-    `get_access_token()` attribute needed by PyFirecREST's
-    authenticator"""
-
-    _access_token: str = None
-
-    def __init__(self, access_token):
-        self._access_token = access_token
-
-    def get_access_token(self):
-        return self._access_token
-
-
-async def get_firecrest_client(spawner):
-    auth_state_refreshed = await spawner.user.authenticator.refresh_user(spawner.user)  # noqa E501
-    access_token = auth_state_refreshed['auth_state']['access_token']
-
-    client = firecrest.AsyncFirecrest(
-        firecrest_url=spawner.firecrest_url,
-        authorization=FirecrestAccessTokenAuth(access_token)
-    )
-
-    return client
-
-
-# FIXME: Setup the auth state in the unit tests
-# Since the auth state is not setup for the unit tests,
-# the spawner's get_firecrest_client method will fail
-# when trying to get a key from a none `auth_state`
-SlurmSpawner.get_firecrest_client = get_firecrest_client
+async def get_auth_state():
+    """Function to monkey patch `user.authenticator.get_auth_state`
+    to simulate a hub where the user is already logged in
+    """
+    auth_state = {
+        "access_token": "VALID_ACCESS_TOKEN",
+        "refresh_token": "VALID_REFRESH_TOKEN"
+    }
+    return auth_state
 
 
 def new_spawner(db, spawner_class=SlurmSpawner, **kwargs):
-    user = db.query(orm.User).first()
     hub = Hub()
-    user = User(user, {"authenticator": DummyOAuthenticator()})
-
+    user = db.query(orm.User).first()
+    user = User(user, {"authenticator": GenericOAuthenticator()})
+    # Monkey patch the `get_auth_state` function to return an
+    # auth state containing accesss tokens without having login
+    user.get_auth_state = get_auth_state
+    user.authenticator.client_id = "client-id"
+    user.authenticator.client_secret = "client-secret"
     _spawner = user._new_spawner(
         "",
         spawner_class=spawner_class,
@@ -77,7 +58,7 @@ def new_spawner(db, spawner_class=SlurmSpawner, **kwargs):
         req_host="cluster1",
         port=testport,
         node_name_template="{}.cluster1.ch",
-        enable_aux_fc_client=False
+        enable_aux_fc_client=False,
     )
     return _spawner
 
@@ -104,9 +85,12 @@ def fc_server(httpserver):
         re.compile("^/compute/jobs.*"), method="DELETE"
     ).respond_with_handler(cancel_handler)
 
+    httpserver.expect_request("/utilities/whoami",
+        method="GET").respond_with_handler(whoami_handler)
+
     httpserver.expect_request(
-        "/utilities/whoami", method="GET"
-    ).respond_with_handler(whoami_handler)
+        "/auth/realms/kcrealm/protocol/openid-connect/token", method="POST"
+    ).respond_with_handler(keycloak_handler)
 
     return httpserver
 
@@ -121,9 +105,20 @@ def test_format_template():
     assert templated == "value_1 and value_2"
 
 
-def test_get_access_token():
-    auth = FirecrestAccessTokenAuth("access_token")
-    assert auth.get_access_token() == "access_token"
+def test_get_access_token(db, fc_server):
+    spawner = new_spawner(db=db)
+    spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
+    auth = AuthorizationCodeFlowAuth(
+        client_id=spawner.user.authenticator.client_id,
+        client_secret=spawner.user.authenticator.client_secret,
+        refresh_token="VALID_REFRESH_TOKEN",
+        token_url=spawner.user.authenticator.token_url
+    )
+    assert auth.get_access_token() == "VALID_ACCESS_TOKEN"
 
 
 @pytest.mark.asyncio
@@ -249,19 +244,15 @@ echo "jupyterhub-singleuser ended gracefully"
 async def test_get_firecrest_client(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     client = await spawner.get_firecrest_client()
     systems = await client.all_systems()
     ref_systems = [
-        {
-            "description": "System ready",
-            "status": "available",
-            "system": "cluster1"
-        },
-        {
-            "description": "System ready",
-            "status": "available",
-            "system": "cluster2"
-        },
+        {"description": "System ready", "status": "available", "system": "cluster1"},
+        {"description": "System ready", "status": "available", "system": "cluster2"},
     ]
     assert systems == ref_systems
 
@@ -270,6 +261,10 @@ async def test_get_firecrest_client(db, fc_server):
 async def test_query_job_status_completed(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     # force setting `host` and `job_id` since they
     # are set only set when calling `spawner.start()`
     spawner.host = "cluster1"
@@ -284,6 +279,10 @@ async def test_query_job_status_completed(db, fc_server):
 async def test_query_job_status_running(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     # force setting `host` and `job_id` since they
     # are set only set when calling `spawner.start()`
     spawner.host = "cluster1"
@@ -298,6 +297,10 @@ async def test_query_job_status_running(db, fc_server):
 async def test_query_job_status_pending(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     # force setting `host` and `job_id` since they
     # are set only set when calling `spawner.start()`
     spawner.host = "cluster1"
@@ -310,9 +313,13 @@ async def test_query_job_status_pending(db, fc_server):
 
 @pytest.mark.asyncio
 async def _test_query_job_status_fail(db, fc_server):
-    # TODO: Test the case where the job failed afte start
+    # TODO: Test the case where the job failed after start
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     # force setting `host` and `job_id` since they
     # are set only set when calling `spawner.start()`
     spawner.host = "cluster1"
@@ -327,6 +334,10 @@ async def _test_query_job_status_fail(db, fc_server):
 async def test_cancel_batch_job(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     # force setting `host` and `job_id` since they
     # are set only set when calling `spawner.start()`
     spawner.host = "cluster1"
@@ -368,6 +379,10 @@ def test_load_state_nostate(db):
 async def test_start_job_fail(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     spawner.set_trait("req_partition", "job_failed")
     with pytest.raises(RuntimeError) as excinfo:
         await spawner.start()
@@ -384,6 +399,10 @@ async def test_start_job_fail(db, fc_server):
 async def test_start_no_jobid(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     spawner.set_trait("req_partition", "no_jobid")
     with pytest.raises(RuntimeError) as excinfo:
         await spawner.start()
@@ -398,13 +417,19 @@ async def test_start_no_jobid(db, fc_server):
 async def test_start(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     ip, port = await spawner.start()
     assert spawner.job_id == "353"
     assert port == testport
     assert ip == "nid02357.cluster1.ch"
     assert spawner.job_status == "RUNNING nid02357"
     env = spawner.get_env()
-    assert env["JUPYTERHUB_SERVICE_URL"] == f"http://nid02357.cluster1.ch:{testport}/"  # noqa 505
+    assert (
+        env["JUPYTERHUB_SERVICE_URL"] == f"http://nid02357.cluster1.ch:{testport}/"
+    )  # noqa 505
 
     # Since the job 353 has status RUNNING, to stop the job,
     # we have to trick the spawner into using a the job 352 that
@@ -418,6 +443,10 @@ async def test_start(db, fc_server):
 async def test_submit_batch_script(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     await spawner.submit_batch_script()
     assert spawner.job_id == "353"
 
@@ -426,6 +455,10 @@ async def test_submit_batch_script(db, fc_server):
 async def test_state_gethost(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     # force setting `host` and `job_id` since they
     # are set only set when calling `spawner.start()`
     spawner.host = "cluster1"
@@ -438,6 +471,10 @@ async def test_state_gethost(db, fc_server):
 async def test_stop_fail(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
     spawner.host = "cluster1"
     spawner.job_id = "353"  # returns 'RUNNING'
     # the spawner retries many poll calls, but

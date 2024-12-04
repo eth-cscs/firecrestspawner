@@ -1,5 +1,5 @@
 Chart Values
 ============
 
-.. include:: ../../chart/values.yaml
-   :literal:
+.. literalinclude:: ../../chart/values.yaml
+   :language: yaml

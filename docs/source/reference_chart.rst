@@ -1,5 +1,5 @@
-Values.yaml
-===========
+Chart Values
+============
 
 .. include:: ../../chart/values.yaml
    :literal:

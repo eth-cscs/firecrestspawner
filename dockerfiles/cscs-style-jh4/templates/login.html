@@ -1,0 +1,83 @@
+{% extends "page.login.html" %}
+
+{% if announcement_login %}
+	{% set announcement = announcement_login %}
+{% endif %}
+
+{% block login_widget %}
+{% endblock %}
+
+{% block main %}
+	{% block login %}
+		<div class="c-login">
+            {% block announcement %}
+				{% if announcement %}
+					<div class="c-login__announcement">
+					  {{ announcement | safe }}
+					</div>
+				{% endif %}
+			{% endblock %}
+            <div class="c-login__container">
+                <div class="c-login__header">
+                    <div class="c-login__header-title">Sign in to access JupyterLab</div>
+                </div>
+                <div class="c-login__body">
+	                <div class="c-login__body-title">With CSCS account</div>
+					<div class="c-login__body-content">
+						{% if custom_html %}
+							{{ custom_html | safe }}
+						{% elif login_service %}
+							<div class="c-login__service">
+								<a role="button" class='c-login__service-btn' href='{{authenticator_login_url}}'>
+									Sign in with {{login_service}}
+								</a>
+							</div>
+						{% else %}
+							<form class="c-login__form c-login__form--login" action="{{login_url}}?next={{next}}" method="post" role="form">
+								<div class="c-login__form-warning hidden">
+									Warning: JupyterHub seems to be served over an unsecured HTTP connection.
+									We strongly recommend enabling HTTPS for JupyterHub.
+								</div>
+								{% if login_error %}
+									<div class="c-login__form-error">
+										{{login_error}}
+									</div>
+								{% endif %}
+								<div class="c-login__form-field">
+			                        <label class="c-login__form-label c-login__form-label--user" for="username"><span class="hidden">Username</span></label>
+			                        <input id="username_input" type="text" name="username" class="c-login__form-input" placeholder="Username" value="{{username}}" autofocus autocomplete="off" autocapitalize="off" autocorrect="off"/>
+			                    </div>
+			                    <div class="c-login__form-field">
+			                        <label class="c-login__form-label c-login__form-label--lock" for="password"><span class="hidden">Password</span></label>
+			                        <input id="password" type="password" name="password" class="c-login__form-input" placeholder="Password" autocomplete="off" />
+			                    </div>
+			                    <div class="c-login__form-field c-login__form-field--submit">
+			                        <input type="submit" name="login" class="c-login__form-submit" value="Sign in">
+			                    </div>
+							</form>
+						{% endif %}
+					</div>
+                </div>
+                <div class="c-login__footer"></div>
+            </div>
+            <div class="c-login__extra">
+                <ul>
+                    <li><a href="https://user.cscs.ch" target="_blank">Help</a></li>
+                    <li><a href="https://www.cscs.ch/information/terms-privacy-policy/" target="_blank">Privacy</a></li>
+                    <li><a href="https://www.cscs.ch/services/user-regulations/" target="_blank">Terms</a></li>
+                </ul>
+            </div>
+        </div>
+	{% endblock login %}
+{% endblock %}
+
+{% block script %}
+	{{ super() }}
+	<script>
+		if (window.location.protocol === "http:") {
+		  // unhide http warning
+		  var warning = document.getElementById('insecure-login-warning');
+		  warning.className = warning.className.replace(/\bhidden\b/, '');
+		}
+	</script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "page.html" %}
+{% if announcement_spawn is string %}
+  {% set announcement = announcement_spawn %}
+{% endif %}
+
+{% block main %}
+
+<div class="row">
+  <div class="panel panel-default">
+  <div class="panel-body">
+    <div class="col-sm-12">
+      {% if for_user and user.name != for_user.name -%}
+        <p>Spawning server for {{ for_user.name }}</p>
+      {% endif -%}
+      {% if error_message -%}
+        <!-- <p class="spawn-error-msg text-danger">
+          Error: {{error_message}}
+        </p> -->
+        <div>
+          {% if error_message %}
+              <p>
+                  The credentials for spawning a new job have expired. <br>
+                  Please <a href="/hub/logout">log out</a> and log back in.
+              </p>
+          {% endif %}
+        </div>
+      {% endif %}
+      <form enctype="multipart/form-data" id="spawn_form" action="{{ url | safe }}" method="post" role="form">
+        <div class="row">
+        {{spawner_options_form | safe}}
+      </div>
+        <br>
+        <div class="feedback-container">
+          <input type="submit" value="Launch JupyterLab" class="btn btn-jupyter form-control btn-cscs-darkred">
+          <div class="feedback-widget hidden">
+            <i class="fa fa-spinner"></i>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+// setup onSubmit feedback
+$('form').submit((e) => {
+  var form = $(e.target);
+  form.find('.feedback-container>input').attr('disabled', true);
+  form.find('.feedback-container>*').toggleClass('hidden');
+  form.find('.feedback-widget>*').toggleClass('fa-pulse');
+});
+</script>
+{% endblock %}

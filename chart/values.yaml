@@ -43,6 +43,10 @@ f7t4jhub:
     # Set JupyterHub's log level to logging.DEBUG
     debug: false
 
+  reloader:
+    # Enable or disable reloader integration
+    enabled: true
+
   vault:
     # URL for the Vault service (replace with your own Vault URL)
     url: 'https://vault.example.cscs.ch'

@@ -2,20 +2,25 @@ reloader:
   # This is a section configures the reloader settings.
   # In general this is kept unchanged from one deployment to another.
   reloader:
-    # Set to true to enable the reloader for automatically restarting pods on ConfigMap/Secret changes.
+    # Set to true to enable the reloader for automatically restarting pods on
+    # ConfigMap/Secret changes.
     enabled: true
 
-    # If true, the reloader will watch ConfigMaps and Secrets in all namespaces, not just its own.
+    # If true, the reloader will watch ConfigMaps and Secrets in all namespaces,
+    # not just its own.
     watchGlobally: false
 
-    # Set to true if using Argo Rollouts for managing deployments, which may require specific handling.
+    # Set to true if using Argo Rollouts for managing deployments, which may
+    # require specific handling.
     isArgoRollouts: true
 
     serviceAccount:
-      # Set to true to create a new service account for the reloader. If false, it will use an existing one.
+      # Set to true to create a new service account for the reloader. If false,
+      # it will use an existing one.
       create: false
 
-    # Ensures the reloader container's filesystem is mounted as read-only to enhance security.
+    # Ensures the reloader container's filesystem is mounted as read-only to
+    # enhance security.
     securityContext:
       readOnlyRootFilesystem: true
       allowPrivilegeEscalation: false
@@ -29,8 +34,8 @@ f7t4jhub:
     # Replace with the URL of the FirecREST service targeting your cluster
     firecrestUrl: "https://firecrest.cscs.ch"
 
-    # URL to obtain an auth token from your identity provider (replace with your own token URL)
-    authTokenUrl: "https://auth.cscs.ch/auth/realms/<your-realm>/protocol/openid-connect/token"
+    # URL to obtain an auth token from your identity provider
+    authTokenUrl: "https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/token"
 
   proxy:
     # Image for the configurable HTTP proxy
@@ -48,13 +53,13 @@ f7t4jhub:
     enabled: true
 
   vault:
-    # URL for the Vault service (replace with your own Vault URL)
+    # URL for the Vault service
     url: 'https://vault.example.cscs.ch'
 
-    # Secret engine used in Vault (replace with your own secret engine)
+    # Secret engine used in Vault
     secretEngine: 'jupyterhub'
 
-    # Role ID for accessing Vault secrets (replace with your own role ID)
+    # Role ID for accessing Vault secrets
     roleId: '<role-id>'
 
     # Credentials for both the Keycloak Authorization Code Flow client, which is
@@ -65,7 +70,7 @@ f7t4jhub:
       # Enable or disable Vault integration
       enabled: true
 
-      # Secret path in Vault (replace with your own secret path)
+      # Secret path in Vault
       secretPath: 'secret/path/keycloack'
 
     # Container registry credentials
@@ -74,7 +79,7 @@ f7t4jhub:
       # Enable or disable Vault integration
       enabled: false
 
-      # Secret path in Vault (replace with your own secret path)
+      # Secret path in Vault
       secretPath: 'secret/path/containers'
 
     # Proxy-Hub authentication token
@@ -84,7 +89,7 @@ f7t4jhub:
       # Enable or disable Vault integration
       enabled: true
 
-      # Secret path in Vault (replace with your own secret path)
+      # Secret path in Vault
       secretPath: 'secret/path/proxy'
 
   # Service account for polling jobs
@@ -94,8 +99,8 @@ f7t4jhub:
     # are accessed with the same secrets used for keycloak 
     enabled: true
 
-    # URL to obtain an auth token from your identity provider (replace with the SA's token URL)
-    authTokenUrl: 'https://auth.cscs.ch/auth/realms/<your-realm>/protocol/openid-connect/token'
+    # URL to obtain an auth token from your identity provider
+    authTokenUrl: 'https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/token'
 
   metricbeat:
     # Enable or disable annotations for metric beat monitoring
@@ -121,19 +126,19 @@ f7t4jhub:
     hubDefaultUrl: '/hub/home'
 
     auth:
-      # OAuth callback URL (replace with your own callback URL)
+      # OAuth callback URL
       oauthCallbackUrl: "https://jupyterhub-<cluster-name>.cscs.ch/hub/oauth_callback"
 
-      # Authorization URL for your identity provider (replace with your own authorize URL)
-      authorizeUrl: "https://auth.cscs.ch/auth/realms/<your-realm>/protocol/openid-connect/auth"
+      # Authorization URL for your identity provider
+      authorizeUrl: "https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/auth"
 
-      # Token URL for your identity provider (replace with your own token URL)
-      tokenUrl: "https://auth.cscs.ch/auth/realms/<your-realm>/protocol/openid-connect/token"
+      # Token URL for your identity provider
+      tokenUrl: "https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/token"
 
-      # User data URL for your identity provider (replace with your own user info URL)
-      userDataUrl: "https://auth.cscs.ch/auth/realms/<your-realm>/protocol/openid-connect/userinfo"
+      # User data URL for your identity provider
+      userDataUrl: "https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/userinfo"
 
-      # Login service URL (replace with your own login service URL)
+      # Login service URL
       loginService: "https://auth.cscs.ch"
 
       # Key for the username field in the user data response
@@ -152,7 +157,7 @@ f7t4jhub:
       # Port for the single-user server. Set to 0 to use random port
       port: 57001
 
-      # Node name template for the cluster (replace with your own node name template)
+      # Node name template for the cluster
       nodeNameTemplate: '{}.example.cscs.ch'
 
       # Name of the job that runs the notebook server
@@ -173,10 +178,11 @@ f7t4jhub:
       srun: ''
 
       # Command to start the JupyterHub single-user server (customize as needed)
-      # In general the command must be `firecrestspawner-singleuser jupyterhub-singleuser`
-      # but sometimes customization is need. For instance, to something before the
-      # command, like when using a uenv:
-      # 'bash -c ". /user-environment/env/default/activate.sh && firecrestspawner-singleuser jupyterhub-singleuser"'
+      # The basic command is `firecrestspawner-singleuser jupyterhub-singleuser`
+      # but customization is often needed. For instance, adding something before
+      # the command, like when using a uenv:
+      # 'bash -c ". /user-environment/env/default/activate.sh && \
+      #           firecrestspawner-singleuser jupyterhub-singleuser"'
       cmd: 'firecrestspawner-singleuser jupyterhub-singleuser'
 
       # Pre-launch commands (customize as needed)

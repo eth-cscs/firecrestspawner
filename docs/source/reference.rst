@@ -7,3 +7,4 @@ Reference
 
    reference_spawners
    reference_singleuser
+   reference_chart

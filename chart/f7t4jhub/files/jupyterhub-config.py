@@ -86,7 +86,7 @@ hostname = socket.gethostname()
 c.JupyterHub.hub_connect_ip = socket.gethostbyname(hostname)
 
 c.JupyterHub.spawner_class = 'firecrestspawner.spawner.SlurmSpawner'
-c.Spawner.enable_aux_fc_client = {{ .Values.serviceAccount.enabled | toJson | replace "true" "True" | replace "false" "False" }}
+c.Spawner.polling_with_service_account = {{ .Values.serviceAccount.enabled | toJson | replace "true" "True" | replace "false" "False" }}
 c.Spawner.req_host = '{{ .Values.config.spawner.host }}'
 c.Spawner.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'
 c.Spawner.req_partition = '{{ .Values.config.spawner.partition }}'

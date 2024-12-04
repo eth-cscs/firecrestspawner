@@ -11,6 +11,7 @@ import firecrest
 import hostlist
 import httpx
 import inspect
+import json
 import jupyterhub
 import os
 import pwd
@@ -23,6 +24,7 @@ from enum import Enum
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
 from time import sleep
+from tornado.web import HTTPError
 from traitlets import Any, Bool, Integer, Unicode, Float, default
 from typing import AsyncGenerator, Optional
 
@@ -105,7 +107,20 @@ class AuthorizationCodeFlowAuth:
         response = requests.post(self.token_url, data=params, headers=headers)
 
         if response.status_code != 200:
-            return None
+            # if the refresh token is expired, Keycloak returns
+            #
+            # HTTP 400: Bad Request
+            #           ({
+            #               "error": "invalid_grant",
+            #               "error_description": "Session not active"
+            #            })
+            #
+            err = HTTPError(response.status_code, json.dumps(response.json()))
+            err.html_message = (
+                "The credentials for spawning a new job have expired. <br>"
+                "Please <a href='/hub/logout'>log out</a> and log back in."
+            )
+            raise err
 
         json_response = response.json()
         self.refresh_token = json_response["refresh_token"]
@@ -227,10 +242,9 @@ class FirecRESTSpawnerBase(Spawner):
         "needs specification.",
     ).tag(config=True)
 
-    enable_aux_fc_client = Bool(
+    polling_with_service_account = Bool(
         True,
-        help="If ``True``, use an auxiliary client to poll when client "
-        "credentials are expired.",
+        help="If ``True``, use a service account client for job polling.",
     ).tag(config=True)
 
     # Raw output of job submission command unless overridden
@@ -259,12 +273,22 @@ class FirecRESTSpawnerBase(Spawner):
         Flow method"""
         auth_state = await self.user.get_auth_state()
 
-        auth = AuthorizationCodeFlowAuth(
-            client_id=self.user.authenticator.client_id,
-            client_secret=self.user.authenticator.client_secret,
-            refresh_token=auth_state["refresh_token"],
-            token_url=self.user.authenticator.token_url,
-        )
+        try:
+            auth = AuthorizationCodeFlowAuth(
+                client_id=self.user.authenticator.client_id,
+                client_secret=self.user.authenticator.client_secret,
+                refresh_token=auth_state["refresh_token"],
+                token_url=self.user.authenticator.token_url,
+            )
+        except TypeError as e:
+            # If `auth_state` is None, then `auth_state["refresh_token"]` can
+            # throw a `TypeError`
+            # That can happen in some case where jupyterhub starts from scratch
+            # after the user has input the login and password
+            err =  HTTPError(401, f"{e}")
+            err.html_message = ("Please <a href='/hub/logout'>log out</a> and "
+                                "log back in to refresh the credentials.")
+            raise err
 
         client = firecrest.AsyncFirecrest(
             firecrest_url=self.firecrest_url, authorization=auth
@@ -315,7 +339,7 @@ class FirecRESTSpawnerBase(Spawner):
     async def firecrest_poll(self):
         """Helper function to poll jobs."""
 
-        if self.enable_aux_fc_client:
+        if self.polling_with_service_account:
             client = await self.get_firecrest_client_service_account()
         else:
             client = await self.get_firecrest_client()
@@ -366,7 +390,7 @@ class FirecRESTSpawnerBase(Spawner):
 
         script = await self._get_batch_script(**subvars)
         self.log.info("Spawner submitting job using firecREST")
-        self.log.info("Spawner submitted script:\n" + script)
+        self.log.info(f"Spawner submitted script:\n{script}")
 
         try:
             client = await self.get_firecrest_client()
@@ -375,7 +399,7 @@ class FirecRESTSpawnerBase(Spawner):
                 self.host, script_str=script, env_vars=job_env
             )
             self.log.debug(f"[client.submit] {self.job}")
-            self.job_id = str(self.job["jobid"])
+            self.job_id = f"{self.job['jobid']}"
             self.log.info(f"Job {self.job_id} submitted")
         # In case the connection to the firecrest server timesout
         # catch httpx.ConnectTimeout since httpx.ConnectTimeout
@@ -435,7 +459,6 @@ class FirecRESTSpawnerBase(Spawner):
 
     def load_state(self, state) -> None:
         """Load ``job_id`` from state"""
-
         super(FirecRESTSpawnerBase, self).load_state(state)
         self.job_id = state.get("job_id", "")
         self.job_status = state.get("job_status", "")
@@ -489,13 +512,17 @@ class FirecRESTSpawnerBase(Spawner):
             if class_name == "HomeHandler":
                 auth_state = await self.user.get_auth_state()
 
-                auth = AuthorizationCodeFlowAuth(
-                    client_id=self.user.authenticator.client_id,
-                    client_secret=self.user.authenticator.client_secret,
-                    refresh_token=auth_state["refresh_token"],
-                    token_url=self.user.authenticator.token_url,
-                )
-                self.access_token_is_valid = bool(auth.get_access_token())
+                try:
+                    auth = AuthorizationCodeFlowAuth(
+                        client_id=self.user.authenticator.client_id,
+                        client_secret=self.user.authenticator.client_secret,
+                        refresh_token=auth_state["refresh_token"],
+                        token_url=self.user.authenticator.token_url,
+                    )
+                    self.access_token_is_valid = bool(auth.get_access_token())
+                except HTTPError:
+                    self.log.info("Credentials expired.")
+                    self.access_token_is_valid = False
 
         status = await self.query_job_status()
         if status in (JobStatus.PENDING, JobStatus.RUNNING, JobStatus.UNKNOWN):

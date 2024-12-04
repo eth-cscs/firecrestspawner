@@ -1,7 +1,9 @@
 reloader:
+  # This is a section configures the reloader settings.
+  # In general this is kept unchanged from one deployment to another.
   reloader:
     # Set to true to enable the reloader for automatically restarting pods on ConfigMap/Secret changes.
-    enabled: false
+    enabled: true
 
     # If true, the reloader will watch ConfigMaps and Secrets in all namespaces, not just its own.
     watchGlobally: false
@@ -16,51 +18,54 @@ reloader:
     # Ensures the reloader container's filesystem is mounted as read-only to enhance security.
     securityContext:
       readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
       seccompProfile:
         type: RuntimeDefault
 
 f7t4jhub:
+  # This section configures the deployment of JupyterHub and the proxy
   setup:
-    # URL for the Firecrest service (replace with your own Firecrest URL)
-    firecrestUrl: "https://firecrest.example.com"
+    # URL for the Firecrest service
+    # Replace with the URL of the FirecREST service targeting your cluster
+    firecrestUrl: "https://firecrest.cscs.ch"
 
     # URL to obtain an auth token from your identity provider (replace with your own token URL)
-    authTokenUrl: "https://auth.example.com/auth/realms/yourrealm/protocol/openid-connect/token"
+    authTokenUrl: "https://auth.cscs.ch/auth/realms/<your-realm>/protocol/openid-connect/token"
 
   proxy:
     # Image for the configurable HTTP proxy
-    image: 'quay.io/jupyterhub/configurable-http-proxy:4.6.1'
+    image: 'ghcr.io/eth-cscs/chp:4.6.2'
 
   hub:
-    # Image for the JupyterHub application (replace with your own JupyterHub image)
-    image: 'ghcr.io/eth-cscs/f7t4jhub:4.1.5'
+    # Image for the JupyterHub application
+    image: 'ghcr.io/eth-cscs/f7t4jhub:4.1.6'
 
-    # Set log level to logging.DEBUG
+    # Set JupyterHub's log level to logging.DEBUG
     debug: false
-
-  reloader:
-    # Enable or disable reloader integration
-    enabled: false
 
   vault:
     # URL for the Vault service (replace with your own Vault URL)
-    url: 'https://vault.example.com'
+    url: 'https://vault.example.cscs.ch'
 
     # Secret engine used in Vault (replace with your own secret engine)
-    secretEngine: 'secret-engine'
+    secretEngine: 'jupyterhub'
 
     # Role ID for accessing Vault secrets (replace with your own role ID)
-    roleId: 'role-id'
+    roleId: '<role-id>'
 
-    # keycloack credentials
+    # Credentials for both the Keycloak Authorization Code Flow client, which is
+    # used to manage the access to JupyterHub as well as the authentication with
+    # FirecREST and the Client Credentials client, which can be used as service
+    # account for job status polling
     keycloak:
       # Enable or disable Vault integration
-      enabled: false
+      enabled: true
 
       # Secret path in Vault (replace with your own secret path)
       secretPath: 'secret/path/keycloack'
 
-    # container registry credentials
+    # Container registry credentials
+    # This can be used for docker container registries requiring authenticatoin
     containerRegistry:
       # Enable or disable Vault integration
       enabled: false
@@ -68,28 +73,32 @@ f7t4jhub:
       # Secret path in Vault (replace with your own secret path)
       secretPath: 'secret/path/containers'
 
-    # proxy authentication token
+    # Proxy-Hub authentication token
+    # This is used in JupyterHub to secure communication between the hub and
+    # the proxy
     configProxyAuthToken:
       # Enable or disable Vault integration
-      enabled: false
+      enabled: true
 
       # Secret path in Vault (replace with your own secret path)
       secretPath: 'secret/path/proxy'
 
-  # service account for polling jobs
+  # Service account for polling jobs
   serviceAccount:
     # Enable or disable service account for polling jobs
+    # If enabled, the client's id and secret for the service accounts
+    # are accessed with the same secrets used for keycloak 
     enabled: true
 
     # URL to obtain an auth token from your identity provider (replace with the SA's token URL)
-    authTokenUrl: 'https://auth-sa.example.com/auth/realms/yourrealm/protocol/openid-connect/token'
+    authTokenUrl: 'https://auth.cscs.ch/auth/realms/<your-realm>/protocol/openid-connect/token'
 
   metricbeat:
     # Enable or disable annotations for metric beat monitoring
     enabled: false
 
     # Allow or deny access to /hub/metrics
-    deny_metrics_endpoint: false
+    deny_metrics_endpoint: true
 
   network:
     # Ports configuration for the application
@@ -98,30 +107,30 @@ f7t4jhub:
     externalPort: 8081
 
   config:
-    # Common name for the JupyterHub instance (replace with your own domain)
-    commonName: 'jupyterhub.example.com'
+    # URL for the JupyterHub instance (replace with your own domain)
+    commonName: 'jupyterhub-<cluster-name>.cscs.ch'
 
     # Admin users for the JupyterHub instance (replace with your own admin users)
-    adminUsers: "{'adminuser'}"
+    adminUsers: "{'<admin-user>'}"
 
     # Default URL for the hub
     hubDefaultUrl: '/hub/home'
 
     auth:
       # OAuth callback URL (replace with your own callback URL)
-      oauthCallbackUrl: "https://jupyterhub.example.com/hub/oauth_callback"
+      oauthCallbackUrl: "https://jupyterhub-<cluster-name>.cscs.ch/hub/oauth_callback"
 
       # Authorization URL for your identity provider (replace with your own authorize URL)
-      authorizeUrl: "https://auth.example.com/auth/realms/yourrealm/protocol/openid-connect/auth"
+      authorizeUrl: "https://auth.cscs.ch/auth/realms/<your-realm>/protocol/openid-connect/auth"
 
       # Token URL for your identity provider (replace with your own token URL)
-      tokenUrl: "https://auth.example.com/auth/realms/yourrealm/protocol/openid-connect/token"
+      tokenUrl: "https://auth.cscs.ch/auth/realms/<your-realm>/protocol/openid-connect/token"
 
       # User data URL for your identity provider (replace with your own user info URL)
-      userDataUrl: "https://auth.example.com/auth/realms/yourrealm/protocol/openid-connect/userinfo"
+      userDataUrl: "https://auth.cscs.ch/auth/realms/<your-realm>/protocol/openid-connect/userinfo"
 
       # Login service URL (replace with your own login service URL)
-      loginService: "https://auth.example.com"
+      loginService: "https://auth.cscs.ch"
 
       # Key for the username field in the user data response
       userNameKey: "preferred_username"
@@ -130,45 +139,95 @@ f7t4jhub:
       userDataParams: "{'state': 'state'}"
 
       # Scopes for the authentication request (customize as needed)
-      scope: "['openid', 'profile', 'customscope']"
+      scope: "['openid', 'profile', 'firecrest']"
 
     spawner:
-      # Host for the spawner (replace with your own host)
-      host: 'dom'
+      # Name of the custer where the notebooks are going to be launched
+      host: '<cluster-name>'
 
       # Port for the single-user server. Set to 0 to use random port
       port: 57001
 
-      # Node name template (replace with your own node name template)
-      nodeNameTemplate: '{}.example.com'
+      # Node name template for the cluster (replace with your own node name template)
+      nodeNameTemplate: '{}.example.cscs.ch'
 
-      # Job name for the spawner (customize as needed)
+      # Name of the job that runs the notebook server
       jobName: 'spawner-jupyterhub'
 
-      # Partition for the job scheduler (customize as needed)
-      partition: 'slurm_partition'
+      # Name of the partition of the job scheduler (e.g. normal, debug, long)
+      partition: '<slurm-partition>'
 
-      # Constraint for the job scheduler (customize as needed)
-      constraint: 'slurm_constraint'
+      # Constraint for the job scheduler (e.g. gpu, mc, nvgpu)
+      constraint: '<slurm-constraint>'
 
-      # Command to run srun (customize as needed)
+      # Command to run srun
+      # Can be left as empty string, meaning the the notebook server will run
+      # on the master node without using srun
+      # 
+      # Can be used to pass command line options to slurm such as
+      # `srun --interactive`
       srun: ''
 
       # Command to start the JupyterHub single-user server (customize as needed)
+      # In general the command must be `firecrestspawner-singleuser jupyterhub-singleuser`
+      # but sometimes customization is need. For instance, to something before the
+      # command, like when using a uenv:
+      # 'bash -c ". /user-environment/env/default/activate.sh && firecrestspawner-singleuser jupyterhub-singleuser"'
       cmd: 'firecrestspawner-singleuser jupyterhub-singleuser'
 
       # Pre-launch commands (customize as needed)
+      # This is to add logic before the `srun` line
+      # It can be used to setup environment variables for instance
       prelaunchCmds: ''
 
       # Virtual environment setup (customize as needed)
       vclusterEnv: '. /path/to/venv/bin/activate'
 
       # Custom state get host function (customize as needed)
+      # This is used if it's not possible to set a `nodeNameTemplate`
+      # One can pass here the name of a function, defined in the configuration,
+      # to fetch the DNS name or IP of the compute node where the 
+      # notebooks will run
       customStateGetHost: None
 
-      # Literal python code to add at the end of jupyterhub's configuration
+      # JupyterHub options form
+      # It allows users to customize their environment
+      # (e.g., selecting resources, environment type, or packages)
+      # before launching their Jupyter notebook server
+      # The settings here are reflected on the batch script
+      # that submits the JupyterLab job
       optionsForm: |
+        <hr>
+        <div class="col-md-4">
+          <div class="form-group">
+          <label for="reservation"> Reservation (optional) </label>
+          <input name="reservation" class="form-control">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="nnodes"> Nodes </label>
+            <select name="nnodes" id="nnodes" class="form-control">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="runtime"> Job Duration </label>
+            <select name="runtime" id="runtime" class="form-control">
+              <option value="1:00:00">1 hour</option>
+              <option value="2:00:00">2 hours</option>
+              <option value="4:00:00">4 hours</option>
+              <option value="8:00:00">8 hours</option>
+              <option value="12:00:00">12 hours</option>
+            </select>
+          </div>
+        </div>
 
     # Literal python code to add at the end of jupyterhub's configuration
     extraConfig: |
-      # ...
+      c.JupyterHub.authenticate_prometheus = False

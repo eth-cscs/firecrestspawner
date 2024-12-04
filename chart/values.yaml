@@ -1,9 +1,9 @@
 reloader:
-  # This is a section configures the reloader settings.
+  # This section configures the reloader settings.
   # In general this is kept unchanged from one deployment to another.
   reloader:
     # Set to true to enable the reloader for automatically restarting pods on
-    # ConfigMap/Secret changes.
+    # changes in the JupyterHub configuration or in Vault.
     enabled: true
 
     # If true, the reloader will watch ConfigMaps and Secrets in all namespaces,
@@ -32,10 +32,10 @@ f7t4jhub:
   setup:
     # URL for the Firecrest service
     # Replace with the URL of the FirecREST service targeting your cluster
-    firecrestUrl: "https://firecrest.cscs.ch"
+    firecrestUrl: 'https://firecrest.cscs.ch'
 
     # URL to obtain an auth token from your identity provider
-    authTokenUrl: "https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/token"
+    authTokenUrl: 'https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/token'
 
   proxy:
     # Image for the configurable HTTP proxy
@@ -45,7 +45,8 @@ f7t4jhub:
     # Image for the JupyterHub application
     image: 'ghcr.io/eth-cscs/f7t4jhub:4.1.6'
 
-    # Set JupyterHub's log level to logging.DEBUG
+    # If true, this set JupyterHub's log level to logging.DEBUG.
+    # Otherwise, the default log level is used
     debug: false
 
   reloader:
@@ -62,10 +63,10 @@ f7t4jhub:
     # Role ID for accessing Vault secrets
     roleId: '<role-id>'
 
-    # Credentials for both the Keycloak Authorization Code Flow client, which is
-    # used to manage the access to JupyterHub as well as the authentication with
-    # FirecREST and the Client Credentials client, which can be used as service
-    # account for job status polling
+    # Credentials for both the Keycloak Authorization Code Flow client (used
+    # to manage the access to JupyterHub as well as the authentication with
+    # FirecREST) and the Client Credentials client (optionally used as service
+    # account for job status polling)
     keycloak:
       # Enable or disable Vault integration
       enabled: true
@@ -104,10 +105,13 @@ f7t4jhub:
 
   metricbeat:
     # Enable or disable annotations for metric beat monitoring
-    enabled: false
+    enabled: true
 
     # Allow or deny access to /hub/metrics
-    deny_metrics_endpoint: true
+    # Access to the metrics endpoint can be denied to allow
+    # monitoring tools to read the data without setting up
+    # authentication
+    deny_metrics_endpoint: false
 
   network:
     # Ports configuration for the application
@@ -120,41 +124,41 @@ f7t4jhub:
     commonName: 'jupyterhub-<cluster-name>.cscs.ch'
 
     # Admin users for the JupyterHub instance (replace with your own admin users)
-    adminUsers: "{'<admin-user>'}"
+    adminUsers: '{"user1", "user2"}'
 
     # Default URL for the hub
     hubDefaultUrl: '/hub/home'
 
     auth:
       # OAuth callback URL
-      oauthCallbackUrl: "https://jupyterhub-<cluster-name>.cscs.ch/hub/oauth_callback"
+      oauthCallbackUrl: 'https://jupyterhub-<cluster-name>.cscs.ch/hub/oauth_callback'
 
       # Authorization URL for your identity provider
-      authorizeUrl: "https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/auth"
+      authorizeUrl: 'https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/auth'
 
       # Token URL for your identity provider
-      tokenUrl: "https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/token"
+      tokenUrl: 'https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/token'
 
       # User data URL for your identity provider
-      userDataUrl: "https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/userinfo"
+      userDataUrl: 'https://auth.cscs.ch/auth/realms/<realm>/protocol/openid-connect/userinfo'
 
       # Login service URL
-      loginService: "https://auth.cscs.ch"
+      loginService: 'https://auth.cscs.ch'
 
       # Key for the username field in the user data response
-      userNameKey: "preferred_username"
+      userNameKey: 'preferred_username'
 
       # Additional parameters for user data request (customize as needed)
-      userDataParams: "{'state': 'state'}"
+      userDataParams: '{"state": "state"}'
 
       # Scopes for the authentication request (customize as needed)
-      scope: "['openid', 'profile', 'firecrest']"
+      scope: '["openid", "profile", "firecrest"]'
 
     spawner:
-      # Name of the custer where the notebooks are going to be launched
+      # Name of the cluster where the notebooks are going to be launched
       host: '<cluster-name>'
 
-      # Port for the single-user server. Set to 0 to use random port
+      # Port for the single-user server. Set to 0 to use a random port
       port: 57001
 
       # Node name template for the cluster
@@ -169,7 +173,7 @@ f7t4jhub:
       # Constraint for the job scheduler (e.g. gpu, mc, nvgpu)
       constraint: '<slurm-constraint>'
 
-      # Command to run srun
+      # srun command customization
       # Can be left as empty string, meaning the the notebook server will run
       # on the master node without using srun
       # 
@@ -185,12 +189,12 @@ f7t4jhub:
       #           firecrestspawner-singleuser jupyterhub-singleuser"'
       cmd: 'firecrestspawner-singleuser jupyterhub-singleuser'
 
-      # Pre-launch commands (customize as needed)
+      # Pre-launch commands
       # This is to add logic before the `srun` line
       # It can be used to setup environment variables for instance
       prelaunchCmds: ''
 
-      # Virtual environment setup (customize as needed)
+      # Virtual environment setup
       vclusterEnv: '. /path/to/venv/bin/activate'
 
       # Custom state get host function (customize as needed)

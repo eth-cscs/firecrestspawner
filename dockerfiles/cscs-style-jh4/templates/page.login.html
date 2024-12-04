@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="jpyhub-html jpyhub-html__login">
+<head>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block meta %}
+    {% endblock %}
+    <!-- Title -->
+    <title>{% block title %}JupyterHub{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" href="{{static_url("favicon.ico")}}" />
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&amp;subset=all" rel="stylesheet" type="text/css" />
+    <!-- CSS -->
+    {% block stylesheet %}
+    <link rel="stylesheet" href="{{static_url("css/cscs/vendor/font-awesome.min.css")}}">
+    <link rel="stylesheet" href="{{static_url("css/cscs/login.css")}}" type="text/css"/>
+    {% endblock %}
+    <!-- JS -->
+    <script src="{{static_url("components/requirejs/require.js") }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{static_url("components/jquery/dist/jquery.min.js") }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{static_url("components/bootstrap/dist/js/bootstrap.min.js") }}" type="text/javascript" charset="utf-8"></script>
+    <script>
+      require.config({
+          {% if version_hash %}
+          urlArgs: "v={{version_hash}}",
+          {% endif %}
+          baseUrl: '{{static_url("js", include_version=False)}}',
+          paths: {
+            components: '../components',
+            jquery: '../components/jquery/dist/jquery.min',
+            bootstrap: '../components/bootstrap/dist/js/bootstrap.min',
+            moment: "../components/moment/moment",
+          },
+          shim: {
+            bootstrap: {
+              deps: ["jquery"],
+              exports: "bootstrap"
+            },
+          }
+      });
+    </script>
+    <script type="text/javascript">
+      window.jhdata = {
+        base_url: "{{base_url}}",
+        prefix: "{{prefix}}",
+        {% if user %}
+        user: "{{user.name}}",
+        {% endif %}
+        {% if admin_access %}
+        admin_access: true,
+        {% else %}
+        admin_access: false,
+        {% endif %}
+        {% if not no_spawner_check and user and user.spawner.options_form %}
+        options_form: true,
+        {% else %}
+        options_form: false,
+        {% endif %}
+      }
+    </script>
+</head>
+<body class="jpyhub-body jpyhub-body__login">
+	<noscript>
+	  <div id='noscript'>
+	    JupyterHub requires JavaScript.<br>
+	    Please enable it to proceed.
+	  </div>
+	</noscript>
+    <div class="l-login">
+        <header class="l-login__header">
+            <div class="c-heading">
+                <div class="c-heading__logos">
+                    <div class="c-heading__logo c-heading__logo--cscs">
+                        <a href="https://www.cscs.ch" target="_blank">
+                            {% include "partials/logo.cscs.html" %}
+                        </a>
+                    </div>
+                    <div class="c-heading__logo c-heading__logo--eth">
+                        <a href="https://www.ethz.ch" target="_blank">
+                            {% include "partials/logo.ethz.html" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <main class="l-login__main">
+            {% block main %}
+			{% endblock %}
+        </main>
+        <footer class="l-login__footer">
+            <div class="c-address">
+                <p><strong>Swiss National Supercomputing Centre</strong><br>Via Trevano 131, 6900 Lugano, Switzerland</p>
+            </div>
+            <div class="c-contact">
+                <div class="c-contact__phone">
+                    Phone&nbsp;-&nbsp;<a href="tel:+41916100811">+41 91 610 08 11</a>
+                </div>
+                <div class="c-contact__mail">
+	                Email&nbsp;-&nbsp;<a href="mailto:&amp;#104;&amp;#101;&amp;#108;&amp;#112;&amp;#064;&amp;#099;&amp;#115;&amp;#099;&amp;#115;&amp;#046;&amp;#099;&amp;#104;">help@cscs.ch</a>
+                </div>
+            </div>
+            <div class="c-social">
+                <ul class="c-social__set">
+                    <li><a href="https://twitter.com/cscsch" target="_blank" aria-label="Twitter"><i class="fa fa-twitter fa-fw" title="Twitter"></i></a></li>
+                    <li><a href="https://www.youtube.com/user/cscsch" target="_blank" aria-label="Youtube"><i class="fa fa-youtube fa-fw" title="Youtube"></i></a></li>
+                    <li><a href="https://www.facebook.com/CSCS-1486988184942005/" target="_blank" aria-label="Facebook"><i class="fa fa-facebook-square fa-fw" title="Facebook"></i></a></li>
+                    <li><a href="https://www.linkedin.com/company/cscs" target="_blank" aria-label="LinkedIn"><i class="fa fa-linkedin fa-fw" title="LinkedIn"></i></a></li>
+                </ul>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

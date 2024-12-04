@@ -25,6 +25,11 @@ RUN . /opt/jhub-env/bin/activate && \
     cd .. && \
     rm -r firecrestspawner
 
+RUN rm -r /opt/jhub-env/share/jupyterhub/templates
+COPY dockerfiles/cscs-style-jh4/templates       /opt/jhub-env/share/jupyterhub/templates
+COPY dockerfiles/cscs-style-jh4/static/css/cscs /opt/jhub-env/share/jupyterhub/static/css/cscs
+
+
 EXPOSE 8000
 
 RUN useradd -ms /bin/bash juhu

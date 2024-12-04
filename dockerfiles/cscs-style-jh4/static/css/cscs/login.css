@@ -1,0 +1,551 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block;
+}
+body {
+  line-height: 1;
+}
+ol,
+ul {
+  list-style: none;
+}
+blockquote,
+q {
+  quotes: none;
+}
+blockquote:before,
+blockquote:after {
+  content: '';
+  content: none;
+}
+q:before,
+q:after {
+  content: '';
+  content: none;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+.jpyhub-html {
+  font-family: 'Open Sans', sans-serif;
+  line-height: 1.5;
+}
+.jpyhub-html .hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+.jpyhub-html .c-heading .c-heading__logos {
+  display: flex;
+  justify-content: space-between;
+}
+.jpyhub-html .c-heading .c-heading__logos .c-svg.c-svg--cscs.c-svg--large {
+  width: 264px;
+}
+.jpyhub-html .c-heading .c-heading__logos .c-svg.c-svg--cscs.c-svg--small {
+  width: 120px;
+  display: none;
+}
+.jpyhub-html .c-heading .c-heading__logos .c-svg.c-svg--eth {
+  width: 120px;
+}
+.jpyhub-html .c-address {
+  flex: 1;
+  font-size: 0.8rem;
+}
+.jpyhub-html .c-address strong {
+  font-weight: 600;
+}
+.jpyhub-html .c-contact {
+  flex: 1;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.8rem;
+}
+.jpyhub-html .c-social {
+  flex: 1;
+  text-align: right;
+  font-size: 0.8rem;
+}
+.jpyhub-html .c-social .c-social__set {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  height: auto;
+  width: auto;
+  list-style: none;
+}
+.jpyhub-html .c-social .c-social__set li {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.jpyhub-html .c-social .c-social__set a {
+  margin-left: 10px;
+  border: 1px solid #dedede;
+  padding: 9px;
+  font-size: 1.2rem;
+  line-height: 1.4rem;
+  color: #999999;
+  transition: all 0.4s ease-out;
+}
+.jpyhub-html .c-social .c-social__set a:hover {
+  color: #e2001a;
+  border-color: #e2001a;
+}
+.jpyhub-html .c-alert {
+  border: 1px solid;
+  padding: 5px;
+  font-size: 0.8rem;
+}
+.jpyhub-html .c-alert.c-alert--success {
+  border-color: #c3e6cb;
+  color: #155724;
+  background-color: #d4edda;
+}
+.jpyhub-html .c-alert.c-alert--warning {
+  border-color: #ffeeba;
+  color: #856404;
+  background-color: #fff3cd;
+}
+.jpyhub-html .c-alert.c-alert--error {
+  border-color: #f5c6cb;
+  color: #721c24;
+  background-color: #f8d7da;
+}
+.jpyhub-html .c-alert.c-alert--info {
+  border-color: #b8daff;
+  color: #004085;
+  background-color: #cce5ff;
+}
+.jpyhub-html__login {
+  height: 100%;
+  font-size: 100%;
+  box-sizing: border-box;
+}
+.jpyhub-html__login *,
+.jpyhub-html__login ::after,
+.jpyhub-html__login ::before {
+  box-sizing: inherit;
+}
+.jpyhub-html__login a {
+  color: #e2001a;
+  text-decoration: none;
+}
+.jpyhub-html__login a:hover {
+  color: #a60b16;
+}
+.jpyhub-html__login .jpyhub-body__login {
+  height: 100%;
+}
+.jpyhub-html__login .l-login {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 100%;
+  width: 100%;
+  line-height: 1.5;
+}
+.jpyhub-html__login .l-login .l-login__header {
+  flex: 0 0 auto;
+  padding: 25px;
+  background-color: #ffffff;
+}
+.jpyhub-html__login .l-login .l-login__main {
+  display: flex;
+  flex: 1 1 auto;
+  position: relative;
+  overflow-y: auto;
+  justify-content: center;
+  align-items: center;
+}
+.jpyhub-html__login .l-login .l-login__footer {
+  display: flex;
+  flex: 0 0 auto;
+  border-top: 1px solid #dedede;
+  padding: 25px;
+}
+.jpyhub-html__login .c-login {
+  padding: 40px 0;
+}
+.jpyhub-html__login .c-login .c-login__announcement {
+  margin: 0 0 20px 0;
+  border: 1px solid #faebcc;
+  padding: 20px;
+  max-width: 500px;
+  font-size: 13px;
+  color: #8a6d3b;
+  background-color: #fcf8e3;
+}
+.jpyhub-html__login .c-login .c-login__container {
+  border: 1px solid #dedede;
+  padding: 20px;
+  width: 500px;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+  background-color: #ffffff;
+}
+.jpyhub-html__login .c-login .c-login__extra {
+  padding: 10px 0 0 0;
+  text-align: right;
+  font-size: 0.8rem;
+}
+.jpyhub-html__login .c-login .c-login__extra ul {
+  list-style: none;
+}
+.jpyhub-html__login .c-login .c-login__extra ul li {
+  display: inline-block;
+  padding: 0 0 0 10px;
+}
+.jpyhub-html__login .c-login .c-login__extra a {
+  color: #999;
+}
+.jpyhub-html__login .c-login .c-login__extra a:hover {
+  color: #666;
+}
+.jpyhub-html__login .c-login .c-login__header {
+  margin: 0 0 30px 0;
+  border-bottom: 1px solid #dedede;
+  padding: 0 0 10px 0;
+}
+.jpyhub-html__login .c-login .c-login__header .c-login__header-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.jpyhub-html__login .c-login .c-login__body .c-login__body-title {
+  padding: 0 0 15px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.jpyhub-html__login .c-login .c-login__body .c-login__body-messages {
+  padding: 0 0 15px 0;
+}
+.jpyhub-html__login .c-login .c-login__form-field {
+  display: flex;
+  padding-bottom: 15px;
+}
+.jpyhub-html__login .c-login .c-login__form-field.c-login__form-field--remember-me {
+  padding-top: 10px;
+}
+.jpyhub-html__login .c-login .c-login__form-field.c-login__form-field--submit {
+  padding-top: 20px;
+}
+.jpyhub-html__login .c-login .c-login__form-input {
+  margin: 0;
+  border: 1px solid #eeeeee;
+  padding: 0.7rem;
+  width: 100%;
+  color: inherit;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
+  background-color: #ffffff;
+}
+.jpyhub-html__login .c-login .c-login__form-input:hover {
+  background-color: #f1f1f1;
+}
+.jpyhub-html__login .c-login .c-login__form-error {
+  margin: 0 0 10px 0;
+  border: 1px solid #ebccd1;
+  padding: 4px;
+  font-size: 13px;
+  color: #a94442;
+  background-color: #f2dede;
+}
+.jpyhub-html__login .c-login .c-login__form-warning {
+  margin: 0 0 10px 0;
+  border: 1px solid #faebcc;
+  padding: 4px;
+  color: #8a6d3b;
+  font-size: 13px;
+  background-color: #fcf8e3;
+}
+.jpyhub-html__login .c-login .c-login__form-submit {
+  border: 0;
+  width: 100%;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.7rem;
+  font-size: 0.8rem;
+  color: #ffffff;
+  background-color: #e2001a;
+  text-transform: uppercase;
+  transition: background-color 0.3s;
+}
+.jpyhub-html__login .c-login .c-login__form-submit:focus,
+.jpyhub-html__login .c-login .c-login__form-submit:hover {
+  background-color: #a60b16;
+}
+.jpyhub-html__login .c-login .c-login__service-btn {
+  display: inline-block;
+  border: 0;
+  width: 100%;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.7rem;
+  font-size: 0.8rem;
+  color: #ffffff;
+  background-color: #286090;
+  text-transform: uppercase;
+  transition: background-color 0.3s;
+  text-decoration: none;
+  text-align: center;
+}
+.jpyhub-html__login .c-login .c-login__service-btn:focus,
+.jpyhub-html__login .c-login .c-login__service-btn:hover {
+  background-color: #204d74;
+}
+.jpyhub-html__login .c-login .c-login__form-label {
+  padding-left: 6px;
+  padding-right: 14px;
+}
+.jpyhub-html__login .c-login .c-login__form-label--user:before {
+  content: '\f007';
+  font: 16px fontawesome;
+  color: #000000;
+  line-height: 40px;
+}
+.jpyhub-html__login .c-login .c-login__form-label--lock:before {
+  content: '\f023';
+  font: 16px fontawesome;
+  color: #000000;
+  line-height: 40px;
+}
+.jpyhub-html__login .c-login .c-login__form-checkbox input {
+  position: absolute;
+  opacity: 0;
+}
+.jpyhub-html__login .c-login .c-login__form-checkbox input + label {
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.8rem;
+}
+.jpyhub-html__login .c-login .c-login__form-checkbox input + label:before {
+  content: '';
+  display: inline-block;
+  margin-right: 10px;
+  border: 1px solid #000000;
+  width: 20px;
+  height: 20px;
+  vertical-align: text-top;
+}
+.jpyhub-html__login .c-login .c-login__form-checkbox input:hover + label:before {
+  border-color: #e2001a;
+}
+.jpyhub-html__login .c-login .c-login__form-checkbox input:focus + label:before {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.12);
+}
+.jpyhub-html__login .c-login .c-login__form-checkbox input:checked + label:after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  background: #000000;
+  width: 8px;
+  height: 8px;
+}
+.jpyhub-html__login .c-login .c-login__form-group {
+  display: table;
+  width: 100%;
+}
+@media only screen and (max-width: 1199px) {
+  .jpyhub-html__login .l-login .l-login__header {
+    padding: 20px;
+  }
+  .jpyhub-html__login .l-login .l-login__footer {
+    padding: 20px;
+  }
+}
+@media only screen and (max-width: 1023px) {
+  .jpyhub-html__login .l-login .l-login__header {
+    padding: 15px;
+  }
+  .jpyhub-html__login .l-login .l-login__footer {
+    padding: 15px;
+  }
+}
+@media only screen and (max-width: 767px) {
+  .jpyhub-html .c-heading .c-heading__logos .c-svg.c-svg--cscs.c-svg--small {
+    display: block;
+  }
+  .jpyhub-html .c-heading .c-heading__logos .c-svg.c-svg--cscs.c-svg--large {
+    display: none;
+  }
+  .jpyhub-html .c-heading .c-heading__logos .c-svg.c-svg--eth {
+    width: 80px;
+  }
+  .jpyhub-html .c-address {
+    padding: 0 0 20px 0;
+    text-align: center;
+  }
+  .jpyhub-html .c-contact {
+    padding: 0 0 30px 0;
+    text-align: center;
+  }
+  .jpyhub-html .c-social {
+    padding: 0 0 0 0;
+    text-align: center;
+  }
+  .jpyhub-html__login .l-login {
+    display: block;
+    width: 100%;
+  }
+  .jpyhub-html__login .l-login .l-login__header {
+    display: block;
+    flex: none;
+    padding: 10px;
+  }
+  .jpyhub-html__login .l-login .l-login__main {
+    display: block;
+    flex: none;
+    padding: 30px 0 20px 0;
+  }
+  .jpyhub-html__login .l-login .l-login__footer {
+    display: block;
+    flex: none;
+    padding: 40px 10px 40px 10px;
+  }
+  .jpyhub-html__login .l-login .c-login {
+    padding: 0;
+  }
+  .jpyhub-html__login .l-login .c-login .c-login__container {
+    display: block;
+    border: none;
+    padding: 0;
+    width: 100%;
+    box-shadow: none;
+  }
+  .jpyhub-html__login .l-login .c-login .c-login__header {
+    padding: 0 10px 10px 10px;
+  }
+  .jpyhub-html__login .l-login .c-login .c-login__header .c-login__header-title {
+    font-size: 1.2rem;
+  }
+  .jpyhub-html__login .l-login .c-login .c-login__body {
+    display: block;
+    padding: 0 10px;
+    text-align: center;
+  }
+  .jpyhub-html__login .l-login .c-login .c-login__body .c-login__body-title {
+    position: relative;
+    display: inline-block;
+    top: -22px;
+    padding: 0 10px;
+    text-align: center;
+    background-color: white;
+  }
+  .jpyhub-html__login .l-login .c-login .c-login__extra {
+    padding: 40px 0 0 0;
+    text-align: center;
+  }
+}

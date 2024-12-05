@@ -1,4 +1,4 @@
-# Dockerfile to for the Hub
+# Dockerfile for the Hub's image
 
 This is a dockerfile to build the image used for the deployment of the Hub.
 

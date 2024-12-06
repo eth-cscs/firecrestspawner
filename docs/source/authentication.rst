@@ -22,7 +22,7 @@ Authorization Code Flow
 -----------------------
 
 For CSCS's requirements, the most suitable authentication method is the Authorization Code Flow, where users log into JupyterHub and receive an access token and a refresh token from Keycloak.
-The access tokens is then given to the spawner to be used for authentication with FirecREST. 
+The access token is then given to the spawner to be used for authentication with FirecREST.
 Since access tokens expire after a few minutes, they must be refreshed before performing any spawner operations.
 New access tokens are requested by providing a refresh token, which has a longer lifespan.
 During the time of validity of a refresh token, also known as single sign-on (SSO) session, the process of requesting new access tokens can be managed either by JupyterHub or by the spawner itself. 
@@ -36,8 +36,8 @@ To prevent this issue, FirecRESTSpawner can check the notebook status using an a
 Client Credentials Flow
 -----------------------
 
-In this approach, JupyterHub polls for the jobs status of every users with a single service account that uses the Client Credentials Flow.
-In contrast to the SSO session discussed above, within this Keycloak authentication method it's possible to refresh the access tokens by providing a client id and secret.
+In this approach, JupyterHub uses a single Client Credentials Flow service account to poll for the job status of every user.
+In contrast to the Authorization Code Flow, within this Keycloak authentication method it's possible to refresh the access tokens by providing a client id and secret.
 Note that such service account has no permissions to start or stop user jobs.
 Those actions only can be done providing the user's access token.
 By combining this method with JupyterHub's own session management, which operates independently of Keycloak, potential polling failures can be completely avoided.
@@ -61,17 +61,13 @@ Stopping the server
 Enabling JupyterHub's authentication state
 ------------------------------------------
 
-By default, JupyterHub does not store authentication states.
+The access and refresh tokens are obtained by the spawner via `JupyterHub's authentication state <https://jupyterhub.readthedocs.io/en/latest/reference/authenticators.html#authenticator-auth-state>`_.
+That information must be stored in the hub's database so it can be accessible within the spawner.
+By default the authentication state is not persisted.
 That feature must be enabled in the configuration by setting
 
 .. code-block:: Python
 
     c.Authenticator.enable_auth_state = True
 
-which, in turn, requires setting ``c.CryptKeeper.keys`` in JupyterHub's configuration and the environment variable ``JUPYTERHUB_CRYPT_KEY`` on the system where the notebooks server will run.
-
-The access and refresh tokens are kept stored in
-JupyterHub's `authentication state <https://jupyterhub.readthedocs.io/en/stable/reference/authenticators.html#authentication-state>`_ dictionary.
-From there, they can be fetched by the spawner and used to create PyFirecREST clients.
-
-That mechanism can be implemented by extending the ``GenericOAuthenticator`` class from ``oauthenticator`` to provide a token refreshing method.
+Since the authentication state is encrypted before being stored in the database, ``c.CryptKeeper.keys`` must be set in JupyterHub's configuration and the environment variable ``JUPYTERHUB_CRYPT_KEY`` must be defined on the system where the notebooks server will run.

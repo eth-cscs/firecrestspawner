@@ -409,7 +409,7 @@ class FirecRESTSpawnerBase(Spawner):
                 self.host,
                 script=script,
                 env_vars=job_env,
-                working_dir=f"/{self.workdir}/{self.user.name}"
+                working_dir="/".join((self.workdir, self.user.name))
             )
             self.log.debug(f"[client.submit] {self.job}")
             self.job_id = f"{self.job['jobId']}"

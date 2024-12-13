@@ -39,8 +39,8 @@ and then launch the deployment
 
 ```bash
 cd firecrest-v2
-export JHUB_DOCKERFILE_DIR=/path/to/demo
-docker compose -f docker-compose-minimal-env.yml -f /path/to/demo/docker-compose-jhub.yaml up
+export JHUB_DOCKERFILE_DIR=/path/to/tutorial
+docker compose -f docker-compose-minimal-env.yml -f /path/to/tutorial/docker-compose-jhub.yaml up
 ```
 
 This step takes a few minutes. In the meanwhile we can install JupyterHub on a local virtual environment.
@@ -71,7 +71,7 @@ pip install --no-cache .
 
 ## Back to the deployment
 
-Once the image building is over, you can check that all containers are running
+Once the images have been built, you can check that all containers are running
 
 ```bash
 docker compose -p firecrest-v2 ps --format 'table {{.ID}}\t{{.Name}}\t{{.State}}'
@@ -91,7 +91,7 @@ When we are done with the tutorial, the deployment can be shutdown by pressing `
 
 ```
 cd firecrest-v2
-docker compose -f docker-compose-minimal-env.yml -f /path/to/demo/docker-compose-jhub.yaml down
+docker compose -f docker-compose-minimal-env.yml -f /path/to/tutorial/docker-compose-jhub.yaml down
 ```
 
 ### Setting up the authorization

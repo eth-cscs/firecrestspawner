@@ -3,7 +3,8 @@
 
 This tutorial explains how to run [JupyterHub](https://jupyterhub.readthedocs.io/en/stable/) with [FirecRESTSpawner](https://github.com/eth-cscs/firecrestspawner) using the [Docker demo of FirecREST API v2](https://github.com/eth-cscs/firecrest-v2).
 
-FirecRESTSpawner is a tool for launching Jupyter Notebook servers from JupyterHub on HPC clusters through FirecREST. it supports both [version 1](https://firecrest.readthedocs.io/en/stable/) and [version v2](https://github.com/eth-cscs/firecrest-v2) of the API.
+FirecRESTSpawner is a tool for launching Jupyter Notebook servers from JupyterHub on HPC clusters through FirecREST.
+It supports both [version 1](https://firecrest.readthedocs.io/en/stable/) and [version 2](https://github.com/eth-cscs/firecrest-v2) of the API.
 It can be deployed on Kubernetes as part of JupyterHub and configured to target different systems.
 
 In this tutorial, we will set up a simplified environment on a local machine, including:

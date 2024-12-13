@@ -23,14 +23,27 @@ For this tutorial you will need
  * a Python installation (version 3.9 or higher)
 
 
-## Setup
-
-
-### Building images from FirecREST's Docker Compose demo
+## Deployment of FirecREST and Slurm cluster
 
 This tutorial builds on the Docker demo of FirecREST.
 We will use the small [docker-compose-jhub.yaml](docker-compose-jhub.yaml) file to override some settings in the FirecREST demo.
 This can be done by passing both files to the `docker compose` command.
+
+First, we clone the FirecREST repository
+
+```bash
+git clone https://github.com/eth-cscs/firecrest-v2.git
+```
+
+and then launch the deployment
+
+```bash
+cd firecrest-v2
+export JHUB_DOCKERFILE_DIR=/path/to/demo
+docker compose -f docker-compose-minimal-env.yml -f /path/to/demo/docker-compose-jhub.yaml up
+```
+
+This step takes a few minutes. In the meanwhile we can install JupyterHub on a local virtual environment.
 
 
 ### Install JupyterHub and FirecRESTSpawner
@@ -56,36 +69,9 @@ git checkout apiv2
 pip install --no-cache .
 ```
 
-### Building image for the Slurm cluster including JupyterLab
+## Back to the deployment
 
-For this step we need to move to the tutorial directory and do
-
-```bash
-cd demo
-docker build -f Dockerfile -t slurm2x:jhub .
-```
-
-This will create a new image that extends the `slurm2x` image from the Docker demo of FirecREST to include JupyterLab and other requirements.
-The should be quite fast.
-
-
-## Deployment of FirecREST and Slurm cluster
-
-We clone the FirecREST repository
-
-```bash
-git clone https://github.com/eth-cscs/firecrest-v2.git
-```
-
-and launch the deployment
-
-```bash
-cd firecrest-v2
-export JHUB_DOCKERFILE_DIR=/path/to/demo
-docker compose -f docker-compose-minimal-env.yml -f /path/to/demo/docker-compose-jhub.yaml up
-```
-
-Once that's finished, you can check that all containers are running
+Once the image building is over, you can check that all containers are running
 
 ```bash
 docker compose -p firecrest-v2 ps --format 'table {{.ID}}\t{{.Name}}\t{{.State}}'
@@ -105,7 +91,7 @@ When we are done with the tutorial, the deployment can be shutdown by pressing `
 
 ```
 cd firecrest-v2
-docker compose -f docker-compose-minimal-env.yml down
+docker compose -f docker-compose-minimal-env.yml -f /path/to/demo/docker-compose-jhub.yaml down
 ```
 
 ### Setting up the authorization
@@ -122,7 +108,7 @@ Navigate to the tutorial's directory, choose the [jhub-client.json](jhub-client.
 Once that's done, the client `jhub-client` can be seen listed on the "Clients" tab of the side panel.
 
 
-### Launching JupyterHub
+## Launching JupyterHub
 
 The [configuration file](jupyterhub-config.py) provided in this tutorial has all the settings needed for using JupyterHub with our deployment.
 

@@ -48,6 +48,12 @@ c.Spawner.port = 56123
 c.Spawner.batch_script = """#!/bin/bash
 #SBATCH --job-name=jhub
 
+{% if account is string %}
+#SBATCH --account={{account}}
+{% else %}
+#SBATCH --account={{account[0]}}
+{% endif %}
+
 export JUPYTERHUB_API_URL="http://host.docker.internal:8003/hub/api"
 export JUPYTERHUB_ACTIVITY_URL="http://host.docker.internal:8003/hub/api/users/${USER}/activity"
 
@@ -70,6 +76,11 @@ echo "jupyterhub-singleuser ended gracefully"
 # {{epilogue}}
 """
 
-# c.Spawner.options_form = """
-# Options Form!
-# """
+c.Spawner.options_form = """
+        <div class="col-md-4">
+          <div class="form-group">
+          <label for="account"> Account (optional) </label>
+          <input name="account" class="form-control">
+          </div>
+        </div>
+"""

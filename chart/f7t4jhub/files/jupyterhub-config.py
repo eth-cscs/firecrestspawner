@@ -57,8 +57,25 @@ async def get_node_ip_from_output(spawner):
 
 c = get_config()
 
+# Admin users can start and access user servers
+# To disable such feature, we define instead the "limited admin"
+# users, with scopes that allow access to the list of users,
+# user activity, deleting and creating users, but not to the user
+# servers
+# c.Authenticator.admin_users = {{ .Values.config.adminUsers }}
+c.JupyterHub.load_roles = [
+    {
+        "name": "limited-admin",
+        "scopes": [
+            "self",
+            "admin:users",
+            "admin-ui",
+            "admin:groups",
+        ],
+        "users": {{ .Values.config.adminUsers }},
+    }
+]
 
-c.Authenticator.admin_users = {{ .Values.config.adminUsers }}
 c.JupyterHub.admin_access = False
 c.Authenticator.allow_all = True
 
@@ -95,16 +112,19 @@ c.Spawner.req_srun = '{{ .Values.config.spawner.srun }}'
 c.Spawner.batch_script = """#!/bin/bash
 
 #SBATCH --job-name={{ .Values.config.spawner.jobName }}
-#SBATCH --chdir={{`{{homedir}}`}}
 #SBATCH --get-user-env=L
 
 {% if partition  %}#SBATCH --partition={{`{{partition}}`}}{% endif %}
-{% if account    %}#SBATCH --account={{`{{account}}`}}{% endif %}
 {% if runtime    %}#SBATCH --time={{`{{runtime[0]}}`}}{% endif %}
 {% if memory     %}#SBATCH --mem={{`{{memory}}`}}{% endif %}
 {% if gres       %}#SBATCH --gres={{`{{gres}}`}}{% endif %}
 {% if nprocs     %}#SBATCH --cpus-per-task={{`{{nprocs}}`}}{% endif %}
 {% if nnodes     %}#SBATCH --nodes={{`{{nnodes[0]}}`}}{% endif %}
+{% if account is string %}
+#SBATCH --account={{`{{account}}`}}
+{% else %}
+#SBATCH --account={{`{{account[0]}}`}}
+{% endif %}
 {% if reservation is string %}
 #SBATCH --reservation={{`{{reservation}}`}}
 {% else %}
@@ -141,13 +161,13 @@ echo "jupyterhub-singleuser ended gracefully"
 """
 c.Spawner.custom_state_gethost = {{ .Values.config.spawner.customStateGetHost }}
 c.Spawner.cmd = '{{ .Values.config.spawner.cmd }}'
-c.Spawner.http_timeout = 60
+c.Spawner.http_timeout = {{ .Values.config.spawner.http_timeout }}
 c.Spawner.options_form = """
 {{ .Values.config.spawner.optionsForm }}
 """
 c.Spawner.poll_interval = 300
 c.Spawner.port = {{ .Values.config.spawner.port }}
-c.Spawner.start_timeout = 120
+c.Spawner.start_timeout = {{ .Values.config.spawner.start_timeout }}
 
 # This tells the hub to not stop servers when the hub restarts
 c.JupyterHub.cleanup_servers = False

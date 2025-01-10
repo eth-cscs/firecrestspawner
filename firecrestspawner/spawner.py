@@ -386,7 +386,8 @@ class FirecRESTSpawnerBase(Spawner):
 
         client = await self.get_firecrest_client()
         groups = await client.groups(self.host)
-        subvars["account"] = groups["group"]["name"]
+        if subvars["account"] == [""] or not subvars["account"]:
+            subvars["account"] = groups["group"]["name"]
 
         script = await self._get_batch_script(**subvars)
         self.log.info("Spawner submitting job using firecREST")
@@ -635,13 +636,19 @@ class FirecRESTSpawnerBase(Spawner):
             if self.state_ispending():
                 await yield_(
                     {
-                        "message": "Pending in queue...",
+                        "message": "Pending in queue... "
+                                   "If the server fails to start in a few moments, "
+                                   "check the log file for possible reasons: "
+                                   f"{self.job['job_file_out']}",
                     }
                 )
             elif self.state_isrunning():
                 await yield_(
                     {
-                        "message": "Cluster job running... waiting to connect",
+                        "message": "Cluster job running... waiting to connect. "
+                                   "If the server fails to start in a few moments, "
+                                   "check the log file for possible reasons: "
+                                   f"{self.job['job_file_out']}",
                     }
                 )
                 return

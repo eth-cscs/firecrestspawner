@@ -204,6 +204,14 @@ f7t4jhub:
       # notebooks will run
       customStateGetHost: None
 
+      # Timeout in seconds before giving up on a spawned HTTP server
+      # Once a server has successfully been spawned, this is the amount of time
+      # that the hub waits before assuming that the server is unable to accept connections.
+      http_timeout: 300
+
+      # Timeout in seconds for the job to start
+      start_timeout: 300
+
       # JupyterHub options form
       # It allows users to customize their environment
       # (e.g., selecting resources, environment type, or packages)

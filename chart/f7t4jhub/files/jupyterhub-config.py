@@ -107,7 +107,6 @@ c.Spawner.polling_with_service_account = {{ .Values.serviceAccount.enabled | toJ
 c.Spawner.req_host = '{{ .Values.config.spawner.host }}'
 c.Spawner.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'
 c.Spawner.req_partition = '{{ .Values.config.spawner.partition }}'
-c.Spawner.req_constraint = '{{ .Values.config.spawner.constraint }}'
 c.Spawner.req_srun = '{{ .Values.config.spawner.srun }}'
 c.Spawner.batch_script = """#!/bin/bash
 
@@ -120,20 +119,12 @@ c.Spawner.batch_script = """#!/bin/bash
 {% if gres       %}#SBATCH --gres={{`{{gres}}`}}{% endif %}
 {% if nprocs     %}#SBATCH --cpus-per-task={{`{{nprocs}}`}}{% endif %}
 {% if nnodes     %}#SBATCH --nodes={{`{{nnodes[0]}}`}}{% endif %}
+{% if reservation  %}#SBATCH --reservation={{`{{reservation}}`}}{% endif %}
+{% if constraint   %}#SBATCH --constraint={{`{{constraint}}`}}{% endif %}
 {% if account is string %}
 #SBATCH --account={{`{{account}}`}}
 {% else %}
 #SBATCH --account={{`{{account[0]}}`}}
-{% endif %}
-{% if reservation is string %}
-#SBATCH --reservation={{`{{reservation}}`}}
-{% else %}
-#SBATCH --reservation={{`{{reservation[0]}}`}}
-{% endif %}
-{% if constraint is string %}
-#SBATCH --constraint={{`{{constraint}}`}}
-{% else %}
-#SBATCH --constraint={{`{{constraint[0]}}`}}
 {% endif %}
 {% if options    %}#SBATCH {{`{{options}}`}}{% endif %}
 
@@ -165,6 +156,25 @@ c.Spawner.http_timeout = {{ .Values.config.spawner.http_timeout }}
 c.Spawner.options_form = """
 {{ .Values.config.spawner.optionsForm }}
 """
+
+def spawner_options_form(formdata, spawner):
+    """Function to process the script flags `reservation` and
+    `constraint` since they could come from the `values.yaml` or
+    the options form.
+    """
+    reservation = formdata.get("reservation", [""])[0].strip()
+    constraint = formdata.get("constraint", [""])[0].strip()
+    if reservation:
+        spawner.req_reservation = reservation
+    else:
+        spawner.req_reservation = "{{ .Values.config.spawner.reservation }}"
+
+    if constraint:
+        spawner.req_constraint = constraint
+    else:
+        spawner.req_constraint = "{{ .Values.config.spawner.constraint }}"
+
+c.Spawner.options_from_form = spawner_options_form
 c.Spawner.poll_interval = 300
 c.Spawner.port = {{ .Values.config.spawner.port }}
 c.Spawner.start_timeout = {{ .Values.config.spawner.start_timeout }}

@@ -411,6 +411,7 @@ class FirecRESTSpawnerBase(Spawner):
         except Exception as e:
             self.log.error(f"Job submission failed: {e}")
             self.job_id = ""
+            return e
 
     async def query_job_status(self):
         """Check job status, return JobStatus object."""
@@ -545,7 +546,7 @@ class FirecRESTSpawnerBase(Spawner):
         if self.server:
             self.server.port = self.port
 
-        await self.submit_batch_script()
+        ret = await self.submit_batch_script()
 
         # We are called with a timeout, and if the timeout expires, this
         # function will be interrupted at the next yield, and self.stop()
@@ -553,9 +554,15 @@ class FirecRESTSpawnerBase(Spawner):
         # So this function should not return unless successful, and if
         # unsuccessful should either raise and Exception or loop forever.
         if len(self.job_id) == 0:
-            raise RuntimeError(
-                "Jupyter batch job submission failure: " "(no jobid in output)"
-            )
+            message = "Jupyter batch job submission failure: no jobid in output "
+            if ret:
+                if ret.responses[-1].status_code == 200:
+                    byte_content = ret.responses[-1].content
+                    decoded_string = byte_content.decode('utf-8')
+                    response_dict = json.loads(decoded_string)
+                    message = list(response_dict["tasks"].values())[0]["data"]
+
+            raise RuntimeError(message)
         while True:
             status = await self.query_job_status()
             if status == JobStatus.RUNNING:
@@ -636,10 +643,7 @@ class FirecRESTSpawnerBase(Spawner):
             if self.state_ispending():
                 await yield_(
                     {
-                        "message": "Pending in queue... "
-                                   "If the server fails to start in a few moments, "
-                                   "check the log file for possible reasons: "
-                                   f"{self.job['job_file_out']}",
+                        "message": f"Job {self.job['jobid']} is pending in queue... ",
                     }
                 )
             elif self.state_isrunning():

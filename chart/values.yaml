@@ -170,6 +170,9 @@ f7t4jhub:
       # Name of the partition of the job scheduler (e.g. normal, debug, long)
       partition: '<slurm-partition>'
 
+      # Name of a reservation in the job scheduler
+      reservation: '<slurm-reservation>'
+
       # Constraint for the job scheduler (e.g. gpu, mc, nvgpu)
       constraint: '<slurm-constraint>'
 

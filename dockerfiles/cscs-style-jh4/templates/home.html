@@ -104,42 +104,60 @@
 
 <script>
 
-
-    setTimeout(function() {
-        // Find the "Stop My Server" button
-        const stopButton = document.getElementById("stop");
-
-        if (stopButton) {
-            // Get the parent element of the button
-            const parent = stopButton.parentNode;
-
-            // Remove the original "Stop My Server" button
-            parent.removeChild(stopButton);
+    // Track the last time the page was active
+    let lastActiveTime = Date.now();
+    
+    // Threshold for refresh (5 hours in milliseconds)
+    const refreshThreshold = 10 * 1000; // 5 hours
+    
+    // Function to handle tab visibility change
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            // Calculate time elapsed since the page was last active
+            const now = Date.now();
+            const timeElapsed = now - lastActiveTime;
+    
+            if (timeElapsed > refreshThreshold) {
+                location.reload();
+            }
         }
+    });
 
-        const startButton = document.getElementById("start");
-
-        if (startButton.textContent.trim() === "My Server") {
-            // Get the parent element of the button
-            parent = startButton.parentNode;
-
-            // Create the new refresh button
-            const refreshButton = document.createElement("button");
-            refreshButton.textContent = "Refresh Page";
-            refreshButton.className = "btn btn-lg btn-cscs-darkred"; // Add any desired styles here
-            refreshButton.onclick = function() {
-                location.reload(); // Refresh the page
-            };
-
-            // Insert the new refresh button into the parent element
-            parent.appendChild(refreshButton);
-
-            // Remove the original "Stop My Server" button
-            parent.removeChild(startButton);
-        }
-
-
-    }, 10000); // in milliseconds	
+//    setTimeout(function() {
+//        // Find the "Stop My Server" button
+//        const stopButton = document.getElementById("stop");
+//
+//        if (stopButton) {
+//            // Get the parent element of the button
+//            const parent = stopButton.parentNode;
+//
+//            // Remove the original "Stop My Server" button
+//            parent.removeChild(stopButton);
+//        }
+//
+//        const startButton = document.getElementById("start");
+//
+//        if (startButton.textContent.trim() === "My Server") {
+//            // Get the parent element of the button
+//            parent = startButton.parentNode;
+//
+//            // Create the new refresh button
+//            const refreshButton = document.createElement("button");
+//            refreshButton.textContent = "Refresh Page";
+//            refreshButton.className = "btn btn-lg btn-cscs-darkred"; // Add any desired styles here
+//            refreshButton.onclick = function() {
+//                location.reload(); // Refresh the page
+//            };
+//
+//            // Insert the new refresh button into the parent element
+//            parent.appendChild(refreshButton);
+//
+//            // Remove the original "Stop My Server" button
+//            parent.removeChild(startButton);
+//        }
+//
+//
+//    }, 10000); // in milliseconds	
 
 </script>
 

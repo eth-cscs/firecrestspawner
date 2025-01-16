@@ -408,7 +408,7 @@ async def test_start_no_jobid(db, fc_server):
         await spawner.start()
 
     assert str(excinfo.value) == (
-        "Jupyter batch job submission " "failure: (no jobid in output)"
+        "Jupyter batch job submission failure: no jobid in output"
     )
     assert spawner.job_status == ""
 

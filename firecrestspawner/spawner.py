@@ -555,7 +555,7 @@ class FirecRESTSpawnerBase(Spawner):
         # So this function should not return unless successful, and if
         # unsuccessful should either raise and Exception or loop forever.
         if len(self.job_id) == 0:
-            message = "Jupyter batch job submission failure: no jobid in output "
+            message = "Jupyter batch job submission failure: no jobid in output"
             if ret:
                 if ret.responses[-1].status_code == 200:
                     byte_content = ret.responses[-1].content

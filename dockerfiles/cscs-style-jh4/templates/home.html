@@ -12,7 +12,8 @@
         <a id="stop"
 	   role="button"
 	   class="btn btn-lg btn-cscs-darkred outline"
-	   data-access-token-is-valid="{{ default_server.access_token_is_valid | lower }}">
+	   data-access-token-is-valid="{{ default_server.access_token_is_valid | lower }}"
+	   data-access-server-is-running="{{ default_server.user.running | lower }}">
            Stop My Server
         </a>
       {% endif %}

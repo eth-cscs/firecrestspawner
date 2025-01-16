@@ -386,7 +386,8 @@ class FirecRESTSpawnerBase(Spawner):
 
         client = await self.get_firecrest_client()
         groups = await client.groups(self.host)
-        if subvars["account"] == [""] or not subvars["account"]:
+        account_from_form = self.user_options.get("account")
+        if not account_from_form or account_from_form == [""]:
             subvars["account"] = groups["group"]["name"]
 
         script = await self._get_batch_script(**subvars)

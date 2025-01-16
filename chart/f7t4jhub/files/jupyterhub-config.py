@@ -105,6 +105,8 @@ c.JupyterHub.hub_connect_ip = socket.gethostbyname(hostname)
 c.JupyterHub.spawner_class = 'firecrestspawner.spawner.SlurmSpawner'
 c.Spawner.polling_with_service_account = {{ .Values.serviceAccount.enabled | toJson | replace "true" "True" | replace "false" "False" }}
 c.Spawner.req_host = '{{ .Values.config.spawner.host }}'
+c.Spawner.req_reservation = "{{ .Values.config.spawner.reservation }}"
+c.Spawner.req_constraint = "{{ .Values.config.spawner.constraint }}"
 c.Spawner.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'
 c.Spawner.req_partition = '{{ .Values.config.spawner.partition }}'
 c.Spawner.req_srun = '{{ .Values.config.spawner.srun }}'
@@ -119,8 +121,8 @@ c.Spawner.batch_script = """#!/bin/bash
 {% if gres       %}#SBATCH --gres={{`{{gres}}`}}{% endif %}
 {% if nprocs     %}#SBATCH --cpus-per-task={{`{{nprocs}}`}}{% endif %}
 {% if nnodes     %}#SBATCH --nodes={{`{{nnodes[0]}}`}}{% endif %}
-{% if reservation  %}#SBATCH --reservation={{`{{reservation}}`}}{% endif %}
-{% if constraint   %}#SBATCH --constraint={{`{{constraint}}`}}{% endif %}
+{% if reservation  %}#SBATCH --reservation={{`{{reservation[0]}}`}}{% endif %}
+{% if constraint   %}#SBATCH --constraint={{`{{constraint[0]}}`}}{% endif %}
 {% if account is string %}
 #SBATCH --account={{`{{account}}`}}
 {% else %}
@@ -164,15 +166,13 @@ def spawner_options_form(formdata, spawner):
     """
     reservation = formdata.get("reservation", [""])[0].strip()
     constraint = formdata.get("constraint", [""])[0].strip()
-    if reservation:
-        spawner.req_reservation = reservation
-    else:
-        spawner.req_reservation = "{{ .Values.config.spawner.reservation }}"
+    if not reservation or reservation == [""]:
+        formdata["reservation"] = [spawner.req_reservation]
 
-    if constraint:
-        spawner.req_constraint = constraint
-    else:
-        spawner.req_constraint = "{{ .Values.config.spawner.constraint }}"
+    if not constraint or constraint == [""]:
+        formdata["constraint"] = [spawner.req_constraint]
+
+    return formdata
 
 c.Spawner.options_from_form = spawner_options_form
 c.Spawner.poll_interval = 300

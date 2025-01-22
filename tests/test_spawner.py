@@ -396,6 +396,23 @@ async def test_start_job_fail(db, fc_server):
 
 
 @pytest.mark.asyncio
+async def test_submit_batch_script_no_jobid(db, fc_server):
+    spawner = new_spawner(db=db)
+    spawner.firecrest_url = fc_server.url_for("/")
+    spawner.user.authenticator.token_url = "".join([
+        fc_server.url_for("/") ,
+        "auth/realms/kcrealm/protocol/openid-connect/token"
+    ])
+    spawner.set_trait("req_partition", "no_jobid")
+    ret = await spawner.submit_batch_script()
+    byte_content = ret.responses[-1].content
+    decoded_string = byte_content.decode('utf-8')
+    response_dict = json.loads(decoded_string)
+    message =  list(response_dict["tasks"].values())[0]["data"]
+    assert message == "sbatch: error: cli_filter plugin terminated with error"
+
+
+@pytest.mark.asyncio
 async def test_start_no_jobid(db, fc_server):
     spawner = new_spawner(db=db)
     spawner.firecrest_url = fc_server.url_for("/")

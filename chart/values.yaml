@@ -120,8 +120,10 @@ f7t4jhub:
     externalPort: 8081
 
   config:
-    # URL for the JupyterHub instance (replace with your own domain)
-    commonName: 'jupyterhub-<cluster-name>.cscs.ch'
+    # List of URLs for the JupyterHub instance
+    commonNames:
+      - 'jupyterhub-<cluster-name-1>.cscs.ch'
+      - 'jupyterhub-<cluster-name-2>.cscs.ch'
 
     # Admin users for the JupyterHub instance (replace with your own admin users)
     adminUsers: '{"user1", "user2"}'
@@ -169,6 +171,9 @@ f7t4jhub:
 
       # Name of the partition of the job scheduler (e.g. normal, debug, long)
       partition: '<slurm-partition>'
+
+      # Name of a reservation in the job scheduler
+      reservation: '<slurm-reservation>'
 
       # Constraint for the job scheduler (e.g. gpu, mc, nvgpu)
       constraint: '<slurm-constraint>'

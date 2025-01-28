@@ -3,10 +3,12 @@ kind: Certificate
 metadata:
   name: {{ .Release.Name }}-cert
 spec:
-  commonName: {{ .Values.config.commonName }}
+  commonName: {{ index .Values.config.commonNames 0 }}
   dnsNames:
-  - {{ .Values.config.commonName }}
+  {{- range .Values.config.commonNames }}
+  - {{ . }}
+  {{- end }}
   issuerRef:
     kind: ClusterIssuer
-    name: letsencrypt
+    name: letsencrypt-http01
   secretName: {{ .Release.Name }}-cert-secret

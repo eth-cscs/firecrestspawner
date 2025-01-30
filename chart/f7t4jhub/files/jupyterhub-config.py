@@ -67,10 +67,15 @@ c.JupyterHub.load_roles = [
     {
         "name": "limited-admin",
         "scopes": [
-            "self",
-            "admin:users",
-            "admin-ui",
-            "admin:groups",
+             "self",
+             "admin-ui",
+             "list:users",
+             "read:servers",
+             "shutdown",
+             "read:metrics",
+             "admin:groups",
+             "delete:users",
+             "delete:groups"
         ],
         "users": {{ .Values.config.adminUsers }},
     }

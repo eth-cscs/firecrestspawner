@@ -141,8 +141,8 @@ c.Spawner.batch_script = """#!/bin/bash
 #
 {{ .Values.config.spawner.prelaunchCmds }}
 
-export JUPYTERHUB_API_URL="http://{{ index .Values.config.commonNames 0 }}/hub/api"
-export JUPYTERHUB_ACTIVITY_URL="http://{{ index .Values.config.commonNames 0 }}/hub/api/users/${USER}/activity"
+export JUPYTERHUB_API_URL="http://{{ index .Values.config.certificates.letsencrypt.urls 0 }}/hub/api"
+export JUPYTERHUB_ACTIVITY_URL="http://{{ index .Values.config.certificates.letsencrypt.urls 0 }}/hub/api/users/${USER}/activity"
 
 export JUPYTERHUB_OAUTH_ACCESS_SCOPES=$(echo $JUPYTERHUB_OAUTH_ACCESS_SCOPES | base64 --decode)
 export JUPYTERHUB_OAUTH_SCOPES=$(echo $JUPYTERHUB_OAUTH_SCOPES | base64 --decode)

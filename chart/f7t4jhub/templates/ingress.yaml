@@ -12,7 +12,8 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  {{- range .Values.config.commonNames }}
+  {{- range $issuer, $config := .Values.config.certificates }}
+    {{- range $config.urls }}
   - host: {{ . }}
     http:
       paths:
@@ -37,10 +38,13 @@ spec:
             name: {{ $.Release.Name }}-proxy-svc
             port:
               number: {{ $.Values.network.apiPort }}
+    {{- end }}
   {{- end }}
   tls:
-  - hosts:
-    {{- range .Values.config.commonNames }}
-    - {{ . }}
+    {{- range $issuer, $config := .Values.config.certificates }}
+    {{- range $config.urls }}
+    - hosts:
+      - {{ . }}
+      secretName: {{ $.Release.Name }}-cert-{{ $issuer }}-secret
     {{- end }}
-    secretName: {{ .Release.Name }}-cert-secret
+    {{- end }}

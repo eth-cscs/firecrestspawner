@@ -120,10 +120,14 @@ f7t4jhub:
     externalPort: 8081
 
   config:
-    # List of URLs for the JupyterHub instance
-    commonNames:
-      - 'jupyterhub-<cluster-name-1>.cscs.ch'
-      - 'jupyterhub-<cluster-name-2>.cscs.ch'
+    # List of URLs and the corresponding challenges for the JupyterHub instance
+    certificates:
+      letsencrypt:
+        urls:
+          - 'jupyterhub-<cluster-name-1>.cscs.ch'
+      letsencrypt-http01:
+        urls:
+          - 'jupyterhub-<cluster-name-2>.cscs.ch'
 
     # Admin users for the JupyterHub instance (replace with your own admin users)
     adminUsers: '{"user1", "user2"}'

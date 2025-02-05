@@ -125,9 +125,9 @@ f7t4jhub:
       letsencrypt:
         urls:
           - 'jupyterhub-<cluster-name-1>.cscs.ch'
-      letsencrypt-http01:
-        urls:
-          - 'jupyterhub-<cluster-name-2>.cscs.ch'
+      # letsencrypt-http01:
+      #   urls:
+      #     - 'jupyterhub-<cluster-name-2>.cscs.ch'
 
     # Admin users for the JupyterHub instance (replace with your own admin users)
     adminUsers: '{"user1", "user2"}'

@@ -145,6 +145,8 @@ async def test_get_req_subvars(db):
         "runtime": "",
         "srun": "",
         "submitenv": "",
+        "uenv": "",
+        "uenv_view": "",
         "username": getpass.getuser(),
     }
     assert spawner.get_req_subvars() == expected_subvars

@@ -157,6 +157,16 @@ class FirecRESTSpawnerBase(Spawner):
         help="Address for singleuser server to listen at"
     ).tag(config=True)
 
+    req_uenv = Unicode(
+        "",
+        help="Name of a uenv to mount"
+    ).tag(config=True)
+
+    req_uenv_view = Unicode(
+        "",
+        help="Name of a uenv view to activate"
+    ).tag(config=True)
+
     req_queue = Unicode(
         "",
         help="Queue name to submit job to resource manager"

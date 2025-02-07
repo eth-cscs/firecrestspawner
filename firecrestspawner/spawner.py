@@ -288,9 +288,9 @@ class FirecRESTSpawnerBase(Spawner):
     async def get_firecrest_client(self):
         """Returns a firecrest client that uses Keycloak's Authorization Code
         Flow method"""
-        auth_state = await self.user.get_auth_state()
-
         try:
+            auth_state = await self.user.get_auth_state()
+
             auth = AuthorizationCodeFlowAuth(
                 client_id=self.user.authenticator.client_id,
                 client_secret=self.user.authenticator.client_secret,
@@ -406,9 +406,6 @@ class FirecRESTSpawnerBase(Spawner):
 
         client = await self.get_firecrest_client()
 
-        systems = client.systems()
-        self.log.info(f"\n\n\n {systems} \n\n\n")
-
         groups = await client.userinfo(self.host)
         account_from_form = self.user_options.get("account")
         if not account_from_form or account_from_form == [""]:
@@ -423,7 +420,7 @@ class FirecRESTSpawnerBase(Spawner):
             self.log.info("firecREST: Submitting job")
             self.job = await client.submit(
                 self.host,
-                script=script,
+                script_str=script,
                 env_vars=job_env,
                 working_dir="/".join((self.workdir, self.user.name))
             )
@@ -680,7 +677,7 @@ class FirecRESTSpawnerBase(Spawner):
                         "message": "Cluster job running... waiting to connect. "
                                    "If the server fails to start in a few moments, "
                                    "check the log file for possible reasons: "
-                                   f"{self.job['job_file_out']}",
+                                   f"{self.workdir}/slurm-{self.job_id}.out",
                     }
                 )
                 return

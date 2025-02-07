@@ -38,7 +38,7 @@ c.JupyterHub.default_url = "/hub/home"
 
 # Spawner setup
 c.JupyterHub.spawner_class = SlurmSpawner
-c.Spawner.req_host = "cluster-ssh"
+c.Spawner.req_host = "cluster-slurm-ssh"
 c.Spawner.req_srun = ""
 c.Spawner.workdir = "/home"
 c.Spawner.cmd = "firecrestspawner-singleuser jupyterhub-singleuser"
@@ -74,13 +74,4 @@ trap 'echo SIGTERM received' TERM
 {% if srun %}{{srun}}{% endif %} {{cmd}}
 echo "jupyterhub-singleuser ended gracefully"
 # {{epilogue}}
-"""
-
-c.Spawner.options_form = """
-        <div class="col-md-4">
-          <div class="form-group">
-          <label for="account"> Account (optional) </label>
-          <input name="account" class="form-control">
-          </div>
-        </div>
 """

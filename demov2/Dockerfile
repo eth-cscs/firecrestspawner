@@ -1,11 +1,13 @@
 FROM slurm2x:latest
 
-RUN zypper --non-interactive install python311 python311-pip git
+RUN apt update -y \
+    && apt install -y \
+    python3.12-full
 
-RUN python3.11 -m venv /opt/jhub-env
-
+RUN python3 -m venv /opt/jhub-env
+ 
 RUN . /opt/jhub-env/bin/activate && \
-    python3.11 -m pip install --no-cache \
+    python3 -m pip install --no-cache \
                               jupyterlab \
                               jupyterhub==4.1.6 \
                               pyfirecrest==2.1.0 \

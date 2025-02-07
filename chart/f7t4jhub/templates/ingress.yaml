@@ -12,31 +12,39 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: {{ .Values.config.commonName }}
+  {{- range $issuer, $config := .Values.config.certificates }}
+    {{- range $config.urls }}
+  - host: {{ . }}
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: {{ .Release.Name }}-proxy-svc
+            name: {{ $.Release.Name }}-proxy-svc
             port:
-              number: {{ .Values.network.appPort }}
+              number: {{ $.Values.network.appPort }}
       - path: /hub/api
         pathType: Prefix
         backend:
           service:
-            name: {{ .Release.Name }}-proxy-svc
+            name: {{ $.Release.Name }}-proxy-svc
             port:
-              number: {{ .Values.network.appPort }}
+              number: {{ $.Values.network.appPort }}
       - path: /api
         pathType: Prefix
         backend:
           service:
-            name: {{ .Release.Name }}-proxy-svc
+            name: {{ $.Release.Name }}-proxy-svc
             port:
-              number: {{ .Values.network.apiPort }}
+              number: {{ $.Values.network.apiPort }}
+    {{- end }}
+  {{- end }}
   tls:
-  - hosts:
-    - {{ .Values.config.commonName }}
-    secretName: {{ .Release.Name }}-cert-secret
+    {{- range $issuer, $config := .Values.config.certificates }}
+    {{- range $config.urls }}
+    - hosts:
+      - {{ . }}
+      secretName: {{ $.Release.Name }}-cert-{{ $issuer }}-secret
+    {{- end }}
+    {{- end }}

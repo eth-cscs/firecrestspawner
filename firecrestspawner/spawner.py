@@ -21,7 +21,7 @@ import time
 from async_generator import async_generator, yield_
 from enum import Enum
 from firecrest import ClientCredentialsAuth
-from firecrest.v2._async.Client import AsyncFirecrest as Firecrest
+from firecrest.v2 import AsyncFirecrest as Firecrest
 from firecrest.FirecrestException import UnexpectedStatusException
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
@@ -162,6 +162,16 @@ class FirecRESTSpawnerBase(Spawner):
     ip = Unicode(
         "0.0.0.0",
         help="Address for singleuser server to listen at"
+    ).tag(config=True)
+
+    req_uenv = Unicode(
+        "",
+        help="Name of a uenv to mount"
+    ).tag(config=True)
+
+    req_uenv_view = Unicode(
+        "",
+        help="Name of a uenv view to activate"
     ).tag(config=True)
 
     req_queue = Unicode(
@@ -395,8 +405,14 @@ class FirecRESTSpawnerBase(Spawner):
         self.host = subvars["host"]
 
         client = await self.get_firecrest_client()
+
+        systems = client.systems()
+        self.log.info(f"\n\n\n {systems} \n\n\n")
+
         groups = await client.userinfo(self.host)
-        subvars["account"] = groups["group"]["name"]
+        account_from_form = self.user_options.get("account")
+        if not account_from_form or account_from_form == [""]:
+            subvars["account"] = groups["group"]["name"]
 
         script = await self._get_batch_script(**subvars)
         self.log.info("Spawner submitting job using firecREST")
@@ -423,6 +439,7 @@ class FirecRESTSpawnerBase(Spawner):
         except Exception as e:
             self.log.error(f"Job submission failed: {e}")
             self.job_id = ""
+            return e
 
     async def query_job_status(self):
         """Check job status, return JobStatus object."""
@@ -557,7 +574,7 @@ class FirecRESTSpawnerBase(Spawner):
         if self.server:
             self.server.port = self.port
 
-        await self.submit_batch_script()
+        ret = await self.submit_batch_script()
 
         # We are called with a timeout, and if the timeout expires, this
         # function will be interrupted at the next yield, and self.stop()
@@ -565,9 +582,15 @@ class FirecRESTSpawnerBase(Spawner):
         # So this function should not return unless successful, and if
         # unsuccessful should either raise and Exception or loop forever.
         if len(self.job_id) == 0:
-            raise RuntimeError(
-                "Jupyter batch job submission failure: " "(no jobid in output)"
-            )
+            message = "Jupyter batch job submission failure: no jobid in output"
+            if ret:
+                if ret.responses[-1].status_code == 200:
+                    byte_content = ret.responses[-1].content
+                    decoded_string = byte_content.decode('utf-8')
+                    response_dict = json.loads(decoded_string)
+                    message = list(response_dict["tasks"].values())[0]["data"]
+
+            raise RuntimeError(message)
         while True:
             status = await self.query_job_status()
             if status == JobStatus.RUNNING:
@@ -648,13 +671,16 @@ class FirecRESTSpawnerBase(Spawner):
             if self.state_ispending():
                 await yield_(
                     {
-                        "message": "Pending in queue...",
+                        "message": f"Job {self.job['jobid']} is pending in queue... ",
                     }
                 )
             elif self.state_isrunning():
                 await yield_(
                     {
-                        "message": "Cluster job running... waiting to connect",
+                        "message": "Cluster job running... waiting to connect. "
+                                   "If the server fails to start in a few moments, "
+                                   "check the log file for possible reasons: "
+                                   f"{self.job['job_file_out']}",
                     }
                 )
                 return

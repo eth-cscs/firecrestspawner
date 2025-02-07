@@ -128,4 +128,4 @@ Here we are sourcing the file [env.sh](env.sh) which defines environment variabl
 We use the port `8003` for the JupyterHub since the default one `8000` is already used for FirecREST in the deployment.
 The ip `0.0.0.0` is necessary to allow JupyterLab to connect back to the JupyterHub.
 
-JupyterHub should be accessible in the browser at [http://localhost:8003](http://localhost:8003/) (username: test1 and password: test11) and it should be possible to launch notebooks on the slurm cluster.
+JupyterHub should be accessible in the browser at [http://localhost:8003](http://localhost:8003/) (username: fireuser and password: password) and it should be possible to launch notebooks on the slurm cluster.

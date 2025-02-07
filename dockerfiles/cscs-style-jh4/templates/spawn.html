@@ -18,10 +18,21 @@
         </p> -->
         <div>
           {% if error_message %}
+	          {% if "HTTP 401" in error_message %}
               <p>
                   The credentials for spawning a new job have expired. <br>
                   Please <a href="/hub/logout">log out</a> and log back in.
               </p>
+	          {% elif "HTTP 400" in error_message or "Session not active" in error_message %}
+              <p>
+                  The Keycloak single-sign on session has expired. <br>
+                  Please <a href="/hub/logout">log out</a> and log back in.
+              </p>
+	          {% else %}
+              <p>
+	          {{ error_message }}
+              </p>
+	          {% endif %}
           {% endif %}
         </div>
       {% endif %}

@@ -120,8 +120,14 @@ f7t4jhub:
     externalPort: 8081
 
   config:
-    # URL for the JupyterHub instance (replace with your own domain)
-    commonName: 'jupyterhub-<cluster-name>.cscs.ch'
+    # List of URLs and the corresponding challenges for the JupyterHub instance
+    certificates:
+      letsencrypt:
+        urls:
+          - 'jupyterhub-<cluster-name-1>.cscs.ch'
+      # letsencrypt-http01:
+      #   urls:
+      #     - 'jupyterhub-<cluster-name-2>.cscs.ch'
 
     # Admin users for the JupyterHub instance (replace with your own admin users)
     adminUsers: '{"user1", "user2"}'
@@ -170,6 +176,9 @@ f7t4jhub:
       # Name of the partition of the job scheduler (e.g. normal, debug, long)
       partition: '<slurm-partition>'
 
+      # Name of a reservation in the job scheduler
+      reservation: '<slurm-reservation>'
+
       # Constraint for the job scheduler (e.g. gpu, mc, nvgpu)
       constraint: '<slurm-constraint>'
 
@@ -203,6 +212,14 @@ f7t4jhub:
       # to fetch the DNS name or IP of the compute node where the 
       # notebooks will run
       customStateGetHost: None
+
+      # Timeout in seconds before giving up on a spawned HTTP server
+      # Once a server has successfully been spawned, this is the amount of time
+      # that the hub waits before assuming that the server is unable to accept connections.
+      http_timeout: 300
+
+      # Timeout in seconds for the job to start
+      start_timeout: 300
 
       # JupyterHub options form
       # It allows users to customize their environment

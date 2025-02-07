@@ -28,6 +28,7 @@ RUN . /opt/jhub-env/bin/activate && \
 RUN rm -r /opt/jhub-env/share/jupyterhub/templates
 COPY dockerfiles/cscs-style-jh4/templates       /opt/jhub-env/share/jupyterhub/templates
 COPY dockerfiles/cscs-style-jh4/static/css/cscs /opt/jhub-env/share/jupyterhub/static/css/cscs
+COPY dockerfiles/cscs-style-jh4/static/js/home.js /opt/jhub-env/share/jupyterhub/static/js/home.js
 
 
 EXPOSE 8000

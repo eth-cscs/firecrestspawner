@@ -57,8 +57,30 @@ async def get_node_ip_from_output(spawner):
 
 c = get_config()
 
+# Admin users can start and access user servers
+# To disable such feature, we define instead the "limited admin"
+# users, with scopes that allow access to the list of users,
+# user activity, deleting and creating users, but not to the user
+# servers
+# c.Authenticator.admin_users = {{ .Values.config.adminUsers }}
+c.JupyterHub.load_roles = [
+    {
+        "name": "limited-admin",
+        "scopes": [
+             "self",
+             "admin-ui",
+             "list:users",
+             "read:servers",
+             "shutdown",
+             "read:metrics",
+             "admin:groups",
+             "delete:users",
+             "delete:groups"
+        ],
+        "users": {{ .Values.config.adminUsers }},
+    }
+]
 
-c.Authenticator.admin_users = {{ .Values.config.adminUsers }}
 c.JupyterHub.admin_access = False
 c.Authenticator.allow_all = True
 
@@ -88,32 +110,28 @@ c.JupyterHub.hub_connect_ip = socket.gethostbyname(hostname)
 c.JupyterHub.spawner_class = 'firecrestspawner.spawner.SlurmSpawner'
 c.Spawner.polling_with_service_account = {{ .Values.serviceAccount.enabled | toJson | replace "true" "True" | replace "false" "False" }}
 c.Spawner.req_host = '{{ .Values.config.spawner.host }}'
+c.Spawner.req_reservation = "{{ .Values.config.spawner.reservation }}"
+c.Spawner.req_constraint = "{{ .Values.config.spawner.constraint }}"
 c.Spawner.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'
 c.Spawner.req_partition = '{{ .Values.config.spawner.partition }}'
-c.Spawner.req_constraint = '{{ .Values.config.spawner.constraint }}'
 c.Spawner.req_srun = '{{ .Values.config.spawner.srun }}'
 c.Spawner.batch_script = """#!/bin/bash
 
 #SBATCH --job-name={{ .Values.config.spawner.jobName }}
-#SBATCH --chdir={{`{{homedir}}`}}
 #SBATCH --get-user-env=L
 
 {% if partition  %}#SBATCH --partition={{`{{partition}}`}}{% endif %}
-{% if account    %}#SBATCH --account={{`{{account}}`}}{% endif %}
 {% if runtime    %}#SBATCH --time={{`{{runtime[0]}}`}}{% endif %}
 {% if memory     %}#SBATCH --mem={{`{{memory}}`}}{% endif %}
 {% if gres       %}#SBATCH --gres={{`{{gres}}`}}{% endif %}
 {% if nprocs     %}#SBATCH --cpus-per-task={{`{{nprocs}}`}}{% endif %}
 {% if nnodes     %}#SBATCH --nodes={{`{{nnodes[0]}}`}}{% endif %}
-{% if reservation is string %}
-#SBATCH --reservation={{`{{reservation}}`}}
+{% if reservation  %}#SBATCH --reservation={{`{{reservation[0]}}`}}{% endif %}
+{% if constraint   %}#SBATCH --constraint={{`{{constraint[0]}}`}}{% endif %}
+{% if account is string %}
+#SBATCH --account={{`{{account}}`}}
 {% else %}
-#SBATCH --reservation={{`{{reservation[0]}}`}}
-{% endif %}
-{% if constraint is string %}
-#SBATCH --constraint={{`{{constraint}}`}}
-{% else %}
-#SBATCH --constraint={{`{{constraint[0]}}`}}
+#SBATCH --account={{`{{account[0]}}`}}
 {% endif %}
 {% if options    %}#SBATCH {{`{{options}}`}}{% endif %}
 
@@ -123,8 +141,8 @@ c.Spawner.batch_script = """#!/bin/bash
 #
 {{ .Values.config.spawner.prelaunchCmds }}
 
-export JUPYTERHUB_API_URL="http://{{ .Values.config.commonName }}/hub/api"
-export JUPYTERHUB_ACTIVITY_URL="http://{{ .Values.config.commonName }}/hub/api/users/${USER}/activity"
+export JUPYTERHUB_API_URL="http://{{ index .Values.config.certificates.letsencrypt.urls 0 }}/hub/api"
+export JUPYTERHUB_ACTIVITY_URL="http://{{ index .Values.config.certificates.letsencrypt.urls 0 }}/hub/api/users/${USER}/activity"
 
 export JUPYTERHUB_OAUTH_ACCESS_SCOPES=$(echo $JUPYTERHUB_OAUTH_ACCESS_SCOPES | base64 --decode)
 export JUPYTERHUB_OAUTH_SCOPES=$(echo $JUPYTERHUB_OAUTH_SCOPES | base64 --decode)
@@ -141,13 +159,30 @@ echo "jupyterhub-singleuser ended gracefully"
 """
 c.Spawner.custom_state_gethost = {{ .Values.config.spawner.customStateGetHost }}
 c.Spawner.cmd = '{{ .Values.config.spawner.cmd }}'
-c.Spawner.http_timeout = 60
+c.Spawner.http_timeout = {{ .Values.config.spawner.http_timeout }}
 c.Spawner.options_form = """
 {{ .Values.config.spawner.optionsForm }}
 """
+
+def spawner_options_form(formdata, spawner):
+    """Function to process the script flags `reservation` and
+    `constraint` since they could come from the `values.yaml` or
+    the options form.
+    """
+    reservation = formdata.get("reservation", [""])[0].strip()
+    constraint = formdata.get("constraint", [""])[0].strip()
+    if not reservation or reservation == [""]:
+        formdata["reservation"] = [spawner.req_reservation]
+
+    if not constraint or constraint == [""]:
+        formdata["constraint"] = [spawner.req_constraint]
+
+    return formdata
+
+c.Spawner.options_from_form = spawner_options_form
 c.Spawner.poll_interval = 300
 c.Spawner.port = {{ .Values.config.spawner.port }}
-c.Spawner.start_timeout = 120
+c.Spawner.start_timeout = {{ .Values.config.spawner.start_timeout }}
 
 # This tells the hub to not stop servers when the hub restarts
 c.JupyterHub.cleanup_servers = False

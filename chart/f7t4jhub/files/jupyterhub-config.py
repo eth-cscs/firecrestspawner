@@ -126,7 +126,11 @@ c.Spawner.batch_script = """#!/bin/bash
 {% if gres       %}#SBATCH --gres={{`{{gres}}`}}{% endif %}
 {% if nprocs     %}#SBATCH --cpus-per-task={{`{{nprocs}}`}}{% endif %}
 {% if nnodes     %}#SBATCH --nodes={{`{{nnodes[0]}}`}}{% endif %}
-{% if reservation  %}#SBATCH --reservation={{`{{reservation[0]}}`}}{% endif %}
+{% if reservation_custom[0] %}
+#SBATCH --reservation={{`{{reservation_custom[0]}}`}}
+{% elif reservation  %}
+#SBATCH --reservation={{`{{reservation[0]}}`}}
+{% endif %}
 {% if constraint   %}#SBATCH --constraint={{`{{constraint[0]}}`}}{% endif %}
 {% if account is string %}
 #SBATCH --account={{`{{account}}`}}

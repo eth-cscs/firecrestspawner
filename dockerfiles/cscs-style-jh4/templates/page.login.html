@@ -17,13 +17,13 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&amp;subset=all" rel="stylesheet" type="text/css" />
     <!-- CSS -->
     {% block stylesheet %}
-    <link rel="stylesheet" href="{{static_url("css/cscs/vendor/font-awesome.min.css")}}">
+    <!--<link rel="stylesheet" href="{{static_url("css/cscs/vendor/font-awesome.min.css")}}">--!>
     <link rel="stylesheet" href="{{static_url("css/cscs/login.css")}}" type="text/css"/>
     {% endblock %}
     <!-- JS -->
-    <script src="{{static_url("components/requirejs/require.js") }}" type="text/javascript" charset="utf-8"></script>
-    <script src="{{static_url("components/jquery/dist/jquery.min.js") }}" type="text/javascript" charset="utf-8"></script>
-    <script src="{{static_url("components/bootstrap/dist/js/bootstrap.min.js") }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{static_url("components/require.min.js") }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{static_url("components/jquery.min.js") }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{static_url("components/bootstrap.min.js") }}" type="text/javascript" charset="utf-8"></script>
     <script>
       require.config({
           {% if version_hash %}
@@ -32,9 +32,9 @@
           baseUrl: '{{static_url("js", include_version=False)}}',
           paths: {
             components: '../components',
-            jquery: '../components/jquery/dist/jquery.min',
-            bootstrap: '../components/bootstrap/dist/js/bootstrap.min',
-            moment: "../components/moment/moment",
+            jquery: '../components/jquery.min',
+            bootstrap: '../components/bootstrap.min',
+            moment: "../components/moment.min",
           },
           shim: {
             bootstrap: {

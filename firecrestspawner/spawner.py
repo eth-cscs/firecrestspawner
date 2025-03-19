@@ -650,11 +650,23 @@ class FirecRESTSpawnerBase(Spawner):
             This generator pauses for one second between each status check to
             avoid excessive polling.
         """
+        client = await self.get_firecrest_client()
         while True:
             if self.state_ispending():
+                try:
+                    poll_result = await client.poll_active(self.host, [self.job["jobid"]])
+                    if poll_result[0]["state"] != "RUNNING":
+                        reason = poll_result[0]["nodelist"]
+                        message = f"Job {self.job['jobid']} is pending in queue {reason} "
+                    else:
+                        message = f"Job {self.job['jobid']} is being allocated"
+
+                except:
+                    message = f"Job {self.job['jobid']} is pending in queue "
+
                 await yield_(
                     {
-                        "message": f"Job {self.job['jobid']} is pending in queue... ",
+                        "message": message,
                     }
                 )
             elif self.state_isrunning():

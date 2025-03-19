@@ -58,6 +58,7 @@
 {% block script %}
 {{ super() }}
 <script>
+require(["spawn"]);
 // setup onSubmit feedback
 $('form').submit((e) => {
   var form = $(e.target);

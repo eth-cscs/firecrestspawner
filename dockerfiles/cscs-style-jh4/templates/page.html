@@ -19,11 +19,8 @@
   </div>
 </div>
 {% endmacro %}
-
-
 <!DOCTYPE HTML>
-<html lang="en">
-
+<html xmlns="http://www.w3.org/1999/xhtml" class="jpyhub-html jpyhub-html__app">
 <head>
     <meta charset="utf-8">
 
@@ -34,14 +31,18 @@
     {% block stylesheet %}
     <link rel="stylesheet" href="{{ static_url("css/style.min.css") }}" type="text/css"/>
     <link rel="stylesheet" href="{{ static_url("css/cscs/app.css" ) }}" type="text/css"/>
+    <link rel="stylesheet" href="{{ static_url("components/select2.min.css") }}">
+    <link rel="stylesheet" href="{{ static_url("components/bootstrap-touchspin-master/dist/jquery.bootstrap-touchspin.min.css") }}">
+    <link rel="stylesheet" href="{{ static_url("components/icheck-2/skins/square/grey.css") }}">
+    <link rel="stylesheet" href="{{ static_url("css/cscs/app.css") }}" type="text/css"/>
     {% endblock %}
     {% block favicon %}
     <link rel="icon" href="{{ static_url("favicon.ico") }}" type="image/x-icon">
     {% endblock %}
     {% block scripts %}
-    <script src="{{static_url("components/requirejs/require.js") }}" type="text/javascript" charset="utf-8"></script>
-    <script src="{{static_url("components/jquery/dist/jquery.min.js") }}" type="text/javascript" charset="utf-8"></script>
-    <script src="{{static_url("components/bootstrap/dist/js/bootstrap.min.js") }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{static_url("components/require.min.js") }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{static_url("components/jquery.min.js") }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{static_url("components/bootstrap.min.js") }}" type="text/javascript" charset="utf-8"></script>
     {% endblock %}
     <script>
       require.config({
@@ -51,9 +52,12 @@
           baseUrl: '{{static_url("js", include_version=False)}}',
           paths: {
             components: '../components',
-            jquery: '../components/jquery/dist/jquery.min',
-            bootstrap: '../components/bootstrap/dist/js/bootstrap.min',
-            moment: "../components/moment/moment",
+            jquery: '../components/jquery.min',
+            bootstrap: '../components/bootstrap.min',
+            moment: '../components/moment',
+            select2: '../components/select2.min',
+            icheck: '../components/icheck-2/icheck.min',
+            touchspin: '../components/bootstrap-touchspin-master/dist/jquery.bootstrap-touchspin.min'
           },
           shim: {
             bootstrap: {
@@ -63,7 +67,6 @@
           }
       });
     </script>
-
     <script type="text/javascript">
       window.jhdata = {
         base_url: "{{base_url}}",

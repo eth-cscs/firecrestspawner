@@ -1,0 +1,25 @@
+{{- if .Values.metricbeat.deny_metrics_endpoint }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-deny-metrics-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/deny-all: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  {{- range $issuer, $config := .Values.config.certificates }}
+    {{- range $config.urls }}
+  - host: {{ . }}
+    http:
+      paths:
+      - path: /hub/metrics
+        pathType: Prefix
+        backend:
+          service:
+            name: fake-service
+            port:
+              number: 80  # Dummy backend, never actually used
+    {{- end }}
+  {{- end }}
+{{- end }}

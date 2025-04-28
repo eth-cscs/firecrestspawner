@@ -132,6 +132,9 @@ f7t4jhub:
     # Admin users for the JupyterHub instance (replace with your own admin users)
     adminUsers: '{"user1", "user2"}'
 
+    # Users that can launch servers as service accounts
+    serviceAccountUsers: '{"testuser"}'
+
     # Default URL for the hub
     hubDefaultUrl: '/hub/home'
 

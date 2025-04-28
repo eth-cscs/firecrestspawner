@@ -73,11 +73,27 @@ c.JupyterHub.load_roles = [
              "read:servers",
              "shutdown",
              "read:metrics",
+             "read:hub",
              "admin:groups",
              "delete:users",
              "delete:groups"
         ],
         "users": {{ .Values.config.adminUsers }},
+    },
+    {
+        "name": "service-account",
+        "scopes": [
+             "self",
+             "admin-ui",
+             "list:users",
+             "read:servers",
+             "shutdown",
+             "read:metrics",
+             "admin:groups",
+             "delete:users",
+             "delete:groups"
+        ],
+        "users": {{ .Values.config.serviceAccountUsers }},
     }
 ]
 

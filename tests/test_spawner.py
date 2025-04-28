@@ -142,6 +142,7 @@ async def test_get_req_subvars(db):
         "qos": "",
         "queue": "",
         "reservation": "",
+        "reservation_custom": "",
         "runtime": "",
         "srun": "",
         "submitenv": "",

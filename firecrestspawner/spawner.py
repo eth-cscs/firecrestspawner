@@ -21,6 +21,7 @@ import sys
 import time
 from async_generator import async_generator, yield_
 from enum import Enum
+from firecrest.FirecrestException import PollingIterException
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
 from time import sleep
@@ -165,6 +166,11 @@ class FirecRESTSpawnerBase(Spawner):
     req_uenv_view = Unicode(
         "",
         help="Name of a uenv view to activate"
+    ).tag(config=True)
+
+    req_reservation_custom = Unicode(
+        "",
+        help="Custom reservation to pass in the form"
     ).tag(config=True)
 
     req_queue = Unicode(
@@ -394,7 +400,13 @@ class FirecRESTSpawnerBase(Spawner):
 
         self.host = subvars["host"]
 
-        client = await self.get_firecrest_client()
+        is_service_account = any(role.name == 'service-account'
+                                 for role in self.user.roles)
+        if is_service_account:
+            client = await self.get_firecrest_client_service_account()
+        else:
+            client = await self.get_firecrest_client()
+
         groups = await client.groups(self.host)
         account_from_form = self.user_options.get("account")
         if not account_from_form or account_from_form == [""]:
@@ -405,7 +417,6 @@ class FirecRESTSpawnerBase(Spawner):
         self.log.info(f"Spawner submitted script:\n{script}")
 
         try:
-            client = await self.get_firecrest_client()
             self.log.info("firecREST: Submitting job")
             self.job = await client.submit(
                 self.host, script_str=script, env_vars=job_env
@@ -418,6 +429,9 @@ class FirecRESTSpawnerBase(Spawner):
         # doesn't print anything when cought
         except httpx.ConnectTimeout:
             self.log.error(f"Job submission failed: httpx.ConnectTimeout")
+            self.job_id = ""
+        except PollingIterException:
+            self.log.error(f"Job submission failed: PollingIterException")
             self.job_id = ""
         except Exception as e:
             self.log.error(f"Job submission failed: {e}")
@@ -465,7 +479,13 @@ class FirecRESTSpawnerBase(Spawner):
         """Cancel the job running the notebooks sever"""
 
         self.log.info(f"Cancelling job {self.job_id}")
-        client = await self.get_firecrest_client()
+        is_service_account = any(role.name == 'service-account'
+                                 for role in self.user.roles)
+        if is_service_account:
+            client = await self.get_firecrest_client_service_account()
+        else:
+            client = await self.get_firecrest_client()
+
         self.log.info("firecREST: Canceling job")
         cancel_result = await client.cancel(self.host, self.job_id)
         self.log.debug(f"[client.cancel] {cancel_result}")
@@ -566,12 +586,14 @@ class FirecRESTSpawnerBase(Spawner):
         # unsuccessful should either raise and Exception or loop forever.
         if len(self.job_id) == 0:
             message = "Jupyter batch job submission failure: no jobid in output"
-            if ret:
+            try:
                 if ret.responses[-1].status_code == 200:
                     byte_content = ret.responses[-1].content
                     decoded_string = byte_content.decode('utf-8')
                     response_dict = json.loads(decoded_string)
                     message = list(response_dict["tasks"].values())[0]["data"]
+            except Exception:
+                pass
 
             raise RuntimeError(message)
         while True:

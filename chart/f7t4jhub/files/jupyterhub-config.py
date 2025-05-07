@@ -62,7 +62,12 @@ c = get_config()
 # users, with scopes that allow access to the list of users,
 # user activity, deleting and creating users, but not to the user
 # servers
-# c.Authenticator.admin_users = {{ .Values.config.adminUsers }}
+{{- if .Values.config.adminUsers }}
+c.Authenticator.admin_users = set({{ toJson .Values.config.adminUsers }})
+{{- else }}
+c.Authenticator.admin_users = set()
+{{- end }}
+
 c.JupyterHub.load_roles = [
     {
         "name": "limited-admin",
@@ -78,7 +83,11 @@ c.JupyterHub.load_roles = [
              "delete:users",
              "delete:groups"
         ],
-        "users": {{ .Values.config.adminUsers }},
+        {{- if .Values.config.limitedAdminUsers }}
+        "users": set({{ toJson .Values.config.limitedAdminUsers }})
+        {{- else }}
+        "users": set()
+        {{- end }}
     },
     {
         "name": "service-account",
@@ -93,7 +102,11 @@ c.JupyterHub.load_roles = [
              "delete:users",
              "delete:groups"
         ],
-        "users": {{ .Values.config.serviceAccountUsers }},
+        {{- if .Values.config.serviceAccountUsers }}
+        "users": set({{ toJson .Values.config.serviceAccountUsers }})
+        {{- else }}
+        "users": set()
+        {{- end }}
     }
 ]
 

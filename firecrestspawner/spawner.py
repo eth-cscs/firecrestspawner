@@ -7,7 +7,6 @@
 
 import asyncio
 import base64
-import firecrest
 import hostlist
 import httpx
 import inspect
@@ -22,6 +21,9 @@ import time
 from async_generator import async_generator, yield_
 from enum import Enum
 from firecrest.FirecrestException import PollingIterException
+from firecrest import ClientCredentialsAuth
+from firecrest.FirecrestException import UnexpectedStatusException
+from firecrest.v2._async.Client import AsyncFirecrest as Firecrest
 from jinja2 import Template
 from jupyterhub.spawner import Spawner
 from time import sleep
@@ -145,6 +147,11 @@ class FirecRESTSpawnerBase(Spawner):
         "This is used in the ``home.html`` template to manage the stop"
         "button availability"
     )
+
+    workdir = Unicode(
+        "/home",
+        help="Directory where the job will be submitted from"
+    ).tag(config=True)
 
     # override default since batch systems typically need longer
     start_timeout = Integer(
@@ -306,7 +313,7 @@ class FirecRESTSpawnerBase(Spawner):
                                 "log back in to refresh the credentials.")
             raise err
 
-        client = firecrest.AsyncFirecrest(
+        client = Firecrest(
             firecrest_url=self.firecrest_url, authorization=auth
         )
 
@@ -330,13 +337,13 @@ class FirecRESTSpawnerBase(Spawner):
         client_secret = os.environ["SA_CLIENT_SECRET"]
         token_url = os.environ["SA_AUTH_TOKEN_URL"]
 
-        auth = firecrest.ClientCredentialsAuth(
+        auth = ClientCredentialsAuth(
             client_id,
             client_secret,
             token_url
         )
 
-        client = firecrest.AsyncFirecrest(
+        client = Firecrest(
             firecrest_url=self.firecrest_url, authorization=auth
         )
 
@@ -365,8 +372,11 @@ class FirecRESTSpawnerBase(Spawner):
         # to be an empty list
         poll_result = []
         while poll_result == []:
-            poll_result = await client.poll(self.host, [self.job_id])
-            await asyncio.sleep(1)
+            try:
+                poll_result = await client.job_info(self.host, self.job_id)
+            except UnexpectedStatusException as e:
+                self.log.info(f"Polling job status fail: {e}")
+                await asyncio.sleep(1)
 
         return poll_result
 
@@ -407,7 +417,7 @@ class FirecRESTSpawnerBase(Spawner):
         else:
             client = await self.get_firecrest_client()
 
-        groups = await client.groups(self.host)
+        groups = await client.userinfo(self.host)
         account_from_form = self.user_options.get("account")
         if not account_from_form or account_from_form == [""]:
             subvars["account"] = groups["group"]["name"]
@@ -419,10 +429,13 @@ class FirecRESTSpawnerBase(Spawner):
         try:
             self.log.info("firecREST: Submitting job")
             self.job = await client.submit(
-                self.host, script_str=script, env_vars=job_env
+                self.host,
+                script_str=script,
+                env_vars=job_env,
+                working_dir="/".join((self.workdir, self.user.name))
             )
             self.log.debug(f"[client.submit] {self.job}")
-            self.job_id = f"{self.job['jobid']}"
+            self.job_id = f"{self.job['jobId']}"
             self.log.info(f"Job {self.job_id} submitted")
         # In case the connection to the firecrest server timesout
         # catch httpx.ConnectTimeout since httpx.ConnectTimeout
@@ -454,8 +467,8 @@ class FirecRESTSpawnerBase(Spawner):
         try:
             poll_result = await self.firecrest_poll()
             self.log.debug(f"[client.poll] [query_job_status] {poll_result}")
-            state = poll_result[0]["state"]
-            nodelist = hostlist.expand_hostlist(poll_result[0]["nodelist"])
+            state = poll_result[0]["status"]["state"]
+            nodelist = hostlist.expand_hostlist(poll_result[0]["nodes"])
             # when PENDING nodelist is []
             host = nodelist[0] if len(nodelist) > 0 else ""
             # `job_status` must keep the format used in the original
@@ -487,7 +500,7 @@ class FirecRESTSpawnerBase(Spawner):
             client = await self.get_firecrest_client()
 
         self.log.info("firecREST: Canceling job")
-        cancel_result = await client.cancel(self.host, self.job_id)
+        cancel_result = await client.cancel_job(self.host, self.job_id)
         self.log.debug(f"[client.cancel] {cancel_result}")
 
     def load_state(self, state) -> None:
@@ -676,15 +689,15 @@ class FirecRESTSpawnerBase(Spawner):
         while True:
             if self.state_ispending():
                 try:
-                    poll_result = await client.poll_active(self.host, [self.job["jobid"]])
+                    poll_result = await client.job_info(self.host, self.job["jobId"])
                     if poll_result[0]["state"] != "RUNNING":
-                        reason = poll_result[0]["nodelist"]
-                        message = f"Job {self.job['jobid']} is pending in queue {reason} "
+                        reason = poll_result[0]["nodes"]
+                        message = f"Job {self.job['jobId']} is pending in queue {reason} "
                     else:
-                        message = f"Job {self.job['jobid']} is being allocated"
+                        message = f"Job {self.job['jobId']} is being allocated"
 
                 except:
-                    message = f"Job {self.job['jobid']} is pending in queue "
+                    message = f"Job {self.job['jobId']} is pending in queue "
 
                 await yield_(
                     {
@@ -692,12 +705,13 @@ class FirecRESTSpawnerBase(Spawner):
                     }
                 )
             elif self.state_isrunning():
+                poll_result = await client.job_metadata(self.host, self.job["jobId"])
                 await yield_(
                     {
                         "message": "Cluster job running... waiting to connect. "
                                    "If the server fails to start in a few moments, "
                                    "check the log file for possible reasons: "
-                                   f"{self.job['job_file_out']}",
+                                   f"{poll_result[0]['standardOutput']}",
                     }
                 )
                 return
@@ -788,7 +802,7 @@ class FirecRESTSpawnerRegexStates(FirecRESTSpawnerBase):
 
         # this function is called only when the job has been allocated,
         # then ``nodelist`` won't be ``[]``
-        host = hostlist.expand_hostlist(poll_result[0]["nodelist"])[0]
+        host = hostlist.expand_hostlist(poll_result[0]["nodes"])[0]
         return self.node_name_template.format(host)
 
 

@@ -168,10 +168,6 @@ c.Spawner.batch_script = """#!/bin/bash
 {% endif %}
 {% if options    %}#SBATCH {{`{{options}}`}}{% endif %}
 
-# Activate a virtual environment, load modules, etc
-{{ .Values.config.spawner.vclusterEnv }}
-
-#
 {{ .Values.config.spawner.prelaunchCmds }}
 
 export JUPYTERHUB_API_URL="http://{{ index .Values.config.certificates.letsencrypt.urls 0 }}/hub/api"

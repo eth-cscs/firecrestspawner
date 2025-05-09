@@ -22,3 +22,4 @@ Jupyter notebook servers
 
    deployment_cscs
    deployment_demo
+   deployment_testing

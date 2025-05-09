@@ -38,9 +38,14 @@ Client Credentials Flow
 
 In this approach, JupyterHub uses a single Client Credentials Flow service account to poll for the job status of every user.
 In contrast to the Authorization Code Flow, within this Keycloak authentication method it's possible to refresh the access tokens by providing a client id and secret.
-Note that such service account has no permissions to start or stop user jobs.
-Those actions only can be done providing the user's access token.
 By combining this method with JupyterHub's own session management, which operates independently of Keycloak, potential polling failures can be completely avoided.
+
+Service accounts, when used alongside an authenticated user, do not have permission to start or stop user jobs.
+These actions require the user’s access token.
+However, in FirecRESTSpawner, users granted the special scope ``service-account``, can manage their jobs using the Client Credentials Flow.
+These service account users do not authenticate via username and password.
+Instead, they interact with JupyterHub's REST API using a JupyterHub API token, which must be issued by an admin. 
+Scopes like ``service-account`` can be configured in the JupyterHub setup, enabling the use of service accounts for automated testing of JupyterHub deployments with FirecRESTSpawner.
 
 In summary, the workflow is like this:
 

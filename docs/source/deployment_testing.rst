@@ -1,8 +1,8 @@
 Testing JupyterHub deployments
 ==============================
 
-This page describes how to use use the JupyterHub REST API to create a service account user with no username/password authentication method.
-That account can be used for automatic testing a JupyterHub deployment.
+This page describes how to use the JupyterHub REST API with service account users with no username/password authentication method.
+Such accounts can be used for automatic testing JupyterHub deployments.
 
 Creating the user
 ~~~~~~~~~~~~~~~~~

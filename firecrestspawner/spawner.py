@@ -149,7 +149,7 @@ class FirecRESTSpawnerBase(Spawner):
     )
 
     workdir = Unicode(
-        "/home",
+        "/users",
         help="Directory where the job will be submitted from"
     ).tag(config=True)
 

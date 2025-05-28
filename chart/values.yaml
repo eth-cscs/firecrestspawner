@@ -129,11 +129,18 @@ f7t4jhub:
       #   urls:
       #     - 'jupyterhub-<cluster-name-2>.cscs.ch'
 
-    # Admin users for the JupyterHub instance (replace with your own admin users)
-    adminUsers: '{"user1", "user2"}'
+    # Admin users for the JupyterHub instance
+    adminUsers: ["user1", "user2"]
+
+    # Limited Admin users for the JupyterHub instance
+    # This users are granted the scope "limited-admin" (see
+    # the configuration file)
+    limitedAdminUsers: ["user3", "user4"]
 
     # Users that can launch servers as service accounts
-    serviceAccountUsers: '{"testuser"}'
+    # This users are granted the scope "service-account" (see
+    # the configuration file)
+    serviceAccountUsers: ["testuser"]
 
     # Default URL for the hub
     hubDefaultUrl: '/hub/home'
@@ -205,9 +212,6 @@ f7t4jhub:
       # This is to add logic before the `srun` line
       # It can be used to setup environment variables for instance
       prelaunchCmds: ''
-
-      # Virtual environment setup
-      vclusterEnv: '. /path/to/venv/bin/activate'
 
       # Custom state get host function (customize as needed)
       # This is used if it's not possible to set a `nodeNameTemplate`

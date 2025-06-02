@@ -144,6 +144,7 @@ c.Spawner.req_constraint = "{{ .Values.config.spawner.constraint }}"
 c.Spawner.node_name_template = '{{ .Values.config.spawner.nodeNameTemplate }}'
 c.Spawner.req_partition = '{{ .Values.config.spawner.partition }}'
 c.Spawner.req_srun = '{{ .Values.config.spawner.srun }}'
+c.Spawner.workdir = '{{ .Values.config.spawner.workdir }}'
 c.Spawner.batch_script = """#!/bin/bash
 
 #SBATCH --job-name={{ .Values.config.spawner.jobName }}

@@ -227,4 +227,22 @@ c.ConfigurableHTTPProxy.auth_token = os.environ["CONFIGPROXY_AUTH_TOKEN"]
 # This should be set to the URL which the hub uses to connect to the proxy’s API.
 c.ConfigurableHTTPProxy.api_url = 'http://{{ .Release.Name }}-proxy-svc:{{ .Values.network.apiPort }}'
 
+c.JupyterHub.template_vars = {
+    {{- if .Values.config.announcements.home }}
+    'announcement_home':  """{{ .Values.config.announcements.home }}""",
+    {{- end}}
+    {{- if .Values.config.announcements.spawn }}
+    'announcement_spawn': """{{ .Values.config.announcements.spawn }}"""
+    {{- end}}
+    {{- if .Values.config.announcements.announcement }}
+    'announcement': """{{ .Values.config.announcements.general }}"""
+    {{- end}}
+    {{- if .Values.config.announcements.login }}
+    'announcement_login': """{{ .Values.config.announcements.login }}"""
+    {{- end}}
+    {{- if .Values.config.announcements.logout }}
+    'announcement_logout': """{{ .Values.config.announcements.logout }}"""
+    {{- end}}
+}
+
 {{ .Values.config.extraConfig }}

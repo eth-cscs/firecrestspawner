@@ -272,3 +272,20 @@ f7t4jhub:
     # Literal python code to add at the end of jupyterhub's configuration
     extraConfig: |
       c.JupyterHub.authenticate_prometheus = False
+
+    # Add announcements to be displayed on different pages of the hub
+    announcements:
+      # The announcement will be placed on the top of all pages
+      general: null
+
+      # The announcement will be placed on the home page
+      home: null
+
+      # The announcement will be placed on the spawn page
+      spawn: null
+
+      # The announcement will be placed on the login page
+      login: null
+
+      # The announcement will be placed on the logout page
+      logout: null

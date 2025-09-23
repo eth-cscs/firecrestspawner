@@ -1,0 +1,26 @@
+version: 2
+updates:
+  # Python dependencies (requirements.txt, setup.py, pyproject.toml)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:00"
+    open-pull-requests-limit: 10
+
+  # Docker dependencies (base images in Dockerfiles)
+  - package-ecosystem: "docker"
+    directory: "/dockerfiles"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:00"
+
+  # Helm chart dependencies (Chart.yaml, values.yaml)
+  - package-ecosystem: "helm"
+    directory: "chart/f7t4jhub/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:00"

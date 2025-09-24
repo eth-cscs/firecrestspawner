@@ -1,32 +1,37 @@
-name: Bandit Security Scan
+name: Python Security Analysis
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   bandit:
-    name: Run Bandit
     runs-on: ubuntu-latest
     permissions:
-      contents: read   # only needs read access
+      security-events: write
+      contents: read
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v3
         with:
           python-version: '3.11'
 
-      - name: Install Bandit
-        run: pip install bandit
+      - name: Install dependencies
+        run: |
+          pip install bandit
+          pip install bandit-sarif-formatter
 
-      - name: Run Bandit
-        run: bandit -r . -f sarif -o bandit-results.sarif
+      - name: Run Bandit and generate SARIF report
+        run: |
+          bandit -r . --format sarif --output bandit-results.sarif
 
       - name: Upload SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3

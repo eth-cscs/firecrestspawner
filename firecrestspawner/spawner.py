@@ -303,6 +303,7 @@ class FirecRESTSpawnerBase(Spawner):
                 refresh_token=auth_state["refresh_token"],
                 token_url=self.user.authenticator.token_url,
             )
+            self.log.info(auth.get_access_token())
         except TypeError as e:
             # If `auth_state` is None, then `auth_state["refresh_token"]` can
             # throw a `TypeError`
@@ -373,7 +374,7 @@ class FirecRESTSpawnerBase(Spawner):
         poll_result = []
         while poll_result == []:
             try:
-                poll_result = await client.job_info(self.host, self.job_id)
+                poll_result = await client.job_info(self.host, self.job_id, True)
             except UnexpectedStatusException as e:
                 self.log.info(f"Polling job status fail: {e}")
                 await asyncio.sleep(1)
@@ -417,10 +418,17 @@ class FirecRESTSpawnerBase(Spawner):
         else:
             client = await self.get_firecrest_client()
 
-        groups = await client.userinfo(self.host)
-        account_from_form = self.user_options.get("account")
-        if not account_from_form or account_from_form == [""]:
-            subvars["account"] = groups["group"]["name"]
+        try:
+            groups = await client.userinfo(self.host)
+            account_from_form = self.user_options.get("account")
+            if not account_from_form or account_from_form == [""]:
+                subvars["account"] = groups["group"]["name"]
+
+        except Exception as e:
+            pass
+            # self.log.error(f"Job submission failed: {e}")
+            # self.job_id = ""
+            # return e
 
         script = await self._get_batch_script(**subvars)
         self.log.info("Spawner submitting job using firecREST")
@@ -608,7 +616,11 @@ class FirecRESTSpawnerBase(Spawner):
             except Exception:
                 pass
 
-            raise RuntimeError(message)
+            # raise RuntimeError(message)
+            err = HTTPError(500, f"Test test test")
+            err.html_message = ("something something")
+            raise err
+
         while True:
             status = await self.query_job_status()
             if status == JobStatus.RUNNING:
@@ -689,7 +701,7 @@ class FirecRESTSpawnerBase(Spawner):
         while True:
             if self.state_ispending():
                 try:
-                    poll_result = await client.job_info(self.host, self.job["jobId"])
+                    poll_result = await client.job_info(self.host, self.job["jobId"], True)
                     if poll_result[0]["state"] != "RUNNING":
                         reason = poll_result[0]["nodes"]
                         message = f"Job {self.job['jobId']} is pending in queue {reason} "

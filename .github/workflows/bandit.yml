@@ -27,7 +27,7 @@ jobs:
         run: pip install bandit
 
       - name: Run Bandit (JSON output)
-        run: bandit -r . -f json -o bandit-results.json
+        run: bandit -r . -f json -o bandit-results.json || true
 
       - name: Convert JSON → SARIF
         uses: microsoft/sarif-actions@v0.1

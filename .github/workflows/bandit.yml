@@ -11,7 +11,8 @@ jobs:
     name: Run Bandit
     runs-on: ubuntu-latest
     permissions:
-      contents: read   # only needs read access
+      contents: read
+      security-events: write
 
     steps:
       - name: Checkout code
@@ -25,8 +26,13 @@ jobs:
       - name: Install Bandit
         run: pip install bandit
 
-      - name: Run Bandit
-        run: bandit -r . -f sarif -o bandit-results.sarif
+      - name: Run Bandit (JSON output)
+        run: bandit -r . -f json -o bandit-results.json
+
+      - name: Convert JSON → SARIF
+        uses: microsoft/sarif-actions@v0.1
+        with:
+          command: convert bandit-results.json --output bandit-results.sarif
 
       - name: Upload SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3

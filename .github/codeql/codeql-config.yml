@@ -1,3 +1,4 @@
 paths:
  - 'firecrestspawner'
  - '.github/workflows'
+ - 'dockerfiles/cscs-style-jh4'

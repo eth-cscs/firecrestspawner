@@ -11,6 +11,8 @@ on:
 
 jobs:
   test:
+    permissions:
+      contents: read
     name: Run Unit Tests
     runs-on: ubuntu-latest
 

@@ -32,7 +32,7 @@ jobs:
       - name: Convert JSON → SARIF
         uses: microsoft/sarif-actions@v0.1
         with:
-          command: convert bandit-results.json --output bandit-results.sarif
+          command: convert bandit-results.json --tool bandit --output bandit-results.sarif
 
       - name: Upload SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3

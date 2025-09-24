@@ -8,6 +8,10 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read     # can read the repo
+      packages: write    # docker/login-action can push to GHCR
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2

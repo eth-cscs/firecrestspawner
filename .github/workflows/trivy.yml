@@ -16,26 +16,31 @@ jobs:
     outputs:
       tags: ${{ steps.get_tags.outputs.tags }}
     steps:
-      - name: Fetch all tags from GHCR
-        id: get_tags
-        env:
-          IMAGE: ghcr.io/eth-cscs/f7t4jhub
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Fetching tags for $IMAGE..."
-          # Extract owner and repo (eth-cscs/f7t4jhub)
-          ORG_REPO=$(echo "$IMAGE" | sed 's|ghcr.io/||')
-          
-          # Call GHCR API to get tags (requires authenticated token)
-          TAGS=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
-            "https://ghcr.io/v2/$ORG_REPO/tags/list" | jq -r '.tags[]' | sort -r | head -n 10)
-          
-          echo "Found tags:"
-          echo "$TAGS"
-          
-          # Format tags as a JSON array for matrix
-          TAGS_JSON=$(echo "$TAGS" | jq -R . | jq -s .)
-          echo "tags=$TAGS_JSON" >> $GITHUB_OUTPUT
+    - name: Fetch all tags from GHCR
+      id: get_tags
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        OWNER: eth-cscs
+        PACKAGE: f7t4jhub
+      run: |
+        echo "Fetching tags for ghcr.io/$OWNER/$PACKAGE..."
+    
+        URL="https://api.github.com/orgs/$OWNER/packages/container/$PACKAGE/versions?per_page=100"
+    
+        TAGS=$(curl -s -H "Authorization: Bearer $GH_TOKEN" "$URL" \
+          | jq -r '.[] | .metadata.container.tags[]?' | sort -r | head -n 10)
+    
+        if [ -z "$TAGS" ]; then
+          echo "No tags found or authentication failed"
+          exit 1
+        fi
+    
+        echo "Found tags:"
+        echo "$TAGS"
+    
+        # Convert tags to JSON array for the matrix
+        TAGS_JSON=$(echo "$TAGS" | jq -R . | jq -s .)
+        echo "tags=$TAGS_JSON" >> "$GITHUB_OUTPUT"
 
   trivy-scan:
     needs: get-tags

@@ -1,0 +1,59 @@
+name: trivy-ghcr-scan
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'  # every Monday at 03:00 UTC
+  workflow_dispatch:     # allows manual triggering
+
+permissions:
+  contents: read
+  security-events: write  # required for SARIF upload
+  packages: read          # required to access GHCR images
+
+jobs:
+  get-tags:
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.get_tags.outputs.tags }}
+    steps:
+      - name: Fetch all tags from GHCR
+        id: get_tags
+        env:
+          IMAGE: ghcr.io/eth-cscs/f7t4jhub
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Fetching tags for $IMAGE..."
+          # Extract owner and repo (eth-cscs/f7t4jhub)
+          ORG_REPO=$(echo "$IMAGE" | sed 's|ghcr.io/||')
+          
+          # Call GHCR API to get tags (requires authenticated token)
+          TAGS=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
+            "https://ghcr.io/v2/$ORG_REPO/tags/list" | jq -r '.tags[]' | sort -r | head -n 10)
+          
+          echo "Found tags:"
+          echo "$TAGS"
+          
+          # Format tags as a JSON array for matrix
+          TAGS_JSON=$(echo "$TAGS" | jq -R . | jq -s .)
+          echo "tags=$TAGS_JSON" >> $GITHUB_OUTPUT
+
+  trivy-scan:
+    needs: get-tags
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tag: ${{ fromJson(needs.get-tags.outputs.tags) }}
+    steps:
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.24.0
+        with:
+          image-ref: ghcr.io/eth-cscs/f7t4jhub:${{ matrix.tag }}
+          format: template
+          template: '@/contrib/sarif.tpl'
+          output: trivy-results-${{ matrix.tag }}.sarif
+          severity: CRITICAL,HIGH
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results-${{ matrix.tag }}.sarif

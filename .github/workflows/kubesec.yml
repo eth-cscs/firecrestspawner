@@ -32,6 +32,7 @@ jobs:
           cd ci
           cp ../chart/Chart.yaml ../chart/values.yaml .
           cp -r ../chart/f7t4jhub .
+          helm dependency build
           helm template . > ../rendered.yaml
 
       - name: Run Kubesec scanner

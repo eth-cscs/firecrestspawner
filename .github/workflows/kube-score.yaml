@@ -39,7 +39,7 @@ jobs:
 
       - name: Install kube-score
         run: |
-          curl -L -o kube-score https://github.com/zegl/kube-score/releases/download/v1.11.0/kube-score_1.20.0_linux_amd64
+          curl -L -o kube-score https://github.com/zegl/kube-score/releases/download/v1.20.0/kube-score_1.20.0_linux_amd64
           chmod +x kube-score
           sudo mv kube-score /usr/local/bin/
 

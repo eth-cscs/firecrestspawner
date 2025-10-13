@@ -29,8 +29,7 @@ jobs:
         run: |
           helm dependency build chart/f7t4jhub
 
-      # Render chart into a single yaml file
-      - name: Render Helm chart
+      - name: Build dependencies
         run: |
           mkdir ci
           cd ci
@@ -40,4 +39,5 @@ jobs:
 
       - name: Lint
         run: |
+          cd ci 
           helm lint

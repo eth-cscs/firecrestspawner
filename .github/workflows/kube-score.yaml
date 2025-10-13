@@ -39,16 +39,15 @@ jobs:
 
       - name: Install kube-score
         run: |
-          curl -L -o kube-score https://github.com/zegl/kube-score/releases/download/v1.11.0/kube-score_1.11.0_linux_amd64
+          curl -L -o kube-score https://github.com/zegl/kube-score/releases/download/v1.11.0/kube-score_1.20.0_linux_amd64
           chmod +x kube-score
           sudo mv kube-score /usr/local/bin/
 
       - name: Run kube-score with SARIF output
         run: |
-          cd ci
-          kube-score score rendered.yaml -o sarif > kube-score.sarif || true
+          kube-score score ci/rendered.yaml -o sarif > kube-score.sarif || true
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: 'ci/kube-score.sarif'
+          sarif_file: 'kube-score.sarif'

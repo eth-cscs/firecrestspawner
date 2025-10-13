@@ -39,7 +39,8 @@ jobs:
 
       - name: Install kube-score
         run: |
-          curl -L https://github.com/zegl/kube-score/releases/latest/download/kube-score_$(uname -s)_$(uname -m).tar.gz | tar xz
+          curl -L -o kube-score https://github.com/zegl/kube-score/releases/download/v1.11.0/kube-score_1.11.0_linux_amd64
+          chmod +x kube-score
           sudo mv kube-score /usr/local/bin/
 
       - name: Run kube-score with SARIF output

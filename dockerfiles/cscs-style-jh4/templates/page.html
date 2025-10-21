@@ -31,8 +31,8 @@
     {% block stylesheet %}
     <link rel="stylesheet" href="{{ static_url("css/style.min.css") }}" type="text/css"/>
     <link rel="stylesheet" href="{{ static_url("css/cscs/app.css" ) }}" type="text/css"/>
-    <link rel="stylesheet" href="{{ static_url("components/select2.min.css") }}">
-    <link rel="stylesheet" href="{{ static_url("components/bootstrap-touchspin-master/dist/jquery.bootstrap-touchspin.min.css") }}">
+    <link rel="stylesheet" href="{{ static_url("components/css/select2.min.css") }}">
+    <link rel="stylesheet" href="{{ static_url("components/jquery.bootstrap-touchspin.min.css") }}">
     <!--<link rel="stylesheet" href="{{ static_url("components/icheck-2/skins/square/grey.css") }}">--!>
     <link rel="stylesheet" href="{{ static_url("css/cscs/app.css") }}" type="text/css"/>
     {% endblock %}
@@ -40,9 +40,9 @@
     <link rel="icon" href="{{ static_url("favicon.ico") }}" type="image/x-icon">
     {% endblock %}
     {% block scripts %}
-    <script src="{{static_url("components/require.min.js") }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{static_url("components/requirejs/require.js") }}" type="text/javascript" charset="utf-8"></script>
     <script src="{{static_url("components/jquery.min.js") }}" type="text/javascript" charset="utf-8"></script>
-    <script src="{{static_url("components/bootstrap.min.js") }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{static_url("components/bootstrap/dist/js/bootstrap.min.js") }}" type="text/javascript" charset="utf-8"></script>
     {% endblock %}
     <script>
       require.config({
@@ -53,11 +53,11 @@
           paths: {
             components: '../components',
             jquery: '../components/jquery.min',
-            bootstrap: '../components/bootstrap.min',
+            bootstrap: '../components/bootstrap/dist/css/bootstrap.min',
             moment: '../components/moment.min',
-            select2: '../components/select2.min',
+            select2: '../components/js/select2.min',
             icheck: '../components/icheck-2/icheck.min',
-            touchspin: '../components/bootstrap-touchspin-master/dist/jquery.bootstrap-touchspin.min'
+            touchspin: '../components/jquery.bootstrap-touchspin.min'
           },
           shim: {
             bootstrap: {

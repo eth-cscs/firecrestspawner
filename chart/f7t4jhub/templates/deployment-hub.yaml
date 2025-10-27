@@ -44,12 +44,14 @@ spec:
           seccompProfile:
             type: RuntimeDefault
         command:
-          - "/bin/bash"
-          - "-c"
-          - >
-              . /opt/jhub-env/bin/activate &&
-              jupyterhub --config /etc/config/jupyterhub_config.py --ip 0.0.0.0
-              {{- if .Values.hub.debug }} --debug{{- end }}
+          - jupyterhub
+          - --config
+          - /etc/config/jupyterhub_config.py
+          - --ip
+          - 0.0.0.0
+          {{- if .Values.hub.debug }}
+          - --debug
+          {{- end }}
         ports:
         - containerPort: {{ .Values.network.appPort }}
         env:

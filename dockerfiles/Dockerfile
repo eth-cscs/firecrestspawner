@@ -1,5 +1,5 @@
 # docker pull python:3.12-slim && docker inspect --format='{{index .RepoDigests 0}}' python:3.12-slim
-FROM python:3.12-slim@sha256:47ae396f09c1303b8653019811a8498470603d7ffefc29cb07c88f1f8cb3d19f AS base
+FROM python:3.14-slim@sha256:4ed33101ee7ec299041cc41dd268dae17031184be94384b1ce7936dc4e5dead3 AS base
 
 # --- STAGE 1: builder ---
 FROM base AS builder
@@ -60,7 +60,7 @@ RUN cd /usr/local/share/jupyterhub/static/components && \
 
 
 # --- STAGE 2 ---
-FROM python:3.12-slim@sha256:47ae396f09c1303b8653019811a8498470603d7ffefc29cb07c88f1f8cb3d19f
+FROM python:3.14-slim@sha256:4ed33101ee7ec299041cc41dd268dae17031184be94384b1ce7936dc4e5dead3
 
 RUN rm -r /usr/local
 

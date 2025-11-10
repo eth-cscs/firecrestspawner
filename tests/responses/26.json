@@ -1,0 +1,53 @@
+{
+    "status_code": 200,
+    "response": {
+        "jobs": [
+            {
+                "jobId": 3,
+                "name": "Count to 100",
+                "status": {
+                    "state": "RUNNING",
+                    "stateReason": "None",
+                    "exitCode": 0,
+                    "interruptSignal": 0
+                },
+                "tasks": [
+                    {
+                        "id": "3.batch",
+                        "name": "batch",
+                        "status": {
+                            "state": "RUNNING",
+                            "stateReason": null,
+                            "exitCode": 0,
+                            "interruptSignal": 0
+                        },
+                        "time": {
+                            "elapsed": 5,
+                            "start": 1756904609,
+                            "end": null,
+                            "suspended": 0,
+                            "limit": null
+                        }
+                    }
+                ],
+                "time": {
+                    "elapsed": 5,
+                    "start": 1756904609,
+                    "end": null,
+                    "suspended": 0,
+                    "limit": 7200
+                },
+                "account": "staff",
+                "allocationNodes": 1,
+                "cluster": "cluster",
+                "group": "users",
+                "nodes": "localhost",
+                "partition": "part01",
+                "killRequestUser": null,
+                "user": "fireuser",
+                "workingDirectory": "/home/fireuser",
+                "priority": 1
+            }
+        ]
+    }
+}

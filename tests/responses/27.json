@@ -1,0 +1,35 @@
+{
+    "status_code": 200,
+    "response": {
+        "jobs": [
+            {
+                "jobId": 2,
+                "name": "Count to 100",
+                "status": {
+                    "state": "PENDING",
+                    "stateReason": "None",
+                    "exitCode": 0,
+                    "interruptSignal": 0
+                },
+                "tasks": [],
+                "time": {
+                    "elapsed": 0,
+                    "start": null,
+                    "end": null,
+                    "suspended": 0,
+                    "limit": 7200
+                },
+                "account": "staff",
+                "allocationNodes": 0,
+                "cluster": "cluster",
+                "group": "users",
+                "nodes": "None assigned",
+                "partition": "part01",
+                "killRequestUser": null,
+                "user": "fireuser",
+                "workingDirectory": "/home/fireuser",
+                "priority": 1
+            }
+        ]
+    }
+}

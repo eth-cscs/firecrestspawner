@@ -148,7 +148,7 @@ c.Spawner.workdir = '{{ .Values.config.spawner.workdir }}'
 c.Spawner.batch_script = """#!/bin/bash
 
 #SBATCH --job-name={{ .Values.config.spawner.jobName }}
-#SBATCH --get-user-env=L
+#SBATCH --get-user-env
 
 {% if partition  %}#SBATCH --partition={{`{{partition}}`}}{% endif %}
 {% if runtime    %}#SBATCH --time={{`{{runtime[0]}}`}}{% endif %}

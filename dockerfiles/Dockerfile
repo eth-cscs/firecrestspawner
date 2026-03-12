@@ -6,6 +6,7 @@ FROM base AS builder
 
 RUN apt-get update -qq \
     && apt-get install -yqq --no-install-recommends --no-install-suggests \
+    curl \
     wget \
     unzip \
     git \
@@ -18,6 +19,9 @@ RUN apt-get update -qq \
 COPY requirements.txt .
 RUN python -m pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install code-server
+RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone --prefix=/usr/local --version=4.109.2
 
 COPY . firecrestspawner
 

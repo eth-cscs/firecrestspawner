@@ -1,3 +1,5 @@
+jupyter_server_proxy==4.4.0
+jupyter_vscode_proxy==0.7
 jupyterhub==4.1.6
 pyfirecrest==3.7.1
 SQLAlchemy==1.4.52

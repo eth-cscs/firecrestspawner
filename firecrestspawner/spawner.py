@@ -412,10 +412,8 @@ class FirecRESTSpawnerBase(Spawner):
 
         is_service_account = any(role.name == 'service-account'
                                  for role in self.user.roles)
-        if is_service_account:
-            client = await self.get_firecrest_client_service_account()
-        else:
-            client = await self.get_firecrest_client()
+
+        client = await self.get_firecrest_client()
 
         groups = await client.userinfo(self.host)
         account_from_form = self.user_options.get("account")

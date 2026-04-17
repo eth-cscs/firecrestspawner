@@ -1,5 +1,6 @@
-jupyterhub==4.1.6
-pyfirecrest==3.3.1
-SQLAlchemy==1.4.52
+jupyterhub==5.4.3
+pyfirecrest==3.7.1
+SQLAlchemy==2.0.48
 oauthenticator==16.3.1
 python-hostlist==1.23.0
+async_generator

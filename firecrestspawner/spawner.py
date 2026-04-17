@@ -107,7 +107,7 @@ class AuthorizationCodeFlowAuth:
             "refresh_token": self.refresh_token,
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = requests.post(self.token_url, data=params, headers=headers)
+        response = requests.post(self.token_url, data=params, headers=headers, timeout=30)
 
         if response.status_code != 200:
             # if the refresh token is expired, Keycloak returns

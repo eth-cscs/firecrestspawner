@@ -17,6 +17,7 @@ def main(argv=None):
         url=url_path_join(hub_auth.api_url, "firecrestspawner"),
         headers={"Authorization": f"token {hub_auth.api_token}"},
         json={"port": port},
+        timeout=30
     )
     cmd_path = which(sys.argv[1])
     sys.argv = sys.argv[1:] + ["--port={}".format(port)]

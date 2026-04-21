@@ -1,20 +1,29 @@
-# docker pull python:3.12-slim && docker inspect --format='{{index .RepoDigests 0}}' python:3.12-slim
-FROM python:3.12-slim@sha256:47ae396f09c1303b8653019811a8498470603d7ffefc29cb07c88f1f8cb3d19f AS base
+# --- Stage 1: Build Tailwind CSS ---
+FROM node:18-alpine AS tailwind-builder
 
-# --- STAGE 1: builder ---
-FROM base AS builder
+WORKDIR /app
 
-RUN apt-get update -qq \
-    && apt-get install -yqq --no-install-recommends --no-install-suggests \
-    wget \
-    unzip \
-    git \
-    ca-certificates \
-    nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
+COPY dockerfiles-tw/templates_cscs /usr/local/share/jupyterhub/templates_cscs
 
-# Install dependencies
+COPY dockerfiles-tw/package.json ./
+
+RUN npm install
+
+COPY dockerfiles-tw/src ./src
+RUN npx tailwindcss -c ./src/tailwind.config.js -i ./src/input.css -o /app/output.css --minify
+
+# --- Stage 2: JupyterHub ---
+FROM python:3.12-slim
+
+WORKDIR /srv/jupyterhub
+
+RUN apt-get update && apt-get install -y nodejs npm curl && apt-get clean
+
+RUN npm install -g configurable-http-proxy
+
+# Install JupyterHub and Notebook
+# RUN pip install --no-cache-dir jupyterhub notebook jupyterlab
+
 COPY requirements.txt .
 RUN python -m pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
@@ -26,52 +35,25 @@ RUN cd firecrestspawner && \
     cd .. && \
     rm -r firecrestspawner
 
-RUN rm -r /usr/local/share/jupyterhub/templates
-COPY dockerfiles/cscs-style-jh4/templates          /usr/local/share/jupyterhub/templates
-COPY dockerfiles/cscs-style-jh4/static/css/cscs    /usr/local/share/jupyterhub/static/css/cscs
-COPY dockerfiles/cscs-style-jh4/static/js/home.js  /usr/local/share/jupyterhub/static/js/home.js
-COPY dockerfiles/cscs-style-jh4/static/js/spawn.js /usr/local/share/jupyterhub/static/js/spawn.js
+COPY --from=tailwind-builder /app/output.css /srv/jupyterhub/custom.css
 
-COPY dockerfiles/cscs-style-jh4/package.json      /tmp/package.json
-COPY dockerfiles/cscs-style-jh4/package-lock.json /tmp/package-lock.json
+# Copy optional JupyterHub config
+# COPY jupyterhub_config.py /srv/jupyterhub/jupyterhub_config.py
+COPY dockerfiles-tw/templates_cscs /usr/local/share/jupyterhub/templates_cscs
+COPY dockerfiles-tw/cscs-logo.svg /usr/local/share/jupyterhub/static/images/cscs-logo.svg
 
-RUN cd /tmp &&\
-    npm ci --no-audit --no-fund
+RUN curl -o /usr/local/share/jupyterhub/static/js/alpine.min.js https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js
 
-RUN mkdir -p /usr/local/share/jupyterhub/static/components && \
-    cp -r /tmp/node_modules/jquery/dist/*              /usr/local/share/jupyterhub/static/components/ && \
-    cp -r /tmp/node_modules/bootstrap/dist/*           /usr/local/share/jupyterhub/static/components/ && \
-    cp -r /tmp/node_modules/moment/min/*               /usr/local/share/jupyterhub/static/components/ && \
-    cp -r /tmp/node_modules/select2/dist/*             /usr/local/share/jupyterhub/static/components/ && \
-    cp -r /tmp/node_modules/bootstrap-touchspin/dist/* /usr/local/share/jupyterhub/static/components/
-
-# icheck is not installable with npm
-RUN cd /usr/local/share/jupyterhub/static/components && \
-    wget -q https://github.com/fronteed/icheck/archive/refs/heads/2.x.zip && \
-    echo "4947ff7139cfb22720070dd5aa710ce70706e72529947480777c6f795f325e9c  2.x.zip" | sha256sum -c - && \
-    unzip 2.x.zip && \
-    rm 2.x.zip && \
-    mv icheck-2.x icheck-2
-
-# USER builder
-# RUN git clone https://github.com/eth-cscs/pyfirecrest.git && \
-#     cd pyfirecrest && \
-#     pip install .
-
-
-# --- STAGE 2 ---
-FROM python:3.12-slim@sha256:47ae396f09c1303b8653019811a8498470603d7ffefc29cb07c88f1f8cb3d19f
-
-RUN rm -r /usr/local
-
-COPY --from=builder /usr/local /usr/local
+# Copy Tailwind output from previous stage
+COPY --from=tailwind-builder /app/output.css /usr/local/share/jupyterhub/static/css/custom.css
 
 EXPOSE 8000
 
-RUN useradd -ms /bin/bash juhu
-
+RUN useradd -m juhu
 USER juhu
-
 WORKDIR /home/juhu
 
+# COPY jupyterhub_config.py /home/juhu/jupyterhub_config.py
+
+# CMD ["jupyterhub" , "-f", "/home/juhu/jupyterhub_config.py"]
 CMD jupyterhub

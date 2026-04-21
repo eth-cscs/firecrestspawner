@@ -1,0 +1,63 @@
+{% extends "page.html" %}
+{% block login_widget %}
+{% endblock login_widget %}
+
+{% block main %}
+  <div class="max-w-3xl mx-auto px-4 py-10">
+    <div class="flex justify-center">
+      <div class="w-full">
+        <h1 class="text-3xl font-semibold text-center mb-4">Authorize access</h1>
+        <p class="text-lg text-center text-gray-700 mb-4">
+          An application is requesting authorization to access data associated with your JupyterHub account
+        </p>
+        <p class="text-gray-700 mb-6">
+          {{ oauth_client.description }} (oauth URL: {{ oauth_client.redirect_uri }})
+          would like permission to identify you.
+          {% if scope_descriptions | length == 1 and not scope_descriptions[0].scope %}
+            It will not be able to take actions on
+            your behalf.
+          {% endif %}
+        </p>
+
+        <form method="post" action="">
+          <div class="border rounded-lg shadow-sm overflow-hidden">
+            <div class="bg-gray-100 px-4 py-3 border-b">
+              <p class="text-lg font-medium">This will grant the application permission to:</p>
+            </div>
+
+            <div class="px-4 py-4 space-y-3">
+              <input type="hidden" name="_xsrf" value="{{ xsrf }}" />
+              {% for scope in allowed_scopes %}
+                <input type="hidden" name="scopes" value="{{ scope }}" />
+              {% endfor %}
+
+              {% for scope_info in scope_descriptions %}
+                <div class="flex items-center">
+                  <input type="checkbox"
+                         name="raw-scopes"
+                         checked="true"
+                         title="This authorization is required"
+                         disabled="disabled"
+                         class="h-4 w-4 text-blue-600 border-gray-300 rounded mr-2"
+                  />
+                  <span class="text-gray-700">
+                    {{ scope_info['description'] }}
+                    {% if scope_info['filter'] %}Applies to {{ scope_info['filter'] }}.{% endif %}
+                  </span>
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="px-4 py-3 bg-gray-50 border-t">
+              <button type="submit"
+                      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+              >
+                Authorize
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock main %}

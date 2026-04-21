@@ -1,0 +1,160 @@
+<div x-data="serverForm()" class="max-w-4xl mx-auto bg-white text-gray-900 p-6 rounded-2xl shadow-xl space-y-6">
+
+  <h3 class="text-2xl font-bold">Server Options</h3>
+  <p class="text-gray-600">Pick your preferred settings</p>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+    <!-- Queue -->
+    <div>
+      <label class="block mb-1 font-medium text-gray-700">Queue</label>
+      <div x-data="{ open: false }" class="relative w-full">
+        <button @click="open = !open" type="button"
+          class="w-full max-w-6xl min-w-[700px] mx-auto  bg-white border border-gray-300 rounded-md shadow-sm px-3 py-2 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <span x-text="queue"></span>
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path :class="{'rotate-180': open}" class="transform transition-transform duration-200"
+                  stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <ul x-show="open" @click.outside="open = false" x-transition
+            class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto text-gray-900">
+          <template x-for="option in ['Dedicated', 'Standard']" :key="option">
+            <li @click="queue = option; open = false" class="cursor-pointer px-3 py-2 hover:bg-blue-100">
+              <span x-text="option"></span>
+            </li>
+          </template>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Account -->
+    <div>
+      <label for="account" class="block mb-1 font-medium text-gray-700">Account</label>
+      <input x-model="account" id="account"
+        class="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+    </div>
+
+    <!-- Job Duration -->
+    <div>
+      <label class="block mb-1 font-medium text-gray-700">Job Duration</label>
+      <div x-data="{ open: false }" class="relative w-full">
+        <button @click="open = !open" type="button"
+          class="w-full bg-white border border-gray-300 rounded-md shadow-sm px-3 py-2 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <span x-text="runtimeLabel"></span>
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path :class="{'rotate-180': open}" class="transform transition-transform duration-200"
+                  stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <ul x-show="open" @click.outside="open = false" x-transition
+            class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto text-gray-900">
+          <template x-for="option in [{label:'1 hour', value:'1:00:00'}, {label:'2 hours', value:'2:00:00'}, {label:'4 hours', value:'4:00:00'}, {label:'8 hours', value:'8:00:00'}]" :key="option.value">
+            <li @click="runtime = option.value; runtimeLabel = option.label; open = false" class="cursor-pointer px-3 py-2 hover:bg-blue-100">
+              <span x-text="option.label"></span>
+            </li>
+          </template>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Image selection -->
+  <div>
+    <label class="block mb-1 font-medium text-gray-700">Image</label>
+    <div x-data="{ open: false }" class="relative w-full">
+      <button @click="open = !open" type="button"
+        class="w-full bg-white border border-gray-300 rounded-md shadow-sm px-3 py-2 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <span x-text="imageLabel"></span>
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path :class="{'rotate-180': open}" class="transform transition-transform duration-200"
+                stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+      <ul x-show="open" @click.outside="open = false" x-transition
+          class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto text-gray-900">
+        <template x-for="option in imageOptions" :key="option.value">
+          <li @click="image = option.value; imageLabel = option.label; open = false" class="cursor-pointer px-3 py-2 hover:bg-blue-100">
+            <span x-text="option.label"></span>
+          </li>
+        </template>
+      </ul>
+    </div>
+    <p class="text-sm text-gray-500 mt-1"><i class="fa fa-info-circle"></i> Select an environment</p>
+  </div>
+
+  <!-- Advanced options toggle -->
+  <div>
+    <button type="button" @click="advanced = !advanced" class="text-blue-600 font-medium flex items-center gap-2">
+      <i class="fa fa-plus-circle" x-show="!advanced"></i>
+      <i class="fa fa-minus-circle" x-show="advanced"></i>
+      Advanced options
+    </button>
+  </div>
+
+  <!-- Advanced options -->
+  <div x-show="advanced" x-transition class="mt-4 space-y-4">
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div>
+        <label for="form_user_toml" class="block mb-1 font-medium text-gray-700">Path to custom CE toml file</label>
+        <input x-model="userToml" class="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+        <p class="text-sm text-gray-500 mt-1"><i class="fa fa-info-circle"></i> Overrides the default image</p>
+      </div>
+
+      <div>
+        <label for="form_user_uenv" class="block mb-1 font-medium text-gray-700">Custom uenv</label>
+        <input x-model="userUenv" class="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+        <p class="text-sm text-gray-500 mt-1"><i class="fa fa-info-circle"></i> Overrides the default uenv</p>
+      </div>
+
+      <div>
+        <label for="form_user_view" class="block mb-1 font-medium text-gray-700">Uenv view</label>
+        <input x-model="userView" class="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+      </div>
+
+      <div>
+        <label for="reservation_custom" class="block mb-1 font-medium text-gray-700">Custom Reservation</label>
+        <input x-model="reservationCustom" class="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+        <p class="text-sm text-gray-500 mt-1"><i class="fa fa-info-circle"></i> Optional custom reservation</p>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function serverForm() {
+  return {
+    queue: 'Dedicated',
+    account: '',
+    runtime: '1:00:00',
+    runtimeLabel: '1 hour',
+    image: 'uenv/prgenv-gnu/24.11:v1',
+    imageLabel: 'PrgEnv-gnu/24.11 (uenv v1)',
+    imageOptions: [
+      { label: 'PrgEnv-gnu/24.11 (uenv v1)', value: 'uenv/prgenv-gnu/24.11:v1' },
+      { label: 'nvcr.io/nvidia/jax:25.04-py3 (Summer University)', value: 'jax/jax_jupyter.sqsh' },
+      { label: 'nvcr.io/nvidia/pytorch:25.04-py3 (PyTorch 2.7.0)', value: 'pytorch/pt-25.04-py3-jlab.sqsh' },
+      { label: 'nvcr.io/nvidia/tensorflow:25.02-tf2-py3 (TensorFlow 2.17.0)', value: 'tensorflow/tf-25.02-py3-jlab.sqsh' }
+    ],
+    advanced: false,
+    userToml: '',
+    userUenv: '',
+    userView: '',
+    reservationCustom: ''
+  }
+}
+</script>
+
+  <script type="text/javascript">
+    require(["alpine.min"]);
+  function serverOptions() {
+    return {};
+  }
+
+  </script>

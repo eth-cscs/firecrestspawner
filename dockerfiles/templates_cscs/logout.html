@@ -1,0 +1,10 @@
+{% extends "page.html" %}
+{% if announcement_logout is string %}
+  {% set announcement = announcement_logout %}
+{% endif %}
+
+{% block main %}
+  <div id="logout-main" class="min-h-screen flex items-center justify-center px-4 py-10 bg-gray-50">
+    <p class="text-lg text-gray-700">Successfully logged out.</p>
+  </div>
+{% endblock main %}

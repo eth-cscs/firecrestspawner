@@ -1,0 +1,166 @@
+{% extends "page.html" %}
+{% if announcement_home is string %}
+  {% set announcement = announcement_home %}
+{% endif %}
+
+{% block main %}
+  <div class="max-w-6xl mx-auto px-4 py-6">
+    <h1 class="sr-only">JupyterHub home page</h1>
+
+    <div class="flex justify-center mb-8">
+      <div class="text-center space-x-3">
+        {% if default_server.active %}
+          <a
+            id="stop"
+            role="button"
+            class="inline-block rounded bg-red-600 px-6 py-3 text-lg font-medium text-white hover:bg-red-700"
+          >
+            Stop My Server
+          </a>
+        {% endif %}
+
+        <a
+          id="start"
+          role="button"
+          class="inline-block rounded bg-blue-600 px-6 py-3 text-lg font-medium text-white hover:bg-blue-700"
+          href="{{ url }}"
+        >
+          {% if not default_server.active %}Start{% endif %}
+          My Server
+        </a>
+      </div>
+    </div>
+
+    {% if allow_named_servers %}
+      <h2 class="text-2xl font-semibold mb-2">Named Servers</h2>
+
+      <p class="mb-4 text-gray-700">
+        In addition to your default server,
+        you may have additional
+        {% if named_server_limit_per_user > 0 %}{{ named_server_limit_per_user }}{% endif %}
+        server(s) with names.
+        This allows you to have more than one server running at the same time.
+      </p>
+
+      {% set named_spawners = user.all_spawners(include_default=False)|list %}
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full border border-gray-200 text-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-3 py-2 text-left font-semibold">Server name</th>
+              <th class="px-3 py-2 text-left font-semibold">URL</th>
+              <th class="px-3 py-2 text-left font-semibold">Last activity</th>
+              <th class="px-3 py-2 text-left font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr class="home-server-row add-server-row bg-gray-50">
+              <td colspan="4" class="px-3 py-3">
+                <div class="flex gap-2">
+                  <input
+                    class="new-server-name w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    aria-label="server name"
+                    placeholder="name-your-server"
+                  >
+                  <button
+                    role="button"
+                    type="button"
+                    class="new-server-btn rounded bg-blue-600 px-3 py-2 text-white text-sm hover:bg-blue-700"
+                  >
+                    Add New Server
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            {% for spawner in named_spawners %}
+              <tr class="home-server-row" data-server-name="{{ spawner.name }}">
+                {# name #}
+                <td class="px-3 py-2 font-medium">
+                  {{ spawner.name }}
+                </td>
+
+                {# url #}
+                <td class="px-3 py-2">
+                  <a
+                    class="server-link text-blue-600 hover:underline {% if not spawner.ready %}hidden{% endif %}"
+                    href="{{ user.server_url(spawner.name) }}"
+                  >
+                    {{ user.server_url(spawner.name) }}
+                  </a>
+                </td>
+
+                {# activity #}
+                <td class="px-3 py-2 text-gray-600 time-col">
+                  {% if spawner.last_activity %}
+                    {{ spawner.last_activity.isoformat() + 'Z' }}
+                  {% else %}
+                    Never
+                  {% endif %}
+                </td>
+
+                {# actions #}
+                <td class="px-3 py-2 space-x-2">
+                  <a
+                    role="button"
+                    class="stop-server inline-block rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700{% if not spawner.active %} hidden{% endif %}"
+                    id="stop-{{ spawner.name }}"
+                  >
+                    stop
+                  </a>
+
+                  <a
+                    role="button"
+                    class="start-server inline-block rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700{% if spawner.active %} hidden{% endif %}"
+                    id="start-{{ spawner.name }}"
+                    href="{{ base_url }}spawn/{{ user.name }}/{{ spawner.name }}"
+                  >
+                    start
+                  </a>
+
+                  <button
+                    role="button"
+                    class="delete-server inline-block rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700{% if spawner.active %} hidden{% endif %}"
+                    id="delete-{{ spawner.name }}"
+                  >
+                    delete
+                  </button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </div>
+{% endblock main %}
+
+{% block script %}
+  {{ super() }}
+  <script type="text/javascript">
+    require(["home"]);
+
+
+    // Track the last time the page was active
+    let lastActiveTime = Date.now();
+
+    // Threshold for refresh (5 hours in milliseconds)
+    const refreshThreshold = 10 * 1000; // 5 hours
+
+    // Function to handle tab visibility change
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            // Calculate time elapsed since the page was last active
+            const now = Date.now();
+            const timeElapsed = now - lastActiveTime;
+
+            if (timeElapsed > refreshThreshold) {
+                location.reload();
+            }
+        }
+    });    
+    
+
+  </script>
+{% endblock script %}

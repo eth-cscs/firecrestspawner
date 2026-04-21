@@ -1,0 +1,265 @@
+{% macro modal(title, btn_label=None, btn_class="bg-blue-600 hover:bg-blue-700") %}
+  {% set key = title.replace(' ', '-').lower() %}
+  {% set btn_label = btn_label or title %}
+
+  <div
+    class="modal fixed inset-0 z-50 hidden bg-black/50 flex items-center justify-center"
+    id="{{ key }}-dialog"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="{{ key }}-label"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog w-full max-w-lg px-4">
+      <div class="modal-content bg-white rounded-lg shadow-xl">
+        <div class="modal-header flex items-center justify-between px-6 py-4 border-b">
+          <h2 class="text-lg font-semibold text-gray-900" id="{{ key }}-label">
+            {{ title }}
+          </h2>
+          <button
+            type="button"
+            class="text-gray-400 hover:text-gray-600"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="modal-body px-6 py-4 text-gray-700">
+          {{ caller() }}
+        </div>
+
+        <div class="modal-footer px-6 py-4 flex justify-end gap-2 border-t">
+          <button
+            type="button"
+            class="px-4 py-2 rounded-md text-white {{ btn_class }}"
+            data-bs-dismiss="modal"
+          >
+            {{ btn_label }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}JupyterHub{% endblock title %}</title>
+
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {% block stylesheet %}
+      <!--script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script-->
+      <!--script src="https://cdn.tailwindcss.com"></script-->
+      <link rel="stylesheet"
+            href="{{ static_url('css/custom.css') }}"
+	    type="text/css" />
+
+
+    {% endblock stylesheet %}
+
+    {% block favicon %}
+      <link rel="icon" href="{{ static_url('favicon.ico') }}" type="image/x-icon">
+    {% endblock favicon %}
+
+    {% block scripts %}
+      <script src="{{ static_url('components/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+      <script src="{{ static_url('components/requirejs/require.js') }}"></script>
+      <script src="{{ static_url('components/jquery/dist/jquery.min.js') }}"></script>
+      <script src="{{ static_url('js/darkmode.js') }}"></script>
+    {% endblock scripts %}
+
+    {# djlint: off #}
+    <script>
+      require.config({
+        {% if version_hash %}
+        urlArgs: "v={{version_hash}}",
+        {% endif %}
+        baseUrl: '{{ static_url("js", include_version=False) }}',
+        paths: {
+          components: '../components',
+          jquery: '../components/jquery/dist/jquery.min',
+          moment: "../components/moment/moment",
+        },
+      });
+
+      window.jhdata = {
+        base_url: "{{ base_url }}",
+        prefix: "{{ prefix }}",
+        {% if user %}
+        user: "{{ user.json_escaped_name | safe }}",
+        {% endif %}
+        admin_access: {{ "true" if admin_access else "false" }},
+        options_form: {{ "true" if not no_spawner_check and user and user.spawner.options_form else "false" }},
+        xsrf_token: "{{ xsrf_token }}",
+      };
+    </script>
+    {# djlint: on #}
+
+    {% block meta %}
+      <meta name="description" content="JupyterHub">
+      <meta name="keywords" content="Jupyter, JupyterHub">
+    {% endblock meta %}
+  </head>
+
+  <!--body class="min-h-full bg-gray-50 text-gray-900"-->
+  <body class="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+    <noscript>
+      <div class="mx-auto mt-10 max-w-lg rounded-md bg-red-100 px-4 py-3 text-center text-red-800">
+        JupyterHub requires JavaScript. Please enable it to proceed.
+      </div>
+    </noscript>
+
+    {% block nav_bar %}
+    <nav class="border-b border-gray-200 bg-white">
+      <div class="mx-auto max-w-7xl px-4">
+        <div class="flex h-16 items-center justify-between">
+
+          <!-- Logo -->
+	  <div class="flex-shrink-0">
+          <a href="{{ logo_url or base_url }}" class="flex items-center gap-2">
+            <img src="{{ base_url }}/static/images/cscs-logo.svg" alt="JupyterHub logo" class="h-8 w-auto">
+            <img src="{{ base_url }}logo" alt="JupyterHub logo" class="h-8 w-auto">
+          </a>
+	  </div>
+
+          {% if user %}
+          <button
+            class="sm:hidden rounded-md p-2 text-gray-500 hover:bg-gray-100"
+            data-bs-toggle="collapse"
+            data-bs-target="#thenavbar"
+            aria-label="Toggle navigation"
+          >
+            ☰
+          </button>
+          {% endif %}
+
+          <!--div id="thenavbar" class="sm:flex sm:items-center sm:gap-6">
+            <ul class="flex flex-col sm:flex-row gap-4 text-sm font-medium">
+              {% if user %}
+                <li><a href="{{ base_url }}home" class="hover:text-blue-600">Home</a></li>
+                <li><a href="{{ base_url }}token" class="hover:text-blue-600">Token</a></li>
+                {% if 'admin-ui' in parsed_scopes %}
+                  <li><a href="{{ base_url }}admin" class="hover:text-blue-600">Admin</a></li>
+                {% endif %}
+              {% endif %}
+            </ul>
+          </div-->
+
+
+
+<div class="w-full px-4">
+  <div class="flex items-center gap-8">
+
+    <!-- Navbar -->
+    <div id="thenavbar" class="flex">
+      <ul class="flex flex-col sm:flex-row gap-4 text-sm font-medium items-start sm:items-center">
+
+        {% if user %}
+          <li>
+            <a href="{{ base_url }}home" class="hover:text-blue-600">
+              Home
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ base_url }}token" class="hover:text-blue-600">
+              Token
+            </a>
+          </li>
+
+          {% if 'admin-ui' in parsed_scopes %}
+            <li>
+              <a href="{{ base_url }}admin" class="hover:text-blue-600">
+                Admin
+              </a>
+            </li>
+          {% endif %}
+        {% endif %}
+
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+
+          <div class="flex items-center gap-3">
+            <!--<button
+              id="dark-theme-toggle"
+              class="rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+              title="Toggle dark mode"
+            >
+              🌗
+	    </button>-->
+
+            {% if user %}
+              <span class="text-sm">{{ user.name }}</span>
+              <a
+                href="{{ logout_url }}"
+                class="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100"
+              >
+                Logout
+              </a>
+            {% else %}
+              <a
+                href="{{ login_url }}"
+                class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700"
+              >
+                Login
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+    {% endblock nav_bar %}
+
+    {% block announcement %}
+      {% if announcement %}
+      <div class="mx-auto my-4 max-w-4xl rounded-md bg-yellow-50 px-4 py-3 text-center text-yellow-800">
+        {{ announcement | safe }}
+      </div>
+      {% endif %}
+    {% endblock announcement %}
+
+    <main class="flex-1 mx-auto max-w-7xl px-4 py-6">
+      {% block main %}{% endblock main %}
+    </main>
+
+    {% block footer %}
+               <footer class="bottom-0 z-10 h-12 bg-white shadow sticky">
+                  <div class="flex items-center justify-between">
+                    <div class="pl-3 pt-3">
+                        <p class="text-xs text-xs text-gray-400">
+                            © <!-- -->
+                            2026<!-- -->
+                             CSCS<!-- -->
+                             - All rights reserved
+                        </p>
+                    </div>
+                    <div class="pr-3 pt-3 inline-flex items-center">
+                        <p class="text-right text-xs text-gray-400">
+                            Version
+                            <span class="text-gray-800">5.4.3</span>
+                        </p>
+                    </div>
+                  </div>
+                </footer>
+    {% endblock footer %}
+
+    {% call modal('Error', btn_label='OK') %}
+      <div class="ajax-error rounded-md bg-red-100 px-3 py-2 text-red-800">
+        The error
+      </div>
+    {% endcall %}
+
+    {% block script %}{% endblock script %}
+  </body>
+</html>
+

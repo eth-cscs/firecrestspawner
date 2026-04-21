@@ -3,13 +3,13 @@ FROM node:18-alpine AS tailwind-builder
 
 WORKDIR /app
 
-COPY dockerfiles-tw/templates_cscs /usr/local/share/jupyterhub/templates_cscs
+COPY dockerfiles/templates_cscs /usr/local/share/jupyterhub/templates_cscs
 
-COPY dockerfiles-tw/package.json ./
+COPY dockerfiles/package.json ./
 
 RUN npm install
 
-COPY dockerfiles-tw/src ./src
+COPY dockerfiles/src ./src
 RUN npx tailwindcss -c ./src/tailwind.config.js -i ./src/input.css -o /app/output.css --minify
 
 # --- Stage 2: JupyterHub ---
@@ -39,8 +39,8 @@ COPY --from=tailwind-builder /app/output.css /srv/jupyterhub/custom.css
 
 # Copy optional JupyterHub config
 # COPY jupyterhub_config.py /srv/jupyterhub/jupyterhub_config.py
-COPY dockerfiles-tw/templates_cscs /usr/local/share/jupyterhub/templates_cscs
-COPY dockerfiles-tw/cscs-logo.svg /usr/local/share/jupyterhub/static/images/cscs-logo.svg
+COPY dockerfiles/templates_cscs /usr/local/share/jupyterhub/templates_cscs
+COPY dockerfiles/cscs-logo.svg /usr/local/share/jupyterhub/static/images/cscs-logo.svg
 
 RUN curl -o /usr/local/share/jupyterhub/static/js/alpine.min.js https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js
 

@@ -1,0 +1,41 @@
+{% extends "page.html" %}
+
+{% block main %}
+  <div class="min-h-screen flex items-center justify-center px-4 py-10 bg-gray-50">
+    <div class="text-center space-y-4">
+      {% block message %}
+        <p class="text-lg text-gray-700">Your server is stopping.</p>
+        <p class="text-gray-600">
+          You will be able to start it again once it has finished stopping.
+        </p>
+      {% endblock message %}
+
+      <p>
+        <i class="fa fa-spinner fa-pulse fa-fw fa-3x text-blue-600" aria-hidden="true"></i>
+      </p>
+
+      <a
+        role="button"
+        id="refresh"
+        href="#"
+        class="inline-block rounded bg-blue-600 px-6 py-3 text-lg font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+      >
+        refresh
+      </a>
+    </div>
+  </div>
+{% endblock main %}
+
+{% block script %}
+  {{ super() }}
+  <script type="text/javascript">
+    require(["jquery"], function($) {
+      $("#refresh").click(function() {
+        window.location.reload();
+      });
+      setTimeout(function() {
+        window.location.reload();
+      }, 5000);
+    });
+  </script>
+{% endblock script %}

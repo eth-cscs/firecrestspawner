@@ -1,0 +1,91 @@
+{% extends "page.html" %}
+
+{% block login_widget %}
+{% endblock login_widget %}
+
+{% block main %}
+  <div class="min-h-screen flex items-center justify-center px-4 py-10 bg-gray-50">
+    <div class="w-full max-w-xl space-y-6">
+
+      <h1 class="text-2xl font-semibold text-center text-gray-900">
+        Accept sharing invitation
+      </h1>
+
+      <p class="text-lg text-gray-700 text-center">
+        You (<span class="font-medium">{{ user.name }}</span>) have been invited to access
+        <span class="font-medium">{{ owner.name }}</span>'s server
+        {%- if spawner.name %} ({{ spawner.name }}){%- endif %}
+        at
+        <a
+          href="{{ spawner_url | safe }}"
+          class="text-blue-600 hover:underline break-all"
+        >
+          {{ spawner_url }}
+        </a>
+      </p>
+
+      {% if not spawner_ready %}
+        <div class="rounded-md bg-red-50 border border-red-200 p-4 text-red-700">
+          <p>
+            The server at {{ spawner_url }} is not currently running.
+            After accepting permission, you may need to ask
+            <span class="font-medium">{{ owner.name }}</span>
+            to start the server before you can access it.
+          </p>
+        </div>
+      {% endif %}
+
+      <form method="post" action="">
+        <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+
+          <div class="px-6 py-4 bg-gray-50 text-sm text-gray-700">
+            By accepting the invitation, you will be granted the following permissions,
+            restricted to this particular server:
+          </div>
+
+          <div class="px-6 py-4 space-y-2 text-gray-700">
+            {# real inputs #}
+            <input type="hidden" name="_xsrf" value="{{ xsrf }}" />
+            <input type="hidden" name="code" value="{{ code }}" />
+
+            {% for scope_info in scope_descriptions -%}
+              <div class="text-sm">
+                <span>
+                  {{ scope_info['description'] }}
+                  {% if scope_info['filter'] %}
+                    Applies to {{ scope_info['filter'] }}.
+                  {% endif %}
+                </span>
+              </div>
+            {% endfor -%}
+          </div>
+
+          <div class="px-6 py-4 bg-gray-50 space-y-3">
+            <button
+              type="submit"
+              class="w-full inline-flex justify-center items-center
+                     px-4 py-2 text-sm font-medium
+                     rounded-md text-white bg-blue-600
+                     hover:bg-blue-700 focus:outline-none
+                     focus:ring-2 focus:ring-blue-500 transition"
+            >
+              Accept invitation
+            </button>
+
+            <p class="text-xs text-gray-600">
+              After accepting the invitation, you will be redirected to
+              <a
+                href="{{ next_url | safe }}"
+                class="text-blue-600 hover:underline break-all"
+              >
+                {{ next_url }}
+              </a>.
+            </p>
+          </div>
+
+        </div>
+      </form>
+
+    </div>
+  </div>
+{% endblock main %}

@@ -1,0 +1,78 @@
+{% extends "page.html" %}
+{% if announcement_spawn is string %}
+  {% set announcement = announcement_spawn %}
+{% endif %}
+{% block main %}
+  <div class="container">
+  <!--div class="max-w-5xl mx-auto px-4"-->
+    {% block heading %}
+      <div class="text-center my-8">
+        <h1 class="text-3xl font-semibold">Server Options CSCS</h1>
+      </div>
+    {% endblock heading %}
+    <div class="flex justify-center">
+      <div class="w-full max-w-2xl">
+        {% if for_user and user.name != for_user.name -%}
+          <p class="mb-4 text-gray-700">Spawning server for {{ for_user.name }}</p>
+        {% endif -%}
+
+	<!--
+        {% if error_message -%}<p class="mb-4 rounded bg-red-100 text-red-800 px-4 py-3"> {{ error_message }} </p>{% endif %}
+	-->
+
+
+        <div>
+          {% if error_message %}
+                  {% if "HTTP 401" in error_message %}
+              <p class="mb-4 rounded bg-red-100 text-red-800 px-4 py-3">
+                  The credentials for spawning a new job have expired. <br>
+                  Please <a href="/hub/logout" class="text-blue-900 hover:text-blue-700">log out</a> and log back in.
+              </p>
+                  {% elif "HTTP 400" in error_message or "Session not active" in error_message %}
+              <p class="mb-4 rounded bg-red-100 text-red-800 px-4 py-3">
+                  The Keycloak single-sign on session has expired. <br>
+                  Please <a href="/hub/logout" class="text-blue-900 hover:text-blue-700">log out</a> and log back in.
+              </p>
+                  {% else %}
+              <p class="mb-4 rounded bg-red-100 text-red-800 px-4 py-3">
+	          Something went wrong.
+		  Please contact the service desk.
+
+                  {{ error_message }}
+              </p>
+                  {% endif %}
+          {% endif %}
+        </div>
+
+
+        <form enctype="multipart/form-data"
+              id="spawn_form"
+              action="{{ url | safe }}"
+              method="post"
+              role="form"
+              class="space-y-4">
+          {{ spawner_options_form | safe }}
+
+	  <div class="feedback-container flex items-center gap-3">
+            <button type="submit" class="w-full max-w-6xl min-w-[600px] mx-auto rounded bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">Start</button>
+            <div class="feedback-widget hidden text-blue-600">
+              <i class="fa fa-spinner"></i>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock main %}
+{% block script %}
+  {{ super() }}
+  <script>
+    // setup onSubmit feedback
+    $('form').submit((e) => {
+      var form = $(e.target);
+      form.find('.feedback-container>input').attr('disabled', true);
+      form.find('.feedback-container>*').toggleClass('hidden');
+      form.find('.feedback-widget>*').toggleClass('fa-pulse');
+    });
+  </script>
+{% endblock script %}

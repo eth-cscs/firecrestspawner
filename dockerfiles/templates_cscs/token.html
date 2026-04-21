@@ -1,0 +1,310 @@
+{% extends "page.html" %}
+{% block main %}
+  <div class="max-w-6xl mx-auto px-4 py-6">
+    <h1 class="sr-only">Manage JupyterHub Tokens</h1>
+
+    <div class="flex justify-center">
+      <form id="request-token-form" class="w-full max-w-lg space-y-4">
+        <div>
+          <label for="token-note" class="block font-medium text-gray-800">Note</label>
+          <input
+            id="token-note"
+            class="mt-1 w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="note to identify your new token"
+          >
+          <p id="note-note" class="mt-1 text-sm text-gray-600">
+            This note will help you keep track of what your tokens are for.
+          </p>
+
+          <div class="my-4"></div>
+
+          <label for="oken-expiration-seconds" class="block font-medium text-gray-800">
+            Token expires in
+
+
+
+
+
+
+          </label>
+          {% block expiration_options %}
+            <!-- <select
+              id="oken-expiration-seconds"
+              class="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-1.5 pl-3 pr-2 text-left text-gray-900 outline outline-1 outline-gray-300 focus:outline-2 focus:outline-indigo-600 sm:text-sm"
+            >
+              {{ token_expires_in_options_html | safe }}
+            </select> -->
+
+
+<div x-data="selectComponent()" class="w-full">
+  <label class="block text-sm font-medium text-gray-900">Assigned to</label>
+
+  <!-- Button -->
+  <div class="relative mt-2">
+    <button @click="open = !open"
+            type="button"
+            class="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-1.5 pl-3 pr-2 text-left text-gray-900 outline outline-1 outline-gray-300 focus:outline-2 focus:outline-indigo-600 sm:text-sm">
+      
+      <span class="col-start-1 row-start-1 truncate pr-6"
+            x-text="selected.label"></span>
+
+      <!-- Chevron -->
+      <svg class="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-500"
+           viewBox="0 0 16 16" fill="currentColor">
+        <path d="M5.22 10.22a.75.75 0 0 1 1.06 0L8 11.94l1.72-1.72a.75.75 0 1 1 1.06 1.06l-2.25 2.25a.75.75 0 0 1-1.06 0l-2.25-2.25a.75.75 0 0 1 0-1.06Z"/>
+      </svg>
+    </button>
+
+    <!-- Dropdown -->
+    <ul x-show="open"
+        @click.outside="open = false"
+        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg outline outline-1 outline-black/5 sm:text-sm">
+      
+      <template x-for="option in options" :key="option.value">
+        <li @click="select(option)"
+            class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white">
+
+          <span class="block truncate"
+                :class="selected.value === option.value ? 'font-semibold' : 'font-normal'"
+                x-text="option.label"></span>
+
+          <!-- Checkmark -->
+          <span x-show="selected.value === option.value"
+                class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-hover:text-white">
+            ✓
+          </span>
+        </li>
+      </template>
+    </ul>
+  </div>
+
+  <!-- Hidden input for form submission -->
+  <input type="hidden" id="token-expiration-seconds" name="selected" :value="selected.value">
+</div>
+
+
+
+<!-- <script src="https://unpkg.com/alpinejs" defer></script> -->
+
+
+          {% endblock expiration_options %}
+
+          
+          <p id="note-expires-at" class="mt-1 text-sm text-gray-600">
+            You can configure when your token will expire.
+          </p>
+
+          <div class="my-4"></div>
+
+          <label for="token-scopes" class="block font-medium text-gray-800">
+            Permissions
+          </label>
+          <input
+            id="token-scopes"
+            class="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-1.5 pl-3 pr-2 text-left text-gray-900 outline outline-1 outline-gray-300 focus:outline-2 focus:outline-indigo-600 sm:text-sm"
+            placeholder="list of scopes for the token to have, separated by space"
+          >
+          <p id="note-token-scopes" class="mt-1 text-sm text-gray-600">
+            You can limit the permissions of the token so it can only do what you want it to.
+            If none are specified, the token will have permission to do everything you can do.
+            See the
+            <a
+              href="https://jupyterhub.readthedocs.io/en/stable/rbac/scopes.html#available-scopes"
+              class="text-blue-600 hover:underline"
+            >
+              JupyterHub documentation for a list of available scopes
+            </a>.
+          </p>
+        </div>
+
+        <div class="text-center mt-6">
+          <button
+            type="submit"
+	    class="w-full rounded bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+          >
+            Request new API token
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="flex justify-center mt-8">
+      <div id="token-area" class="w-full max-w-lg hidden">
+        <div class="rounded border border-gray-300 shadow-sm">
+          <div class="border-b border-gray-200 bg-gray-100 px-4 py-2 font-semibold">
+            Your new API Token
+          </div>
+          <div class="px-4 py-4">
+            <p class="text-center font-mono break-all">
+              <span id="token-result"></span>
+            </p>
+            <p class="mt-2 text-sm text-gray-700">
+              Copy this token. You won't be able to see it again,
+              but you can always come back here to get a new one.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if api_tokens %}
+      <div class="mt-10" id="api-tokens-section">
+        <h2 class="text-2xl font-semibold mb-2">API Tokens</h2>
+        <p class="mb-4 text-gray-700">
+          These are tokens with access to the JupyterHub API.
+          Permissions for each token may be viewed via the JupyterHub tokens API.
+          Revoking the API token for a running server will require restarting that server.
+        </p>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-200 text-sm" id="api-tokens-table">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-3 py-2 text-left">Note</th>
+                <th class="px-3 py-2 text-left">Permissions</th>
+                <th class="px-3 py-2 text-left">Last used</th>
+                <th class="px-3 py-2 text-left">Created</th>
+                <th class="px-3 py-2 text-left">Expires</th>
+                <th class="px-3 py-2 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              {% for token in api_tokens %}
+                <tr class="token-row" data-token-id="{{ token.api_id }}">
+                  {% block token_row scoped %}
+                    <td class="px-3 py-2">{{ token.note }}</td>
+                    <td class="px-3 py-2">
+                      <details>
+                        <summary class="cursor-pointer text-blue-600">scopes</summary>
+                        {% for scope in token.scopes %}
+                          <pre class="text-xs bg-gray-100 rounded px-2 py-1 mt-1">{{ scope }}</pre>
+                        {% endfor %}
+                      </details>
+                    </td>
+                    <td class="px-3 py-2 text-gray-600">
+                      {% if token.last_activity %}
+                        {{ token.last_activity.isoformat() + 'Z' }}
+                      {% else %}
+                        Never
+                      {% endif %}
+                    </td>
+                    <td class="px-3 py-2 text-gray-600">
+                      {% if token.created %}
+                        {{ token.created.isoformat() + 'Z' }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </td>
+                    <td class="px-3 py-2 text-gray-600">
+                      {% if token.expires_at %}
+                        {{ token.expires_at.isoformat() + 'Z' }}
+                      {% else %}
+                        Never
+                      {% endif %}
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                      <button class="revoke-token-btn rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700">
+                        revoke
+                      </button>
+                    </td>
+                  {% endblock token_row %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if oauth_clients %}
+      <div class="mt-10" id="oauth-clients-section">
+        <h2 class="text-2xl font-semibold mb-2">Authorized Applications</h2>
+        <p class="mb-4 text-gray-700">
+          These are applications that use OAuth with JupyterHub
+          to identify users (mostly notebook servers).
+          OAuth tokens can generally only be used to identify you,
+          not take actions on your behalf.
+        </p>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-200 text-sm" id="oauth-tokens-table">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-3 py-2 text-left">Application</th>
+                <th class="px-3 py-2 text-left">Permissions</th>
+                <th class="px-3 py-2 text-left">Last used</th>
+                <th class="px-3 py-2 text-left">First authorized</th>
+                <th class="px-3 py-2 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              {% for client in oauth_clients %}
+                <tr class="token-row" data-token-id="{{ client['token_id'] }}">
+                  {% block client_row scoped %}
+                    <td class="px-3 py-2">{{ client['description'] }}</td>
+                    <td class="px-3 py-2">
+                      <details>
+                        <summary class="cursor-pointer text-blue-600">scopes</summary>
+                        {% for scope in client.tokens | sum(attribute="scopes", start=[]) | unique | sort %}
+                          <pre class="text-xs bg-gray-100 rounded px-2 py-1 mt-1">{{ scope }}</pre>
+                        {% endfor %}
+                      </details>
+                    </td>
+                    <td class="px-3 py-2 text-gray-600">
+                      {% if client['last_activity'] %}
+                        {{ client['last_activity'].isoformat() + 'Z' }}
+                      {% else %}
+                        Never
+                      {% endif %}
+                    </td>
+                    <td class="px-3 py-2 text-gray-600">
+                      {% if client['created'] %}
+                        {{ client['created'].isoformat() + 'Z' }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                      <button class="revoke-token-btn rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700">
+                        revoke
+                      </button>
+                    </td>
+                  {% endblock client_row %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock main %}
+
+{% block script %}
+  {{ super() }}
+  <script type="text/javascript">
+    require(["token"]);
+    require(["alpine.min"]);
+
+function selectComponent() {
+  return {
+    open: false,
+    selected: { value: "Never", label: 'Never' },
+    options: [
+      { value:     3600, label: '1 hour' },
+      { value:    86400, label: '1 day' },
+      { value:   604800, label: '1 week' },
+      { value:  2592000, label: '1 month' },
+      { value: 31536000, label: '1 year' },
+      { value:  "Never", label: 'Never' },
+    ],
+    select(option) {
+      this.selected = option
+      this.open = false
+    }
+  }
+}
+
+
+  </script>
+{% endblock script %}

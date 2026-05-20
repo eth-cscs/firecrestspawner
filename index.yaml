@@ -2,8 +2,26 @@ apiVersion: v1
 entries:
   f7t4jhub:
   - apiVersion: v2
+    appVersion: 5.4.3
+    created: "2026-05-20T13:23:41.161124745Z"
+    dependencies:
+    - name: f7t4jhub
+      repository: file://./f7t4jhub
+      version: 0.9.5-dev.12
+    - condition: reloader.reloader.enabled
+      name: reloader
+      repository: https://stakater.github.io/stakater-charts
+      version: v1.0.51
+    description: A Helm chart to Deploy JupyterHub with the FirecREST Spawner
+    digest: 8e526fad7fb952cf7d2528832b36c7fab5478c994880609679fa14bf4e6eab79
+    name: f7t4jhub
+    type: application
+    urls:
+    - https://eth-cscs.github.io/firecrestspawner/f7t4jhub-0.9.5-dev.12.tgz
+    version: 0.9.5-dev.12
+  - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.505212038Z"
+    created: "2026-05-20T13:23:41.159145883Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -21,7 +39,7 @@ entries:
     version: 0.9.5-dev.11
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.502393637Z"
+    created: "2026-05-20T13:23:41.157525557Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -39,7 +57,7 @@ entries:
     version: 0.9.5-dev.10
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.521146199Z"
+    created: "2026-05-20T13:23:41.17408741Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -57,7 +75,7 @@ entries:
     version: 0.9.5-dev.9
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.519773763Z"
+    created: "2026-05-20T13:23:41.172647461Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -75,7 +93,7 @@ entries:
     version: 0.9.5-dev.8
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.518400966Z"
+    created: "2026-05-20T13:23:41.171174322Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -93,7 +111,7 @@ entries:
     version: 0.9.5-dev.7
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.516998433Z"
+    created: "2026-05-20T13:23:41.169691579Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -111,7 +129,7 @@ entries:
     version: 0.9.5-dev.6
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.515570202Z"
+    created: "2026-05-20T13:23:41.167349641Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -129,7 +147,7 @@ entries:
     version: 0.9.5-dev.5
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.513467355Z"
+    created: "2026-05-20T13:23:41.165598861Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -147,7 +165,7 @@ entries:
     version: 0.9.5-dev.4
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.510573804Z"
+    created: "2026-05-20T13:23:41.16388679Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -165,7 +183,7 @@ entries:
     version: 0.9.5-dev.3
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.507909191Z"
+    created: "2026-05-20T13:23:41.162529823Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -183,7 +201,7 @@ entries:
     version: 0.9.5-dev.2
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.499681636Z"
+    created: "2026-05-20T13:23:41.156057826Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -201,7 +219,7 @@ entries:
     version: 0.9.5-dev.1
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.496876698Z"
+    created: "2026-05-20T13:23:41.154684845Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -219,7 +237,7 @@ entries:
     version: 0.9.4
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.49547657Z"
+    created: "2026-05-20T13:23:41.153228752Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -237,7 +255,7 @@ entries:
     version: 0.9.3
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.494115415Z"
+    created: "2026-05-20T13:23:41.151132322Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -255,7 +273,7 @@ entries:
     version: 0.9.2
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.492795847Z"
+    created: "2026-05-20T13:23:41.149789817Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -273,7 +291,7 @@ entries:
     version: 0.9.1
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.491425816Z"
+    created: "2026-05-20T13:23:41.148444757Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -291,7 +309,7 @@ entries:
     version: 0.9.0
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.489586979Z"
+    created: "2026-05-20T13:23:41.147090455Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -309,7 +327,7 @@ entries:
     version: 0.8.6
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.486795279Z"
+    created: "2026-05-20T13:23:41.145797202Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -327,7 +345,7 @@ entries:
     version: 0.8.5
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.484263835Z"
+    created: "2026-05-20T13:23:41.143763319Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -345,7 +363,7 @@ entries:
     version: 0.8.4
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.481825626Z"
+    created: "2026-05-20T13:23:41.142531738Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -363,7 +381,7 @@ entries:
     version: 0.8.3
   - apiVersion: v2
     appVersion: 4.1.6
-    created: "2025-11-20T10:25:47.479423283Z"
+    created: "2026-05-20T13:23:41.141278785Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -381,7 +399,7 @@ entries:
     version: 0.8.2
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2025-11-20T10:25:47.476996696Z"
+    created: "2026-05-20T13:23:41.140007184Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -399,7 +417,7 @@ entries:
     version: 0.8.1
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2025-11-20T10:25:47.474438537Z"
+    created: "2026-05-20T13:23:41.138744847Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -417,7 +435,7 @@ entries:
     version: 0.8.0
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2025-11-20T10:25:47.473076059Z"
+    created: "2026-05-20T13:23:41.136677695Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -435,7 +453,7 @@ entries:
     version: 0.7.0
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2025-11-20T10:25:47.471881105Z"
+    created: "2026-05-20T13:23:41.13544335Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -453,7 +471,7 @@ entries:
     version: 0.6.2
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2025-11-20T10:25:47.470697001Z"
+    created: "2026-05-20T13:23:41.134205429Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -471,7 +489,7 @@ entries:
     version: 0.6.1
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2025-11-20T10:25:47.46952029Z"
+    created: "2026-05-20T13:23:41.132964714Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -489,7 +507,7 @@ entries:
     version: 0.6.0
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2025-11-20T10:25:47.468109462Z"
+    created: "2026-05-20T13:23:41.131714435Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -507,7 +525,7 @@ entries:
     version: 0.5.2
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2025-11-20T10:25:47.465195826Z"
+    created: "2026-05-20T13:23:41.12917539Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -525,7 +543,7 @@ entries:
     version: 0.5.1
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2025-11-20T10:25:47.463355435Z"
+    created: "2026-05-20T13:23:41.127113511Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -543,7 +561,7 @@ entries:
     version: 0.5.0
   - apiVersion: v2
     appVersion: 4.1.5
-    created: "2025-11-20T10:25:47.461476832Z"
+    created: "2026-05-20T13:23:41.125131029Z"
     dependencies:
     - name: f7t4jhub
       repository: file://./f7t4jhub
@@ -555,4 +573,4 @@ entries:
     urls:
     - https://eth-cscs.github.io/firecrestspawner/f7t4jhub-0.3.0.tgz
     version: 0.3.0
-generated: "2025-11-20T10:25:47.46006403Z"
+generated: "2026-05-20T13:23:41.123588878Z"

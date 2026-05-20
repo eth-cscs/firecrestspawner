@@ -3,9 +3,10 @@ kind: Ingress
 metadata:
   name: {{ .Release.Name }}-proxy-ingress
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/client-body-buffer-size: 50m
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   rules:
   {{- range $issuer, $config := .Values.config.certificates }}
     {{- range $config.urls }}

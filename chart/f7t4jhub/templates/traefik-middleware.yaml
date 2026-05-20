@@ -1,0 +1,9 @@
+{{- if .Values.metricbeat.deny_metrics_endpoint }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ .Release.Name }}-deny-metrics
+spec:
+  ipAllowList:
+    sourceRange: []
+{{- end }}

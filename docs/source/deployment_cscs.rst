@@ -17,7 +17,7 @@ It has been designed mainly for CSCS but it's general enough for the use at othe
    Schematic representation of the f7t4jhub chart
 
 In our deployments at CSCS, the hub and proxy run on their own pods.
-That's a standard practice that allows the hub to be restarted (to apply a new configuration, for instance) without affecting users with running JupyterLab servers.
+That's a standard practice that allows the hub to be restarted (to apply a new configuration, for instance) without affecting users that have running JupyterLab servers.
 The deployment used the following images:
 
 Proxy
@@ -244,42 +244,74 @@ As an example, this is a dockerfile to install JupyterLab and the spawner within
 Uenvs
 ^^^^^
 
-A simple way to create a uenv for a JupyterHub deployment, is by starting from the `prgenv-gnu <https://github.com/eth-cscs/alps-uenv/tree/main/recipes/prgenv-gnu/23.11/mc>`_ recipe.
-One way to go, is to include the ``py-pip`` Spack package on the ``environment.yaml`` (the ``osu-micro-benchmarks@5.9`` package can be removed)
+JupyterLab is deployed using either uenvs or containers.
+The uenv-based setup uses one uenv for `JupyterLab itself <https://github.com/eth-cscs/alps-uenv/tree/main/recipes/jupyterlab/v4.1.8/mc>`_, mounted on ``/user-tools`` and another uenv that provides the programming environment which is mounted on ``/user-environments``.
+In the current implementation, the default environment is `PrgEnv-gnu <https://github.com/eth-cscs/alps-uenv/tree/main/recipes/prgenv-gnu>`_, but the JupyterHub UI allows users to specify a custom uenv.
 
-.. code-block:: Yaml
-   :emphasize-lines: 18
+VS Code
+^^^^^^^
 
-    gcc-env:
-      compiler:
-          - toolchain: gcc
-            spec: gcc@12
-      mpi:
-          spec: cray-mpich
-          gpu: Null
-      unify: true
-      specs:
-      - cmake
-      - fftw
-      - fmt
-      - hdf5
-      - ninja@1.11
-      - openblas
-      - python@3.11
-      - py-pybind11
-      - py-pip
-      variants:
-      - +mpi
-      views:
-        default:
+Our JupyterHub deployment includes an integrated VS Code experience directly within JupyterLab.
+This is provided through `code-server <https://github.com/coder/code-server>`_, exposed via ``jupyter-server-proxy`` and the ``jupyter_vscode_proxy`` extension.
+Users can launch a browser-based VS Code environment alongside notebooks and terminals without leaving JupyterLab, enabling a more familiar IDE workflow for software development, debugging, and editing larger codebases
 
-and to add a post-install script that will take care of all the necessary software
+UI and the spawner's options form
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: Shell
+To better integrate JupyterHub with other platforms and services at CSCS, the user interface has been customized using `Tailwind CSS <https://tailwindcss.com>`_ and `Alpine.js <https://alpinejs.dev>`_.
+This approach provides a modern, lightweight, and responsive frontend while allowing consistent styling and interaction patterns across the broader CSCS ecosystem.
 
-    export PATH=/user-environment/env/default/bin:$PATH
-    pip install --no-cache jupyterhub==4.1.5 pyfirecrest==2.1.0 SQLAlchemy==1.4.52 oauthenticator==16.0.7 jupyterlab==4.1.8
-    
-    git clone https://github.com/eth-cscs/firecrestspawner.git
-    cd firecrestspawner
-    pip install .
+The custom Tailwind CSS templates can be found `here <https://github.com/eth-cscs/firecrestspawner/tree/main/dockerfiles/templates_cscs>`_.
+Since the `spawner's options form <https://jupyterhub.readthedocs.io/en/latest/reference/spawners.html#spawner-options-form>`_ is not part of the static JupyterHub templates, at build time, all Tailwind CSS class names may not be detected.
+As a result, some styles can be missing from the final CSS bundle.
+To avoid this, the `form markup <https://github.com/eth-cscs/firecrestspawner/blob/main/dockerfiles/templates_cscs/options_form_tw.html>`_ should be included directly in the HTML templates so that Tailwind can discover the relevant classes during compilation.
+While this is somewhat inconvenient for highly dynamic forms, in practice the dynamically generated portion typically reuses existing UI elements and styling patterns.
+Therefore, copying the “static” part of the form into the templates is usually sufficient to ensure that all required Tailwind classes are included in the generated stylesheet.
+
+
+Dynamic options form
+^^^^^^^^^^^^^^^^^^^^
+
+To provide dynamic values in the spawner options form, such as the list of accounts available to a user, we define a Python function that retrieves the required information at runtime and generates the corresponding HTML form.
+This allows the available options to adapt dynamically based on the authenticated user or external services.
+The function receives the Spawner instance as an argument, which provides access to deployment-specific helpers and authentication context.
+In our setup, this is used to access the FirecREST client directly from the spawner.
+
+As an example, the following function uses PyFirecREST's ``userinfo`` to create a menu from which users can select their available accounts
+
+.. code-block:: Python
+
+   async def dynamic_options_form(spawner):
+      """Generate a dynamic spawn form using FirecREST user groups."""
+
+      html_form = """
+      <label for="account">Select account:</label>
+      <select name="account">
+         {options}
+      </select>
+      """
+
+      client = await spawner.get_firecrest_client()
+
+      # Retrieve user information from FirecREST
+      info = await client.userinfo("cluster1")
+
+      # Extract available groups/accounts
+      groups = info.get("groups", [])
+
+      # Build HTML options
+      options = "\n".join(
+         f'<option value="{group["name"]}">{group["name"]}</option>'
+         for group in groups
+      )
+
+      return html_form.format(options=options)
+      return html_form.format(options=options)
+
+The function is then registered in the JupyterHub configuration
+
+.. code-block:: Python
+
+    c.Spawner.options_form = dynamic_options_form
+
+This approach makes it possible to integrate site-specific logic directly into the spawning workflow while keeping the form generation flexible and extensible.

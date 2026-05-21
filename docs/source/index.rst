@@ -6,10 +6,9 @@
 Welcome to FirecRESTSpawner's documentation!
 ============================================
 
-FirecRESTSpawner is a JupyterHub spawner to launch notebooks servers via `FirecREST <https://firecrest.readthedocs.io>`_.
+FirecRESTSpawner is a JupyterHub spawner plugin that allows users to launch Jupyter notebook servers on High-Performance Computing (HPC) systems via the `FirecREST REST API <https://eth-cscs.github.io/firecrest-v2/>`_.
 
-FirecRESTSpawner has been written starting from the code of `batchspawner <https://github.com/jupyterhub/batchspawner>`_.
-The main change is that the calls to workload scheduler commands to start, poll and stop notebook server jobs, have been replaced by `PyFirecREST <https://pyfirecrest.readthedocs.io/en/stable/index.html>`_ functions.
+It is developed by adapting the architecture of `batchspawner <https://github.com/jupyterhub/batchspawner>`_, replacing traditional scheduler-based job submission (e.g. Slurm commands) with FirecREST-powered remote job control via `PyFirecREST <https://pyfirecrest.readthedocs.io/en/stable/index.html>`_.
 
 Installation
 ------------

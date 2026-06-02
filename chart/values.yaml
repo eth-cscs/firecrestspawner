@@ -60,8 +60,13 @@ f7t4jhub:
     # Secret engine used in Vault
     secretEngine: 'jupyterhub'
 
-    # Role ID for accessing Vault secrets
-    roleId: '<role-id>'
+    # AppRole authentication configuration for Vault access.
+    appRole:
+      # Path where the AppRole authentication method is mounted in Vault
+      path: "approle_kapps"
+
+      # Role ID for accessing Vault secrets (replace with your own role ID)
+      roleId: 'd9362ef4-e1b8-6ccf-4d2d-e74a59471dc7'
 
     # Credentials for both the Keycloak Authorization Code Flow client (used
     # to manage the access to JupyterHub as well as the authentication with

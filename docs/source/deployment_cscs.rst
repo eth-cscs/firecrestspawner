@@ -306,7 +306,6 @@ As an example, the following function uses PyFirecREST's ``userinfo`` to create 
       )
 
       return html_form.format(options=options)
-      return html_form.format(options=options)
 
 The function is then registered in the JupyterHub configuration
 

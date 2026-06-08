@@ -75,6 +75,33 @@ We then remove it from the ``adminUsers`` list in the ``values.yaml``
 
    adminUsers: []
 
+
+Handling the authentication of service account users
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In JupyterHub, OAuth-based authentication can trigger periodic user refreshes which ensures that user authentication remains valid during ongoing API activity.
+However, when ``auth_state`` is enabled, JupyterHub may attempt to refresh user authentication even for users who have never completed an OAuth login restulting in empty ``auth_state``.
+This behavior can become problematic for service account users that do not log in through a browser and therefore do not have OAuth credentials.
+In such cases, repeated refresh attempts may prevent these users from functioning correctly.
+
+To address this, you can override the refresh behavior using a ``OAuthenticator.refresh_user_hook`` and explicitly bypass refresh logic for known service accounts:
+
+.. code-block:: Python
+
+    def refresh_user_hook(authenticator, user, auth_state):
+        if user.name == "deployment-service-check":
+            # Service account user: skip refresh logic
+            return True  # treat as always fresh
+
+        # Default behavior for all real users
+        return None
+
+    c.OAuthenticator.refresh_user_hook = refresh_user_hook
+
+This approach ensures that real users continue to follow normal authentication refresh rules while service account users are not blocked by OAuth refresh requirements.
+
+This has been discussed in this `Jupyter Community  Forum entry <https://discourse.jupyter.org/t/spawning-servers-via-rest-api-with-my-jupyterhub-5-deployment-only-works-if-keycloak-session-is-active/38677/7>`_.
+
 Running a test with the service account
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

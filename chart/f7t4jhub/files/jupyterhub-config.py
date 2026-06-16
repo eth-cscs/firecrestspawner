@@ -150,12 +150,14 @@ c.Spawner.batch_script = """#!/bin/bash
 #SBATCH --job-name={{ .Values.config.spawner.jobName }}
 #SBATCH --get-user-env
 
-{% if partition  %}#SBATCH --partition={{`{{partition}}`}}{% endif %}
+{% set p = partition if partition is string else (partition[0] if partition else '') %}
+{% if p          %}#SBATCH --partition={{`{{p}}`}}{% endif %}
 {% if runtime    %}#SBATCH --time={{`{{runtime[0]}}`}}{% endif %}
 {% if memory     %}#SBATCH --mem={{`{{memory}}`}}{% endif %}
 {% if gres       %}#SBATCH --gres={{`{{gres}}`}}{% endif %}
 {% if nprocs     %}#SBATCH --cpus-per-task={{`{{nprocs}}`}}{% endif %}
 {% if nnodes     %}#SBATCH --nodes={{`{{nnodes[0]}}`}}{% endif %}
+{% if gpus       %}#SBATCH --gres=gpu:{{`{{gpus[0]}}`}}{% endif %}
 {% if reservation_custom[0] %}
 #SBATCH --reservation={{`{{reservation_custom[0]}}`}}
 {% elif reservation  %}
@@ -212,6 +214,8 @@ def spawner_options_form(formdata, spawner):
 c.Spawner.options_from_form = spawner_options_form
 c.Spawner.poll_interval = 300
 c.Spawner.port = {{ .Values.config.spawner.port }}
+c.Spawner.port_min = {{ .Values.config.spawner.port_min }}
+c.Spawner.port_max = {{ .Values.config.spawner.port_max }}
 c.Spawner.start_timeout = {{ .Values.config.spawner.start_timeout }}
 
 # This tells the hub to not stop servers when the hub restarts

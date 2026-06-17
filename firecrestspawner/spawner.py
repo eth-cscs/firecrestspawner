@@ -165,6 +165,16 @@ class FirecRESTSpawnerBase(Spawner):
         help="Address for singleuser server to listen at"
     ).tag(config=True)
 
+    port_min = Integer(
+        50396,
+        help="Lowest port that may be assigned to the singleuser server"
+    ).tag(config=True)
+
+    port_max = Integer(
+        50399,
+        help="Highest port that may be assigned to the singleuser server"
+    ).tag(config=True)
+
     req_uenv = Unicode(
         "",
         help="Name of a uenv to mount"
@@ -401,6 +411,9 @@ class FirecRESTSpawnerBase(Spawner):
         if "PATH" in job_env:
             job_env.pop("PATH")
 
+        job_env["JUPYTERHUB_SINGLEUSER_PORT_MIN"] = f"{self.port_min}"
+        job_env["JUPYTERHUB_SINGLEUSER_PORT_MAX"] = f"{self.port_max}"
+
         # FIXME: These two variables may have quotes in their values.
         # We encoded as base64 since quotes are not allowed
         # in firecrest requests
@@ -413,7 +426,10 @@ class FirecRESTSpawnerBase(Spawner):
         is_service_account = any(role.name == 'service-account'
                                  for role in self.user.roles)
 
-        client = await self.get_firecrest_client()
+        if is_service_account:
+            client = await self.get_firecrest_client_service_account()
+        else:
+            client = await self.get_firecrest_client()
 
         groups = await client.userinfo(self.host)
         account_from_form = self.user_options.get("account")
@@ -430,6 +446,7 @@ class FirecRESTSpawnerBase(Spawner):
                 self.host,
                 script_str=script,
                 env_vars=job_env,
+                account=subvars["account"][0],
                 working_dir="/".join((self.workdir, self.user.name))
             )
             self.log.debug(f"[client.submit] {self.job}")
@@ -626,6 +643,15 @@ class FirecRESTSpawnerBase(Spawner):
                     " while pending in the queue or died "
                     " immediately after starting."
                 )
+            await asyncio.sleep(self.startup_poll_interval)
+
+        while self.port == 0:
+            self.log.debug(f"Job {self.job_id} running, waiting for port callback...")
+            status = await self.query_job_status()
+            if status not in (JobStatus.RUNNING, JobStatus.UNKNOWN):
+                self.clear_state()
+                raise RuntimeError("Job died before reporting its port")
+
             await asyncio.sleep(self.startup_poll_interval)
 
         self.ip = await self.state_gethost()

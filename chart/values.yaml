@@ -183,7 +183,13 @@ f7t4jhub:
       workdir: '/home'
 
       # Port for the single-user server. Set to 0 to use a random port
-      port: 57001
+      port: 0
+
+      # Lowest port that may be assigned to the single-user server
+      port_min: 50396
+
+      # Highest port that may be assigned to the single-user server
+      port_min: 50399
 
       # Node name template for the cluster
       nodeNameTemplate: '{}.example.cscs.ch'

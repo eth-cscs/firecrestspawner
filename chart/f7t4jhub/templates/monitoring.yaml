@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: hub-metrics
+  # namespace: <namespace>
+  labels:
+    release: observability
+spec:
+  selector:
+    matchLabels:
+      app: hub
+  podMetricsEndpoints:
+    - port: metrics
+      path: /hub/metrics
+      interval: 30s

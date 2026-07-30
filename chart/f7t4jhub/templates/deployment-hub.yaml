@@ -24,20 +24,20 @@ spec:
       {{- if .Values.metricbeat.enabled }}
         co.elastic.metrics/enabled: "true"
         co.elastic.metrics/hosts: '"${data.host}:{{ .Values.network.externalPort }}"'
-        co.elastic.metrics/metrics_path: /metrics
+        co.elastic.metrics/metrics_path: /hub/metrics
         co.elastic.metrics/metricsets: collector
         co.elastic.metrics/module: prometheus
       {{- end }}
     spec:
       securityContext:
-          fsGroup: 1000
+          fsGroup: 10001
       containers:
       - name: hub
         image: {{ .Values.hub.image }}
         imagePullPolicy: Always
         securityContext:
-          runAsUser: 1000
-          runAsGroup: 1000
+          runAsUser: 10001
+          runAsGroup: 10001
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           runAsNonRoot: true
@@ -54,6 +54,8 @@ spec:
           {{- end }}
         ports:
         - containerPort: {{ .Values.network.appPort }}
+        - name: metrics
+          containerPort: {{ .Values.network.externalPort }}
         env:
           - name: FIRECREST_URL
             valueFrom:

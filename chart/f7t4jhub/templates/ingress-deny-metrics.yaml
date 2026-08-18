@@ -17,8 +17,8 @@ spec:
     - match: Host(`{{ . }}`)
       kind: Rule
       services:
-        - name: jupyterhub
-          port: 80
+        - name: {{ $.Release.Name }}-proxy-svc
+          port: 8000
 
     # ----------------------------
     # Block /hub/metrics explicitly

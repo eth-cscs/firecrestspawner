@@ -13,7 +13,7 @@ COPY dockerfiles/src ./src
 RUN npx tailwindcss -c ./src/tailwind.config.js -i ./src/input.css -o /app/output.css --minify
 
 # --- Stage 2: JupyterHub ---
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 WORKDIR /srv/jupyterhub
 
@@ -46,6 +46,8 @@ RUN curl -o /usr/local/share/jupyterhub/static/js/alpine.min.js https://unpkg.co
 
 # Copy Tailwind output from previous stage
 COPY --from=tailwind-builder /app/output.css /usr/local/share/jupyterhub/static/css/custom.css
+
+# RUN pip install git+https://github.com/eth-cscs/pyfirecrest
 
 EXPOSE 8000
 

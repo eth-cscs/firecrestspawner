@@ -7,6 +7,7 @@
 
 import asyncio
 import base64
+import firecrest
 import hostlist
 import httpx
 import inspect
@@ -18,7 +19,9 @@ import re
 import requests
 import sys
 import time
+import uuid
 from async_generator import async_generator, yield_
+from contextlib import asynccontextmanager
 from enum import Enum
 from firecrest.FirecrestException import PollingIterException
 from firecrest import ClientCredentialsAuth
@@ -286,6 +289,46 @@ class FirecRESTSpawnerBase(Spawner):
     # Will get the raw output of the job status command unless overridden
     job_status = Unicode()
 
+
+    @asynccontextmanager
+    async def firecrest_errors(self, action: str):
+        try:
+            yield
+        except UnexpectedStatusException as e:
+            resp = e.responses[-1] if e.responses else None
+            status = getattr(resp, "status_code", 502)
+            message = str(e)
+            if resp is not None:
+                try:
+                    message = json.loads(resp.content.decode("utf-8")).get("message", message)
+                except (UnicodeDecodeError, json.JSONDecodeError, AttributeError):
+                    pass  # fall back to str(e)
+            self.log.exception(f"{action} failed ({status}): {message}")
+            raise HTTPError(status if 400 <= status < 600 else 502, message) from e
+        except Exception as e:
+            self.log.exception(f"{action} failed: {e}")
+            raise HTTPError(502, str(e)) from e
+
+    @asynccontextmanager
+    async def _firecrest_errors(self, action: str):
+        try:
+            yield
+        except UnexpectedStatusException as e:
+            resp = e.responses[-1] if e.responses else None
+            status = getattr(resp, "status_code", 502)
+            message = str(e)
+            if resp is not None:
+                try:
+                    message = json.loads(resp.content.decode("utf-8")).get("message", message)
+                except (UnicodeDecodeError, json.JSONDecodeError, AttributeError):
+                    pass  # fall back to str(e)
+
+            self.log.error(f"{action} failed ({status}): {message}")
+            raise HTTPError(status if 400 <= status < 600 else 502, message) from e
+        except Exception as e:
+            self.log.error(f"{action} failed: {e}")
+            raise HTTPError(502, str(e)) from e
+
     def get_req_subvars(self):
         """Prepare substitution variables for templates using ``req_xyz``
         traits.
@@ -369,7 +412,34 @@ class FirecRESTSpawnerBase(Spawner):
         client.timeout = 30
         return client
 
-    async def firecrest_poll(self):
+
+    async def firecrest_poll(self, max_retries=30, retry_delay=1):
+        """Helper function to poll jobs."""
+        if self.polling_with_service_account:
+            client = await self.get_firecrest_client_service_account()
+        else:
+            client = await self.get_firecrest_client()
+
+        # This is needed in case the scheduler is slow updating
+        # its database which could make the result of ``client.poll``
+        # to be an empty list
+        poll_result = []
+        attempts = 0
+        while poll_result == [] and attempts < max_retries:
+            auth_state = await self.user.get_auth_state()
+            try:
+                async with self.firecrest_errors("Poll"):
+                    poll_result = await client.job_info(self.host, self.job_id)
+            except HTTPError as e:
+                attempts += 1
+                self.log.info(f"Polling job status failed (attempt {attempts}/{max_retries}): {e}")
+                await asyncio.sleep(retry_delay)
+        if poll_result == []:
+            self.log.warning(f"Polling job {self.job_id} gave up after {max_retries} attempts")
+        return poll_result
+
+
+    async def _firecrest_poll(self):
         """Helper function to poll jobs."""
 
         if self.polling_with_service_account:
@@ -383,8 +453,10 @@ class FirecRESTSpawnerBase(Spawner):
         poll_result = []
         while poll_result == []:
             try:
-                poll_result = await client.job_info(self.host, self.job_id)
-            except UnexpectedStatusException as e:
+                async with self.firecrest_errors("Submit"):
+                    poll_result = await client.job_info(self.host, self.job_id)
+
+            except HTTPError:
                 self.log.info(f"Polling job status fail: {e}")
                 await asyncio.sleep(1)
 
@@ -431,36 +503,75 @@ class FirecRESTSpawnerBase(Spawner):
         else:
             client = await self.get_firecrest_client()
 
-        groups = await client.userinfo(self.host)
+        async with self.firecrest_errors("Userinfo"):
+            with firecrest.correlation_id(str(uuid.uuid4())) as cid:
+                groups = await client.userinfo(self.host)
+
+        # try:
+        #     groups = await client.userinfo(self.host)
+        # except UnexpectedStatusException as e:
+        #     self.log.error(f"Userinfo failed: {e}")
+        #     byte_content = e.responses[-1].content
+        #     decoded_string = byte_content.decode('utf-8')
+        #     response_dict = json.loads(decoded_string)
+        #     message = response_dict["message"]
+        #     err = HTTPError(400, message)
+        #     raise err
+
+        # except Exception as e:
+        #     self.log.error(f"Userinfo failed: {e}")
+        #     err = HTTPError(400, f"{e}")
+        #     raise err
+
         account_from_form = self.user_options.get("account")
         if not account_from_form or account_from_form == [""]:
             subvars["account"] = groups["group"]["name"]
 
         script = await self._get_batch_script(**subvars)
         self.log.info("Spawner submitting job using firecREST")
-        self.log.info(f"Spawner submitted script:\n{script}")
+        # self.log.info(f"Spawner submitted script:\n{script}")
+        for line in script.splitlines():
+            if line.strip():
+                self.log.info(f"[batch-script] {line}")
 
         try:
             self.log.info("firecREST: Submitting job")
-            self.job = await client.submit(
-                self.host,
-                script_str=script,
-                env_vars=job_env,
-                account=subvars["account"][0],
-                working_dir="/".join((self.workdir, self.user.name))
-            )
-            self.log.debug(f"[client.submit] {self.job}")
-            self.job_id = f"{self.job['jobId']}"
-            self.log.info(f"Job {self.job_id} submitted")
+            async with self.firecrest_errors("Submit"):
+                with firecrest.correlation_id(str(uuid.uuid4())) as cid:
+                    self.job = await client.submit(
+                        self.host,
+                        script_str=script,
+                        env_vars=job_env,
+                        account=subvars["account"][0],
+                        working_dir="/".join((self.workdir, self.user.name))
+                    )
+
+                self.log.debug(f"[client.submit] {self.job}")
+                self.job_id = f"{self.job['jobId']}"
+                self.log.info(f"Job {self.job_id} submitted")
+
+        except HTTPError:
+            self.job_id = ""
+            raise
+
         # In case the connection to the firecrest server timesout
         # catch httpx.ConnectTimeout since httpx.ConnectTimeout
         # doesn't print anything when cought
-        except httpx.ConnectTimeout:
-            self.log.error(f"Job submission failed: httpx.ConnectTimeout")
-            self.job_id = ""
-        except PollingIterException:
-            self.log.error(f"Job submission failed: PollingIterException")
-            self.job_id = ""
+        # except httpx.ConnectTimeout:
+        #     self.log.error(f"Job submission failed: httpx.ConnectTimeout")
+        #     self.job_id = ""
+        # except PollingIterException:
+        #     self.log.error(f"Job submission failed: PollingIterException")
+        #     self.job_id = ""
+        # except UnexpectedStatusException as e:
+        #     self.log.error(f"Userinfo failed: {e}")
+        #     byte_content = e.responses[-1].content
+        #     decoded_string = byte_content.decode('utf-8')
+        #     response_dict = json.loads(decoded_string)
+        #     message = response_dict["message"]
+        #     err = HTTPError(400, message)
+        #     raise err
+
         except Exception as e:
             self.log.error(f"Job submission failed: {e}")
             self.job_id = ""
@@ -515,7 +626,10 @@ class FirecRESTSpawnerBase(Spawner):
             client = await self.get_firecrest_client()
 
         self.log.info("firecREST: Canceling job")
-        cancel_result = await client.cancel_job(self.host, self.job_id)
+        async with self.firecrest_errors("Cancel"):
+            with firecrest.correlation_id(str(uuid.uuid4())) as cid:
+                cancel_result = await client.cancel_job(self.host, self.job_id)
+
         self.log.debug(f"[client.cancel] {cancel_result}")
 
     def load_state(self, state) -> None:
@@ -713,7 +827,9 @@ class FirecRESTSpawnerBase(Spawner):
         while True:
             if self.state_ispending():
                 try:
-                    poll_result = await client.job_info(self.host, self.job["jobId"])
+                    with firecrest.correlation_id(str(uuid.uuid4())) as cid:
+                        poll_result = await client.job_info(self.host, self.job["jobId"])
+
                     if poll_result[0]["state"] != "RUNNING":
                         reason = poll_result[0]["nodes"]
                         message = f"Job {self.job['jobId']} is pending in queue {reason} "
@@ -729,7 +845,9 @@ class FirecRESTSpawnerBase(Spawner):
                     }
                 )
             elif self.state_isrunning():
-                poll_result = await client.job_metadata(self.host, self.job["jobId"])
+                with firecrest.correlation_id(str(uuid.uuid4())) as cid:
+                    poll_result = await client.job_metadata(self.host, self.job["jobId"])
+
                 await yield_(
                     {
                         "message": "Cluster job running... waiting to connect. "

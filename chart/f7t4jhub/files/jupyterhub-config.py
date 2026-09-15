@@ -196,18 +196,19 @@ c.Spawner.options_form = """
 {{ .Values.config.spawner.optionsForm }}
 """
 
-def spawner_options_form(formdata, spawner):
+def spawner_options_form(formdata, spawner=None):
     """Function to process the script flags `reservation` and
     `constraint` since they could come from the `values.yaml` or
     the options form.
     """
     reservation = formdata.get("reservation", [""])[0].strip()
     constraint = formdata.get("constraint", [""])[0].strip()
-    if not reservation or reservation == [""]:
-        formdata["reservation"] = [spawner.req_reservation]
+    if spawner is not None:
+        if not reservation or reservation == [""]:
+            formdata["reservation"] = [spawner.req_reservation]
 
-    if not constraint or constraint == [""]:
-        formdata["constraint"] = [spawner.req_constraint]
+        if not constraint or constraint == [""]:
+            formdata["constraint"] = [spawner.req_constraint]
 
     return formdata
 

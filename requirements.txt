@@ -1,4 +1,4 @@
-jupyterhub==5.4.3
+jupyterhub==5.5.0
 pyfirecrest==3.10.0
 SQLAlchemy==2.0.48
 oauthenticator==17.4.0

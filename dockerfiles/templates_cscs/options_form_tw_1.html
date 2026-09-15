@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html lang="en" class="h-full" data-bs-theme="dark"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>JupyterHub</title>
+
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+      <!--script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script-->
+      <!--script src="https://cdn.tailwindcss.com"></script-->
+      <link rel="stylesheet" href="./JupyterHub_files/custom.css" type="text/css">
+
+
+    
+
+    
+      <link rel="icon" href="https://jupyterhub-starlex-dev.iram-tds.tds.cscs.ch/hub/static/favicon.ico?v=fde5757cd3892b979919d3b1faa88a410f28829feb5ba22b6cf069f2c6c98675fceef90f932e49b510e74d65c681d5846b943e7f7cc1b41867422f0481085c1f" type="image/x-icon">
+    
+
+    
+      <script src="./JupyterHub_files/bootstrap.bundle.min.js"></script>
+      <script src="./JupyterHub_files/require.js"></script>
+      <script src="./JupyterHub_files/jquery.min.js"></script>
+      <script src="./JupyterHub_files/darkmode.js"></script>
+    
+
+    
+    <script>
+      require.config({
+        
+        urlArgs: "v=20260710095602",
+        
+        baseUrl: '/hub/static/js',
+        paths: {
+          components: '../components',
+          jquery: '../components/jquery/dist/jquery.min',
+          moment: "../components/moment/moment",
+        },
+      });
+
+      window.jhdata = {
+        base_url: "/hub/",
+        prefix: "/",
+        
+        user: "sarafael",
+        
+        admin_access: false,
+        options_form: true,
+        xsrf_token: "MnwxOjB8MTA6MTc4NDAzMjAyNHw1Ol94c3JmfDg4OllUVmlZV0V3TlRreU1UZGlORFk1T0RreFpUTTJZMkl5TVdGaFl6VmtaRGs2TTJOaE1ESTRaVE5sWkRFek5HTXdNMkU1T1dSaU9EVTVNV0ppTkRCaVpUTT18YTI4NTNjODVhNmU1YTJhMmVjNWQ1MmI2MmViZjZlNzY4MWJiYzU5MTViMWZhZGE1YTJiYmIyNTUyNzBjMzc5OQ",
+      };
+    </script>
+    
+
+    
+      <meta name="description" content="JupyterHub">
+      <meta name="keywords" content="Jupyter, JupyterHub">
+    
+  <style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.bottom-0{bottom:0px}.right-3{right:0.75rem}.top-3{top:0.75rem}.z-10{z-index:10}.z-20{z-index:20}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mb-5{margin-bottom:1.25rem}.mt-1{margin-top:0.25rem}.mt-1\.5{margin-top:0.375rem}.mt-3{margin-top:0.75rem}.mt-5{margin-top:1.25rem}.mt-0\.5{margin-top:0.125rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-12{height:3rem}.h-16{height:4rem}.h-2{height:0.5rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-8{height:2rem}.h-full{height:100%}.min-h-screen{min-height:100vh}.w-2{width:0.5rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-auto{width:auto}.w-full{width:100%}.max-w-6xl{max-width:72rem}.max-w-7xl{max-width:80rem}.max-w-\[60\%\]{max-width:60%}.max-w-lg{max-width:32rem}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.cursor-pointer{cursor:pointer}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-gray-100{--tw-border-opacity:1;border-color:rgb(243 244 246 / var(--tw-border-opacity, 1))}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235 / var(--tw-border-opacity, 1))}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.border-gray-900{--tw-border-opacity:1;border-color:rgb(17 24 39 / var(--tw-border-opacity, 1))}.bg-black\/50{background-color:rgb(0 0 0 / 0.5)}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.bg-gray-900{--tw-bg-opacity:1;background-color:rgb(17 24 39 / var(--tw-bg-opacity, 1))}.bg-red-100{--tw-bg-opacity:1;background-color:rgb(254 226 226 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.p-2{padding:0.5rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-3{padding:0.75rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-5{padding-top:1.25rem;padding-bottom:1.25rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.pb-2\.5{padding-bottom:0.625rem}.pl-3{padding-left:0.75rem}.pr-3{padding-right:0.75rem}.pt-3{padding-top:0.75rem}.text-left{text-align:left}.text-right{text-align:right}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-\[10px\]{font-size:10px}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-medium{font-weight:500}.font-semibold{font-weight:600}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55 / var(--tw-text-opacity, 1))}.text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39 / var(--tw-text-opacity, 1))}.text-red-800{--tw-text-opacity:1;color:rgb(153 27 27 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.accent-gray-900{accent-color:#111827}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-100:hover{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-50:hover{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-700:hover{--tw-bg-opacity:1;background-color:rgb(55 65 81 / var(--tw-bg-opacity, 1))}.hover\:text-blue-600:hover{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.hover\:text-gray-600:hover{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.focus\:border-gray-500:focus{--tw-border-opacity:1;border-color:rgb(107 114 128 / var(--tw-border-opacity, 1))}.focus\:ring-gray-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(107 114 128 / var(--tw-ring-opacity, 1))}.disabled\:cursor-not-allowed:disabled{cursor:not-allowed}.disabled\:opacity-40:disabled{opacity:0.4}@media (min-width: 640px){.sm\:hidden{display:none}.sm\:grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:flex-row{flex-direction:row}.sm\:items-center{align-items:center}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}}@media (min-width: 1024px){.lg\:sticky{position:sticky}.lg\:top-6{top:1.5rem}.lg\:col-span-2{grid-column:span 2 / span 2}.lg\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.lg\:px-8{padding-left:2rem;padding-right:2rem}}</style></head>
+
+  <!--body class="min-h-full bg-gray-50 text-gray-900"-->
+  <body class="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+    <noscript>
+      <div class="mx-auto mt-10 max-w-lg rounded-md bg-red-100 px-4 py-3 text-center text-red-800">
+        JupyterHub requires JavaScript. Please enable it to proceed.
+      </div>
+    </noscript>
+
+    
+    <nav class="border-b border-gray-200 bg-white">
+    <!--<nav class="border-b border-gray-200 bg-white sticky top-0 z-50">-->
+      <div class="mx-auto max-w-7xl px-4">
+        <div class="flex h-16 items-center justify-between">
+
+          <!-- Logo -->
+	  <div class="flex-shrink-0">
+          <a href="https://jupyterhub-starlex-dev.iram-tds.tds.cscs.ch/hub/" class="flex items-center gap-2">
+            <img src="./JupyterHub_files/cscs-logo.svg" alt="JupyterHub logo" class="h-8 w-auto">
+            <img src="./JupyterHub_files/logo" alt="JupyterHub logo" class="h-8 w-auto">
+          </a>
+	  </div>
+
+          
+          <button class="sm:hidden rounded-md p-2 text-gray-500 hover:bg-gray-100" data-bs-toggle="collapse" data-bs-target="#thenavbar" aria-label="Toggle navigation">
+            ☰
+          </button>
+          
+
+          <!--div id="thenavbar" class="sm:flex sm:items-center sm:gap-6">
+            <ul class="flex flex-col sm:flex-row gap-4 text-sm font-medium">
+              
+                <li><a href="/hub/home" class="hover:text-blue-600">Home</a></li>
+                <li><a href="/hub/token" class="hover:text-blue-600">Token</a></li>
+                
+                  <li><a href="/hub/admin" class="hover:text-blue-600">Admin</a></li>
+                
+              
+            </ul>
+          </div-->
+
+
+
+<div class="w-full px-4">
+  <div class="flex items-center gap-8">
+
+    <!-- Navbar -->
+    <div id="thenavbar" class="flex">
+      <ul class="flex flex-col sm:flex-row gap-4 text-sm font-medium items-start sm:items-center">
+
+        
+          <li>
+            <a href="https://jupyterhub-starlex-dev.iram-tds.tds.cscs.ch/hub/home" class="hover:text-blue-600">
+              Home
+            </a>
+          </li>
+
+          <li>
+            <a href="https://jupyterhub-starlex-dev.iram-tds.tds.cscs.ch/hub/token" class="hover:text-blue-600">
+              Token
+            </a>
+          </li>
+
+          
+            <li>
+              <a href="https://jupyterhub-starlex-dev.iram-tds.tds.cscs.ch/hub/admin" class="hover:text-blue-600">
+                Admin
+              </a>
+            </li>
+          
+        
+
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+
+          <div class="flex items-center gap-3">
+            <!--<button
+              id="dark-theme-toggle"
+              class="rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+              title="Toggle dark mode"
+            >
+              🌗
+	    </button>-->
+
+            
+              <span class="text-sm">sarafael</span>
+              <a href="https://jupyterhub-starlex-dev.iram-tds.tds.cscs.ch/hub/logout" class="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100">
+                Logout
+              </a>
+            
+          </div>
+        </div>
+      </div>
+    </nav>
+    
+
+    
+      
+    
+
+    <main class="flex-1 mx-auto max-w-7xl px-4 py-6">
+      
+  <div class="container">
+  <!--div class="max-w-5xl mx-auto px-4"-->
+    
+    <!--
+      <div class="text-center my-8">
+        <h1 class="text-3xl font-semibold">Server Options</h1>
+      </div>
+    -->
+    
+    <div class="flex justify-center">
+      <div class="w-full">
+        <!--
+        
+	-->
+
+
+        <div>
+          
+        </div>
+
+
+        <form enctype="multipart/form-data" id="spawn_form" action="https://jupyterhub-starlex-dev.iram-tds.tds.cscs.ch/hub/spawn/sarafael?_xsrf=MnwxOjB8MTA6MTc4NDAzMjAyNHw1Ol94c3JmfDg4OllUVmlZV0V3TlRreU1UZGlORFk1T0RreFpUTTJZMkl5TVdGaFl6VmtaRGs2TTJOaE1ESTRaVE5sWkRFek5HTXdNMkU1T1dSaU9EVTVNV0ppTkRCaVpUTT18YTI4NTNjODVhNmU1YTJhMmVjNWQ1MmI2MmViZjZlNzY4MWJiYzU5MTViMWZhZGE1YTJiYmIyNTUyNzBjMzc5OQ" method="post" role="form" class="space-y-4">
+          
+              <script defer="" src="./JupyterHub_files/cdn.min.js"></script>        
+              <script src="./JupyterHub_files/saved_resource"></script>
+              
+              <div x-data="{
+                  /* environment &amp; software */
+                  environment: &#39;managed&#39;,
+                  form_image: &#39;uenv/prgenv-gnu/25.6:v2&#39;,
+                  customImage: &#39;&#39;,
+                  customVenv: &#39;&#39;,
+                  customVenvView: &#39;&#39;,
+                  software: [
+                    {  id: &#39;pytorch/pt-26.05-py3-jlab-test.sqsh&#39;,   name: &#39;PyTorch 2.12.0 (v2)&#39;,   desc: &#39;My own NGC container image nvcr.io/nvidia/pytorch:26.05-py3 (v2)&#39;},
+{  id: &#39;uenv/prgenv-gnu-test/25.6:v2&#39;,   name: &#39;PrgEnv-gnu/25.6 (uenv v2)&#39;,   desc: &#39;GNU compilers and libraries (test)&#39;},
+                    {id:&#39;uenv/prgenv-gnu/25.6:v2&#39;, name:&#39;PrgEnv-gnu/25.6 (uenv v2)&#39;, desc:&#39;GNU compilers and libraries&#39;},
+                    {id:&#39;pytorch/pt-26.05-py3-jlab.sqsh&#39;, name:&#39;PyTorch 2.12.0&#39;, desc:&#39;NGC container image nvcr.io/nvidia/pytorch:26.05-py3&#39;}
+                  ],
+              
+                  /* resources */
+                  cpu: 1,
+                  memory: 16,
+                  gpu: false,
+                  runtime: 0,
+                  runtimeOptions: [1, 2, 4, 8],
+              
+                  /* advanced */
+                  advanced: false,
+                  partition: &#39;normal&#39;,
+                  reservation: &#39;uss140-shs131-nv590-staging&#39;,
+              
+                  /* access group */
+                  groupOpen: false,
+                  // selected: &#39;csstaff&#39;,
+                  // groups: [
+                  //   { id: &#39;csstaff&#39;, name: &#39;csstaff&#39; },
+                  //   { id: &#39;jupyter&#39;, name: &#39;jupyter&#39; },
+                  //   { id: &#39;admin&#39;, name: &#39;admin&#39; }
+                  // ],
+                  selected: &#39;csstaff&#39;,
+            groups: [
+                    {id : &#39;csstaff&#39;, name: &#39;csstaff&#39;},
+               {id : &#39;usup&#39;, name: &#39;usup&#39;},
+               {id : &#39;jupyter&#39;, name: &#39;jupyter&#39;}
+                    ],
+                  selectGroup(g){ this.selected = g.id; this.groupOpen = false; },
+                  get selectedName(){
+                    const g = this.groups.find(x =&gt; x.id === this.selected);
+                    return g ? g.name : &#39;Select a group&#39;;
+                  },
+                  get launchLabel(){
+                    if(this.environment === &#39;managed&#39;) {
+                      const s = this.software.find(x =&gt; x.id === this.form_image);
+                      return s ? s.name : this.form_image;
+                    }
+                    if(this.environment === &#39;container&#39;) return this.customImage || &#39;(no image set)&#39;;
+                    return this.customVenv || &#39;(no uenv path set)&#39;;
+                  },
+                  get _launchLabel(){
+                    if(this.environment === &#39;managed&#39;) return this.form_image;
+                    if(this.environment === &#39;container&#39;) return this.customImage || &#39;(no image set)&#39;;
+                    return this.customVenv || &#39;(no uenv path set)&#39;;
+                  },
+                  get isReady(){
+                    if(this.environment === &#39;container&#39;) return this.customImage.trim().length &gt; 0;
+                    if(this.environment === &#39;venv&#39;) return this.customVenv.trim().length &gt; 0 &amp;&amp; this.customVenvView.trim().length &gt; 0;
+                    return true;
+                  }
+                }" x-init="$watch(&#39;environment&#39;, value =&gt; {
+                  if (value !== &#39;container&#39;) customImage = &#39;&#39;;
+                  if (value !== &#39;venv&#39;) { customVenv = &#39;&#39;; customVenvView = &#39;&#39;; }
+                })" class="min-h-screen">
+              
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+              
+                  <!-- ===================================================== -->
+                  <!-- Header -->
+                  <!-- ===================================================== -->
+
+                  <!--
+                  <div class="mb-8">
+                    <h1 class="text-xl font-semibold text-gray-900">Launch a notebook session</h1>
+                    <p class="mt-1 text-sm text-gray-500 max-w-xl">
+                      Choose your software environment and compute, then submit. Your session runs as a Slurm job on the cluster.
+                    </p>
+                  </div>
+                  -->
+              
+                  <div class="grid lg:grid-cols-3 gap-6 items-start">
+              
+                    <!-- ===================================================== -->
+                    <!-- Main column -->
+                    <!-- ===================================================== -->
+              
+                    <div class="lg:col-span-2 space-y-6">
+              
+                      <!-- Environment -->
+                      <section class="bg-white rounded-md shadow border border-gray-200 p-6">
+              
+                        <!--
+                        <h2 class="text-sm font-medium text-gray-900 mb-1">Environment</h2>
+                        <p class="text-sm text-gray-500 mb-5">How should your notebook server be built?</p>
+                        -->
+              
+                        <div class="grid sm:grid-cols-3 gap-3">
+              
+                          <label class="relative cursor-pointer rounded-md border p-4 transition border-gray-900 bg-gray-50" :class="environment==&#39;managed&#39; ? &#39;border-gray-900 bg-gray-50&#39; : &#39;border-gray-200 hover:bg-gray-50&#39;">
+                            <input type="radio" class="sr-only" x-model="environment" value="managed" name="environment">
+                            <span class="absolute top-3 right-3 text-gray-900" x-show="environment==&#39;managed&#39;">
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"></path>
+                              </svg>
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="text-gray-400 h-6 w-6">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.07-3.694 3.75-8.25 3.75s-8.25-1.68-8.25-3.75M20.25 6.375c0-2.07-3.694-3.75-8.25-3.75s-8.25 1.68-8.25 3.75M20.25 6.375v11.25C20.25 19.695 16.556 21.375 12 21.375s-8.25-1.68-8.25-3.75V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 15.945 16.556 17.625 12 17.625s-8.25-1.68-8.25-3.75v-3.75m16.5 0c0 2.07-3.694 3.75-8.25 3.75s-8.25-1.68-8.25-3.75"></path>
+                            </svg>
+                            <div class="mt-3 text-sm font-medium text-gray-900">Managed Environment</div>
+                            <div class="mt-1 text-xs text-gray-500">Use an environment maintained by your administrators.</div>
+                          </label>
+              
+                          <label class="relative cursor-pointer rounded-md border p-4 transition border-gray-200 hover:bg-gray-50" :class="environment==&#39;container&#39; ? &#39;border-gray-900 bg-gray-50&#39; : &#39;border-gray-200 hover:bg-gray-50&#39;">
+                            <input type="radio" class="sr-only" x-model="environment" value="container" name="environment">
+                            <span class="absolute top-3 right-3 text-gray-900" x-show="environment==&#39;container&#39;" style="display: none;">
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"></path>
+                              </svg>
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="text-gray-400 h-6 w-6">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"></path>
+                            </svg>
+                            <div class="mt-3 text-sm font-medium text-gray-900">Custom Container</div>
+                            <div class="mt-1 text-xs text-gray-500">Launch your own OCI/Docker image.</div>
+                          </label>
+              
+                          <label class="relative cursor-pointer rounded-md border p-4 transition border-gray-200 hover:bg-gray-50" :class="environment==&#39;venv&#39; ? &#39;border-gray-900 bg-gray-50&#39; : &#39;border-gray-200 hover:bg-gray-50&#39;">
+                            <input type="radio" class="sr-only" x-model="environment" value="venv" name="environment">
+                            <span class="absolute top-3 right-3 text-gray-900" x-show="environment==&#39;venv&#39;" style="display: none;">
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"></path>
+                              </svg>
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="text-gray-400 h-6 w-6">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-16.5-3a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3m-19.5 0a4.5 4.5 0 0 1 .9-2.7L5.737 5.1a3.375 3.375 0 0 1 2.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 0 1 .9 2.7m0 0a3 3 0 0 1-3 3m0 3h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Zm-3 6h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Z"></path>
+                            </svg>
+                            <div class="mt-3 text-sm font-medium text-gray-900">Custom Uenv</div>
+                            <div class="mt-1 text-xs text-gray-500">Launch your own uenv squashfs image.</div>
+                          </label>
+              
+                        </div>
+                      </section>
+              
+                      <!-- Managed software list -->
+                      <section x-show="environment==&#39;managed&#39;" x-transition="" class="bg-white rounded-md shadow border border-gray-200 p-6">
+                        <h3 class="text-sm font-medium text-gray-900 mb-4">Available environments</h3>
+                        <div class="space-y-2">
+                          <template x-for="item in software" :key="item.id"></template><label class="flex items-start gap-3 rounded-md border p-3 cursor-pointer transition border-gray-200 hover:bg-gray-50" :class="form_image===item.id ? &#39;border-gray-900 bg-gray-50&#39; : &#39;border-gray-200 hover:bg-gray-50&#39;">
+                              <input type="radio" name="form_image" :value="item.id" x-model="form_image" class="mt-1 text-gray-900 focus:ring-gray-500" value="pytorch/pt-26.05-py3-jlab-test.sqsh">
+                              <span>
+                                <span class="block text-sm font-medium text-gray-900" x-text="item.name">PyTorch 2.12.0 (v2)</span>
+                                <span class="block text-xs font-mono text-gray-500 mt-0.5" x-text="item.desc">My own NGC container image nvcr.io/nvidia/pytorch:26.05-py3 (v2)</span>
+                              </span>
+                            </label><label class="flex items-start gap-3 rounded-md border p-3 cursor-pointer transition border-gray-200 hover:bg-gray-50" :class="form_image===item.id ? &#39;border-gray-900 bg-gray-50&#39; : &#39;border-gray-200 hover:bg-gray-50&#39;">
+                              <input type="radio" name="form_image" :value="item.id" x-model="form_image" class="mt-1 text-gray-900 focus:ring-gray-500" value="uenv/prgenv-gnu-test/25.6:v2">
+                              <span>
+                                <span class="block text-sm font-medium text-gray-900" x-text="item.name">PrgEnv-gnu/25.6 (uenv v2)</span>
+                                <span class="block text-xs font-mono text-gray-500 mt-0.5" x-text="item.desc">GNU compilers and libraries (test)</span>
+                              </span>
+                            </label><label class="flex items-start gap-3 rounded-md border p-3 cursor-pointer transition border-gray-900 bg-gray-50" :class="form_image===item.id ? &#39;border-gray-900 bg-gray-50&#39; : &#39;border-gray-200 hover:bg-gray-50&#39;">
+                              <input type="radio" name="form_image" :value="item.id" x-model="form_image" class="mt-1 text-gray-900 focus:ring-gray-500" value="uenv/prgenv-gnu/25.6:v2">
+                              <span>
+                                <span class="block text-sm font-medium text-gray-900" x-text="item.name">PrgEnv-gnu/25.6 (uenv v2)</span>
+                                <span class="block text-xs font-mono text-gray-500 mt-0.5" x-text="item.desc">GNU compilers and libraries</span>
+                              </span>
+                            </label><label class="flex items-start gap-3 rounded-md border p-3 cursor-pointer transition border-gray-200 hover:bg-gray-50" :class="form_image===item.id ? &#39;border-gray-900 bg-gray-50&#39; : &#39;border-gray-200 hover:bg-gray-50&#39;">
+                              <input type="radio" name="form_image" :value="item.id" x-model="form_image" class="mt-1 text-gray-900 focus:ring-gray-500" value="pytorch/pt-26.05-py3-jlab.sqsh">
+                              <span>
+                                <span class="block text-sm font-medium text-gray-900" x-text="item.name">PyTorch 2.12.0</span>
+                                <span class="block text-xs font-mono text-gray-500 mt-0.5" x-text="item.desc">NGC container image nvcr.io/nvidia/pytorch:26.05-py3</span>
+                              </span>
+                            </label>
+                        </div>
+                      </section>
+              
+                      <!-- Custom container -->
+                      <section x-show="environment==&#39;container&#39;" x-transition="" class="bg-white rounded-md shadow border border-gray-200 p-6" style="display: none;">
+                        <h3 class="text-sm font-medium text-gray-900 mb-4">Custom container</h3>
+                        <label class="block">
+                          <span class="text-xs font-medium text-gray-500">Path to CE toml file</span>
+                          <input type="text" x-model="customImage" name="form_user_toml" placeholder="/path/to/myimage.toml" :disabled="environment !== &#39;container&#39;" class="border px-3 py-2 mt-1.5 w-full rounded-md border-gray-300 text-sm font-mono shadow-sm focus:border-gray-500 focus:ring-gray-500" disabled="disabled">
+                        </label>
+                      </section>
+              
+                      <!-- Custom uenv -->
+                      <section x-show="environment==&#39;venv&#39;" x-transition="" class="bg-white rounded-md shadow border border-gray-200 p-6 space-y-4" style="display: none;">
+                        <h3 class="text-sm font-medium text-gray-900">Custom uenv</h3>
+                        <label class="block">
+                          <span class="text-xs font-medium text-gray-500">Uenv name or path to squashfs file</span>
+                          <input type="text" x-model="customVenv" name="form_user_uenv" placeholder="/home/jovyan/myenv.squashfs" :disabled="environment !== &#39;venv&#39;" class="border px-3 py-2 mt-1.5 w-full rounded-md border-gray-300 text-sm font-mono shadow-sm focus:border-gray-500 focus:ring-gray-500" disabled="disabled">
+                        </label>
+                        <label class="block">
+                          <span class="text-xs font-medium text-gray-500">View</span>
+                          <input type="text" x-model="customVenvView" name="form_user_view" placeholder="default" :disabled="environment !== &#39;venv&#39;" class="border px-3 py-2 mt-1.5 w-full rounded-md border-gray-300 text-sm font-mono shadow-sm focus:border-gray-500 focus:ring-gray-500" disabled="disabled">
+                        </label>
+                      </section>
+              
+                      <!-- Resources -->
+                      <section class="bg-white rounded-md shadow border border-gray-200 p-6">
+                        <h2 class="text-sm font-medium text-gray-900 mb-5">Resources</h2>
+              
+                        <div class="grid sm:grid-cols-2 gap-6">
+              
+                          <div>
+                            <div class="flex items-center justify-between mb-2">
+                              <span class="text-xs font-medium text-gray-500">GPUs</span>
+                              <span class="text-sm font-mono font-semibold text-gray-900" x-text="cpu">1</span>
+                            </div>
+                            <input type="range" name="gpus" min="1" max="4" x-model="cpu" class="w-full accent-gray-900">
+                            <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                              <span>1</span><span>2</span><span>3</span><span>4</span>
+                            </div>
+                          </div>
+              
+                          <div>
+                            <div class="flex items-center justify-between mb-2">
+                              <span class="text-xs font-medium text-gray-500">Runtime</span>
+                              <span class="text-sm font-mono font-semibold text-gray-900" x-text="runtimeOptions[runtime] + &#39;h&#39;">1h</span>
+                            </div>
+                            <input type="range" min="0" max="3" step="1" x-model="runtime" class="w-full accent-gray-900">
+                            <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                              <span>1h</span><span>2h</span><span>4h</span><span>8h</span>
+                            </div>
+                            <input type="hidden" name="runtime" :value="runtimeOptions[runtime] + &#39;:00:00&#39;" value="1:00:00">
+                          </div>
+              
+                          <!--
+                          <div class="flex items-start sm:items-center">
+                            <label class="inline-flex items-center gap-3 cursor-pointer select-none">
+                              <input type="checkbox" x-model="gpu" class="sr-only">
+                              <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors" :class="gpu ? 'bg-gray-900' : 'bg-gray-200'">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform" :class="gpu ? 'translate-x-6' : 'translate-x-1'"></span>
+                              </span>
+                              <span class="text-sm font-medium text-gray-900">Request GPU</span>
+                            </label>
+                          </div>
+                          -->
+              
+                        </div>
+                      </section>
+              
+                      <!-- Advanced -->
+                      <section class="bg-white rounded-md shadow border border-gray-200 overflow-hidden" :class="advanced ? &#39;&#39; : &#39;overflow-hidden&#39;">
+              
+                        <button type="button" @click="advanced=!advanced" class="w-full flex items-center justify-between px-6 py-4 text-left">
+                          <span class="text-sm font-medium text-gray-900">Advanced settings</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 text-gray-400 transition-transform" :class="advanced ? &#39;rotate-180&#39; : &#39;&#39;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"></path>
+                          </svg>
+                        </button>
+              
+                        <div x-show="advanced" x-transition="" class="border-t border-gray-200 px-6 py-5 space-y-5" style="display: none;">
+              
+                        <!--
+                          <label class="block">
+                            <span class="text-xs font-medium text-gray-500">Startup script</span>
+                            <textarea rows="4" class="mt-1.5 w-full rounded-md border-gray-300 bg-gray-50 text-sm font-mono shadow-sm focus:border-gray-500 focus:ring-gray-500" placeholder="#!/bin/bash"></textarea>
+                          </label>
+              
+                          <label class="block">
+                            <span class="text-xs font-medium text-gray-500">Environment variables</span>
+                            <textarea rows="4" class="mt-1.5 w-full rounded-md border-gray-300 bg-gray-50 text-sm font-mono shadow-sm focus:border-gray-500 focus:ring-gray-500" placeholder="MY_VAR=value"></textarea>
+                          </label>
+                          -->
+
+                          <!--
+                          <div class="block relative" @click.away="groupOpen=false">
+                            <span class="text-xs font-medium text-gray-500">Access group</span>
+                            <button type="button" @click="groupOpen=!groupOpen" class="mt-1.5 w-full flex items-center justify-between rounded-md border border-gray-300 px-3 py-2 text-sm bg-white shadow-sm hover:bg-gray-50">
+                              <span class="text-gray-900" x-text="selectedName"></span>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 text-gray-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"></path>
+                              </svg>
+                            </button>
+                            <div x-show="groupOpen" x-transition class="absolute z-20 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg overflow-hidden">
+                              <template x-for="g in groups" :key="g.id">
+                                <button type="button" @click="selectGroup(g)" class="w-full text-left px-3 py-2 text-sm text-gray-900 hover:bg-gray-50" :class="selected===g.id ? 'bg-gray-50 font-medium' : ''">
+                                  <span x-text="g.name"></span>
+                                </button>
+                              </template>
+                            </div>
+                            <input type="hidden" name="account" :value="selected">
+                          </div>
+                          -->
+
+                          
+                         <div class="block relative" @click.away="groupOpen=false">
+                            <span class="text-xs font-medium text-gray-500">Access group</span>
+                            <button type="button" @click="groupOpen=!groupOpen" class="mt-1.5 w-full flex items-center justify-between rounded-md border border-gray-300 px-3 py-2 text-sm bg-white shadow-sm hover:bg-gray-50">
+                              <span class="text-gray-900" x-text="selectedName">csstaff</span>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 text-gray-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"></path>
+                              </svg>
+                            </button>
+                            <div x-show="groupOpen" x-transition="" class="absolute z-20 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg overflow-hidden" style="display: none;">
+                              <template x-for="g in groups" :key="g.id"></template><button type="button" @click="selectGroup(g)" class="w-full text-left px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 bg-gray-50 font-medium" :class="selected===g.id ? &#39;bg-gray-50 font-medium&#39; : &#39;&#39;">
+                                  <span x-text="g.name">csstaff</span>
+                                </button><button type="button" @click="selectGroup(g)" class="w-full text-left px-3 py-2 text-sm text-gray-900 hover:bg-gray-50" :class="selected===g.id ? &#39;bg-gray-50 font-medium&#39; : &#39;&#39;">
+                                  <span x-text="g.name">usup</span>
+                                </button><button type="button" @click="selectGroup(g)" class="w-full text-left px-3 py-2 text-sm text-gray-900 hover:bg-gray-50" :class="selected===g.id ? &#39;bg-gray-50 font-medium&#39; : &#39;&#39;">
+                                  <span x-text="g.name">jupyter</span>
+                                </button>
+                            </div>
+                            <input type="hidden" name="account" :value="selected" value="csstaff">
+                          </div>
+    
+              
+                          <div class="grid sm:grid-cols-1 gap-4">
+                            <!--
+                            <label class="block">
+                              <span class="text-xs font-medium text-gray-500">Partition</span>
+                              <input type="text" name="partition" x-model="partition" class="border px-3 py-2 mt-1.5 w-full rounded-md border-gray-300 text-sm font-mono shadow-sm focus:border-gray-500 focus:ring-gray-500">
+                            </label>
+                            -->
+
+                            <label class="block">
+                              <span class="text-xs font-medium text-gray-500">Reservation</span>
+                              <input type="text" name="reservation_custom" x-model="reservation" placeholder="(optional)" class="border px-3 py-2 mt-1.5 w-full rounded-md border-gray-300 text-sm font-mono shadow-sm focus:border-gray-500 focus:ring-gray-500">
+                            </label>
+                          </div>
+              
+                          
+              
+                        </div>
+                      </section>
+              
+                    </div>
+              
+                    <!-- ===================================================== -->
+                    <!-- Summary -->
+                    <!-- ===================================================== -->
+              
+                    <aside class="lg:sticky lg:top-6">
+                      <div class="bg-white rounded-md shadow border border-gray-200 p-6">
+              
+                        <h2 class="text-sm font-medium text-gray-900 mb-4">Launch summary</h2>
+              
+                        <dl class="space-y-3 text-sm">
+                          <div class="flex justify-between gap-3 border-b border-gray-100 pb-2.5">
+                            <dt class="text-gray-500">Environment</dt>
+                            <dd class="text-gray-900 text-right truncate max-w-[60%]" x-text="environment">managed</dd>
+                          </div>
+                          <div class="flex justify-between gap-3 border-b border-gray-100 pb-2.5">
+                            <dt class="text-gray-500">Image</dt>
+                            <dd class="text-gray-900 text-right font-mono text-xs truncate max-w-[60%]" x-text="launchLabel">PrgEnv-gnu/25.6 (uenv v2)</dd>
+                          </div>
+                          <div class="flex justify-between gap-3 border-b border-gray-100 pb-2.5">
+                            <dt class="text-gray-500">GPUs</dt>
+                            <dd class="text-gray-900" x-text="cpu">1</dd>
+                          </div>
+                          <!--
+                          <div class="flex justify-between gap-3 border-b border-gray-100 pb-2.5">
+                            <dt class="text-gray-500">GPU requested</dt>
+                            <dd class="text-gray-900" x-text="gpu ? 'Yes' : 'No'"></dd>
+                          </div>
+                          -->
+                          <div class="flex justify-between gap-3 border-b border-gray-100 pb-2.5">
+                            <dt class="text-gray-500">Runtime</dt>
+                            <dd class="text-gray-900 font-mono text-xs" x-text="runtimeOptions[runtime] + &#39;:00:00&#39;">1:00:00</dd>
+                          </div>
+                          <div class="flex justify-between gap-3 border-b border-gray-100 pb-2.5">
+                            <dt class="text-gray-500">Partition</dt>
+                            <dd class="text-gray-900" x-text="partition || &#39;(default)&#39;">normal</dd>
+                          </div>
+                          <div class="flex justify-between gap-3">
+                            <dt class="text-gray-500">Account</dt>
+                            <dd class="text-gray-900" x-text="selected || &#39;(no account set)&#39;">csstaff</dd>
+                          </div>
+                          <div class="flex justify-between gap-3">
+                            <dt class="text-gray-500">Reservation</dt>
+                            <dd class="text-gray-900" x-text="reservation || &#39;(no reservation set)&#39;">uss140-shs131-nv590-staging</dd>
+                          </div>
+                        </dl>
+              
+                        
+                        <div class="mt-5 flex items-center gap-2 text-xs">
+                          <span class="h-2 w-2 rounded-full bg-green-500" :class="isReady ? &#39;bg-green-500&#39; : &#39;bg-amber-400&#39;"></span>
+                          <span class="text-gray-500" x-text="isReady ? &#39;Ready to submit&#39; : &#39;Set an image / uenv path before launching&#39;">Ready to submit</span>
+                        </div>
+
+			<div class="mt-5 flex items-center gap-2 text-xs">
+                          <span class="h-2 w-2 rounded-full bg-amber-400" :class="isReady ? &#39;bg-amber-400&#39; : &#39;bg-amber-400&#39;"></span>
+                          <span class="text-gray-500" x-text="isReady ? &#39;Ready to submit&#39; : &#39;Set an image / uenv path before launching&#39;">Ready to submit</span>
+                        </div>
+
+                        <button type="submit" :disabled="!isReady" class="mt-5 w-full rounded-md bg-gray-900 text-white text-sm font-medium py-2.5 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                          Launch session
+                        </button>
+              
+                      </div>
+                    </aside>
+              
+                  </div>
+                </div>
+              </div>
+    
+
+	        <!--
+          <div class="feedback-container flex items-center gap-3">
+            <button type="submit" class="w-full max-w-6xl min-w-[600px] mx-auto rounded bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">Start</button>
+            <div class="feedback-widget hidden text-blue-600">
+              <i class="fa fa-spinner"></i>
+            </div>
+          </div>
+          -->
+        </form>
+      </div>
+    </div>
+  </div>
+
+    </main>
+
+    
+               <footer class="bottom-0 z-10 h-12 bg-white shadow sticky">
+                  <div class="flex items-center justify-between">
+                    <div class="pl-3 pt-3">
+                        <p class="text-xs text-xs text-gray-400">
+                            © <!-- -->
+                            2026<!-- -->
+                             CSCS<!-- -->
+                             - All rights reserved
+                        </p>
+                    </div>
+                    <div class="pr-3 pt-3 inline-flex items-center">
+                        <p class="text-right text-xs text-gray-400">
+                            Version
+                            <span class="text-gray-800">5.4.3</span>
+                        </p>
+                    </div>
+                  </div>
+                </footer>
+    
+
+    
+  
+  
+
+  <div class="modal fixed inset-0 z-50 hidden bg-black/50 flex items-center justify-center" id="error-dialog" tabindex="-1" role="dialog" aria-labelledby="error-label" aria-hidden="true">
+    <div class="modal-dialog w-full max-w-lg px-4">
+      <div class="modal-content bg-white rounded-lg shadow-xl">
+        <div class="modal-header flex items-center justify-between px-6 py-4 border-b">
+          <h2 class="text-lg font-semibold text-gray-900" id="error-label">
+            Error
+          </h2>
+          <button type="button" class="text-gray-400 hover:text-gray-600" data-bs-dismiss="modal" aria-label="Close">
+            ✕
+          </button>
+        </div>
+
+        <div class="modal-body px-6 py-4 text-gray-700">
+          
+      <div class="ajax-error rounded-md bg-red-100 px-3 py-2 text-red-800">
+        The error
+      </div>
+    
+        </div>
+
+        <div class="modal-footer px-6 py-4 flex justify-end gap-2 border-t">
+          <button type="button" class="px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700" data-bs-dismiss="modal">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+    
+  
+  <script>
+    // setup onSubmit feedback
+    $('form').submit((e) => {
+      var form = $(e.target);
+      form.find('.feedback-container>input').attr('disabled', true);
+      form.find('.feedback-container>*').toggleClass('hidden');
+      form.find('.feedback-widget>*').toggleClass('fa-pulse');
+    });
+  </script>
+
+  
+
+</body></html>

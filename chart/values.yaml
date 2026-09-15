@@ -133,6 +133,10 @@ f7t4jhub:
       # letsencrypt-http01:
       #   urls:
       #     - 'jupyterhub-<cluster-name-2>.cscs.ch'
+      #
+      # letsencrypt-http01-traefik:
+      #   urls:
+      #     - 'jupyterhub-<cluster-name-3>.cscs.ch'
 
     # Admin users for the JupyterHub instance
     adminUsers: ["user1", "user2"]

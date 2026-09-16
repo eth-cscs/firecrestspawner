@@ -505,7 +505,7 @@ class FirecRESTSpawnerBase(Spawner):
 
         async with self.firecrest_errors("Userinfo"):
             with firecrest.correlation_id(str(uuid.uuid4())) as cid:
-                groups = await client.userinfo(self.host)
+                userinfo  = await client.userinfo(self.host)
 
         # try:
         #     groups = await client.userinfo(self.host)
@@ -525,7 +525,7 @@ class FirecRESTSpawnerBase(Spawner):
 
         account_from_form = self.user_options.get("account")
         if not account_from_form or account_from_form == [""]:
-            subvars["account"] = groups["group"]["name"]
+            subvars["account"] = userinfo["groups"][0]["name"]
 
         script = await self._get_batch_script(**subvars)
         self.log.info("Spawner submitting job using firecREST")

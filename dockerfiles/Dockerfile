@@ -13,7 +13,7 @@ COPY dockerfiles/src ./src
 RUN npx tailwindcss -c ./src/tailwind.config.js -i ./src/input.css -o /app/output.css --minify
 
 # --- Stage 2: JupyterHub ---
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 WORKDIR /srv/jupyterhub
 
